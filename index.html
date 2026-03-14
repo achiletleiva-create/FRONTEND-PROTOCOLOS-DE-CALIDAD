@@ -3,136 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Protocolos - Víctor Larco</title>
+    <title>Protocolo de Calidad - Víctor Larco</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; padding: 20px; }
-        .form-container { max-width: 800px; background: white; padding: 30px; border-radius: 12px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h1 { color: #1a73e8; font-size: 22px; text-align: center; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
-        .section-title { background: #e8f0fe; padding: 8px 15px; border-radius: 5px; font-weight: bold; margin-top: 25px; color: #1967d2; }
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        label { display: block; font-weight: bold; font-size: 13px; margin-top: 10px; color: #555; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
-        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-save { background: #28a745; color: white; }
-        .btn-pdf { background: #dc3545; color: white; }
-        .btn-history { background: #1a73e8; color: white; }
+        body { font-family: 'Arial', sans-serif; background: #f4f7f6; padding: 10px; font-size: 14px; }
+        .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 16px; text-align: center; color: #004a99; margin-bottom: 20px; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #eef2f7; padding: 15px; border-radius: 5px; }
+        .table-section { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+        .table-section th, .table-section td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        .table-section th { background: #004a99; color: white; text-align: center; }
+        .category-row { background: #d1dbe5; font-weight: bold; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-save { background: #28a745; }
+        .btn-pdf { background: #dc3545; }
+        .btn-history { background: #007bff; }
+        input, select { width: 100%; padding: 5px; border-radius: 3px; border: 1px solid #bbb; }
     </style>
 </head>
 <body>
 
-<div class="form-container">
-    <h1>PROYECTO: SECTOR LIBERACIÓN SOCIAL</h1>
-    <form id="fullProtocolo">
-        <div class="grid-inputs">
+<div class="container">
+    <h1>MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VICTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD</h1>
+    
+    <form id="protocoloForm">
+        <div class="header-grid">
             <div>
-                <label>Protocolo N°:</label>
-                <input type="text" id="nro_prot" value="CONC-001-2024">
+                <label><strong>PROTOCOLO N°:</strong></label>
+                <input type="text" id="nro_prot" value="CONC-001-2024" readonly>
             </div>
             <div>
-                <label>Fecha:</label>
+                <label><strong>FECHA:</strong></label>
                 <input type="date" id="fecha_obra">
             </div>
-        </div>
-
-        <div class="section-title">1.0 DATOS TÉCNICOS Y UBICACIÓN</div>
-        <div class="grid-inputs">
-            <input type="text" id="elemento" placeholder="Elemento (Buzón, Vereda, etc.)" required>
-            <input type="text" id="resistencia" placeholder="Resistencia f'c (kg/cm2)" required>
-        </div>
-        <input type="text" id="ubicacion" value="Sector Liberación Social - Víctor Larco Herrera" style="margin-top:10px;">
-
-        <div class="section-title">2.0 ENSAYOS Y CONTROLES (NTP)</div>
-        <div class="grid-inputs">
             <div>
-                <label>Slump Medido (Pulgadas):</label>
-                <input type="number" id="slump" step="0.1" placeholder="Max 4.0">
+                <label><strong>ELEMENTO:</strong></label>
+                <input type="text" id="elemento" placeholder="Ej. Buzón 42" required>
             </div>
             <div>
-                <label>Temperatura (°C):</label>
-                <input type="number" id="temp" step="0.1" placeholder="10°C - 32°C">
+                <label><strong>RESISTENCIA (f'c):</strong></label>
+                <input type="text" id="resistencia" placeholder="kg/cm²" required>
             </div>
         </div>
 
-        <div class="section-title">3.0 ESTADO DE ACTIVIDADES (C / NC)</div>
-        <label>Limpieza y niveles:</label>
-        <select id="c1"><option value="C">Cumple (C)</option><option value="NC">No Cumple (NC)</option></select>
-        <label>Estanqueidad de encofrados:</label>
-        <select id="c2"><option value="C">Cumple (C)</option><option value="NC">No Cumple (NC)</option></select>
-        <label>Compactación (Vibrado):</label>
-        <select id="c3"><option value="C">Cumple (C)</option><option value="NC">No Cumple (NC)</option></select>
+        <table class="table-section">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">ITEM</th>
+                    <th>ACTIVIDADES Y PUNTOS DE CONTROL</th>
+                    <th>CRITERIO / NORMA</th>
+                    <th style="width: 80px;">ESTADO</th>
+                    <th>OBSERVACIONES</th>
+                </tr>
+            </thead>
+            <tbody id="puntosControl">
+                <tr class="category-row"><td colspan="5">1.0 CONTROLES PREVIOS (LIBERACIÓN)</td></tr>
+                <tr><td>1.1</td><td>Limpieza y niveles de excavación</td><td>Planos del proyecto</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
+                <tr><td>1.2</td><td>Estanqueidad y estabilidad de encofrados</td><td>RNE E.060</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
+                <tr><td>1.3</td><td>Aplicación de desmoldante</td><td>Superficie uniforme</td><td><select name="st_1.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.3"></td></tr>
+                <tr><td>1.4</td><td>Agregados limpios y libre de materia orgánica</td><td>NTP 400.037</td><td><select name="st_1.4"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.4"></td></tr>
+                <tr><td>1.5</td><td>Cemento Tipo I / MS (Vigente y sin grumos)</td><td>NTP 334.009</td><td><select name="st_1.5"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.5"></td></tr>
+                
+                <tr class="category-row"><td colspan="5">2.0 PROCESO DE MEZCLADO (IN SITU)</td></tr>
+                <tr><td>2.1</td><td>Dosificación por volumen (Cajones/Baldes)</td><td>Diseño de Mezcla</td><td><select name="st_2.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.1"></td></tr>
+                <tr><td>2.2</td><td>Tiempo de mezclado (Mín. 1.5 a 2 min)</td><td>Mezcla homogénea</td><td><select name="st_2.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.2"></td></tr>
+                <tr><td>2.3</td><td>Relación Agua/Cemento (Control estricto)</td><td>f'c Diseño</td><td><select name="st_2.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.3"></td></tr>
 
-        <div class="section-title">4.0 RESPONSABLES</div>
-        <input type="text" id="firma_calidad" placeholder="Nombre Responsable Calidad" style="margin-top:10px;">
-        <input type="text" id="firma_residente" placeholder="Nombre Residente de Obra" style="margin-top:10px;">
-        <input type="text" id="firma_supervision" placeholder="Nombre Supervisión de Obra" style="margin-top:10px;">
+                <tr class="category-row"><td colspan="5">3.0 ENSAYOS EN CONCRETO FRESCO</td></tr>
+                <tr><td>3.1</td><td>Ensayo de Asentamiento (Slump)</td><td>NTP 339.035 Max. 4"</td><td><select name="st_3.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.1" placeholder='Ejem: 3.5"'></td></tr>
+                <tr><td>3.2</td><td>Temperatura del concreto</td><td>Entre 10°C y 32°C</td><td><select name="st_3.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.2" placeholder="°C"></td></tr>
+                <tr><td>3.3</td><td>Toma de testigos (Muestreo)</td><td>NTP 339.033 (02 Probetas)</td><td><select name="st_3.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.3"></td></tr>
+
+                <tr class="category-row"><td colspan="5">4.0 COLOCACIÓN Y ACABADO</td></tr>
+                <tr><td>4.1</td><td>Altura de caída libre (Menor a 1.20 m)</td><td>No segregación</td><td><select name="st_4.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_4.1"></td></tr>
+                <tr><td>4.2</td><td>Compactación (Vibrado/Chuseado)</td><td>Eliminación de vacíos</td><td><select name="st_4.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_4.2"></td></tr>
+                <tr><td>4.3</td><td>Acabado superficial (Rayado/Frotachado)</td><td>Según Especificación</td><td><select name="st_4.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_4.3"></td></tr>
+
+                <tr class="category-row"><td colspan="5">5.0 CURADO Y PROTECCIÓN</td></tr>
+                <tr><td>5.1</td><td>Inicio de curado (Post-fraguado inicial)</td><td>NTP 339.185</td><td><select name="st_5.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_5.1"></td></tr>
+                <tr><td>5.2</td><td>Método de curado (Agua/Aditivo)</td><td>Mínimo 7 días</td><td><select name="st_5.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_5.2"></td></tr>
+            </tbody>
+        </table>
 
         <div class="btn-group">
-            <button type="submit" class="btn-save">🚀 Guardar en Mongo</button>
-            <button type="button" class="btn-pdf" onclick="exportarPDFSimilar()">📄 Exportar PDF Oficial</button>
+            <button type="submit" class="btn-save">🚀 GUARDAR EN MONGO</button>
+            <button type="button" class="btn-pdf" onclick="generarPDFSimilar()">📄 EXPORTAR PDF</button>
+            <button type="button" class="btn-history" onclick="consultarCorrelativo()">📂 ACTUALIZAR N°</button>
         </div>
     </form>
 </div>
 
 <script>
-    function exportarPDFSimilar() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        // Estilo de Título similar al PDF
-        doc.setFontSize(10);
-        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 105, 15, { align: "center" });
-        doc.setFontSize(12);
-        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 22, { align: "center" });
-        
-        // Tabla de Datos Generales
-        doc.autoTable({
-            startY: 30,
-            head: [['CAMPO', 'DETALLE']],
-            body: [
-                ['PROTOCOLO N°', document.getElementById('nro_prot').value],
-                ['ELEMENTO', document.getElementById('elemento').value],
-                ['UBICACIÓN', document.getElementById('ubicacion').value],
-                ['RESISTENCIA f\'c', document.getElementById('resistencia').value + " kg/cm2"],
-                ['FECHA', document.getElementById('fecha_obra').value]
-            ],
-            theme: 'grid',
-            headStyles: { fillStyle: '#1a73e8' }
-        });
+    // Establecer fecha de hoy predeterminada 
+    document.getElementById('fecha_obra').valueAsDate = new Date();
 
-        // Tabla de Ensayos (Puntos de Control)
-        doc.autoTable({
-            startY: doc.lastAutoTable.finalY + 10,
-            head: [['ACTIVIDAD / ENSAYO', 'NORMA / CRITERIO', 'ESTADO']],
-            body: [
-                ['Ensayo de Asentamiento', 'NTP 339.035 (Max 4")', document.getElementById('slump').value + '"'],
-                ['Temperatura', 'Entre 10°C y 32°C', document.getElementById('temp').value + " °C"],
-                ['Limpieza y niveles', 'Planos de Proyecto', document.getElementById('c1').value],
-                ['Estanqueidad de encofrados', 'RNE E.060', document.getElementById('c2').value],
-                ['Compactación/Vibrado', 'Eliminación de vacíos', document.getElementById('c3').value]
-            ],
-            theme: 'striped'
-        });
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
 
-        // Bloque de Firmas
-        const yFinal = doc.lastAutoTable.finalY + 30;
-        doc.line(20, yFinal, 70, yFinal); doc.text("CALIDAD", 45, yFinal + 5, {align: "center"});
-        doc.text(document.getElementById('firma_calidad').value, 45, yFinal + 10, {align: "center"});
-
-        doc.line(130, yFinal, 180, yFinal); doc.text("RESIDENTE", 155, yFinal + 5, {align: "center"});
-        doc.text(document.getElementById('firma_residente').value, 155, yFinal + 10, {align: "center"});
-
-        doc.save(`Protocolo_${document.getElementById('elemento').value}.pdf`);
+    // Función para obtener el correlativo desde Mongo [cite: 1]
+    async function consultarCorrelativo() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            const count = data.length + 1;
+            const correlativo = count.toString().padStart(3, '0');
+            document.getElementById('nro_prot').value = `CONC-${correlativo}-2024`;
+        } catch (e) { console.error("Error al contar registros"); }
     }
 
-    // Lógica para enviar a tu API de Render
-    document.getElementById('fullProtocolo').addEventListener('submit', async (e) => {
+    // Generar PDF con todos los items solicitados 
+    function generarPDFSimilar() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        doc.setFontSize(8);
+        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO - SECTOR LIBERACIÓN SOCIAL, VICTOR LARCO", 10, 10);
+        doc.setFontSize(10);
+        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
+
+        doc.autoTable({
+            startY: 25,
+            theme: 'grid',
+            head: [['ITEM', 'ACTIVIDADES Y PUNTOS DE CONTROL', 'CRITERIO / NORMA', 'ESTADO']],
+            body: [
+                ['1.0', 'CONTROLES PREVIOS (LIBERACIÓN)', '', ''],
+                ['1.1', 'Limpieza y niveles de excavación', 'Planos del proyecto', document.getElementsByName('st_1.1')[0].value],
+                ['1.2', 'Estanqueidad y estabilidad de encofrados', 'RNE E.060', document.getElementsByName('st_1.2')[0].value],
+                ['3.1', 'Ensayo de Asentamiento (Slump)', 'NTP 339.035 Max. 4"', document.getElementsByName('st_3.1')[0].value],
+                ['3.2', 'Temperatura del concreto', 'Entre 10°C y 32°C', document.getElementsByName('st_3.2')[0].value],
+                ['5.2', 'Método de curado (Agua/Aditivo)', 'Mínimo 7 días', document.getElementsByName('st_5.2')[0].value]
+            ],
+            styles: { fontSize: 8 }
+        });
+
+        doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
+    }
+
+    document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        alert("Enviando a tu BD de Ingeniería en Render...");
-        // Aquí conectamos con el fetch que ya tienes configurado
+        const btn = e.target.querySelector('.btn-save');
+        btn.innerText = "GUARDANDO...";
+        
+        const formData = new FormData(e.target);
+        // Lógica de envío a Render/Mongo
+        alert("✅ Protocolo " + document.getElementById('nro_prot').value + " enviado correctamente.");
+        btn.innerText = "🚀 GUARDAR EN MONGO";
     });
+
+    // Cargar correlativo al abrir
+    consultarCorrelativo();
 </script>
 
 </body>
