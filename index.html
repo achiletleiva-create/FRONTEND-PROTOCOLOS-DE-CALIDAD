@@ -30,23 +30,60 @@
     
     <form id="protocoloForm">
         <div class="header-grid">
-            <div>
-                <label><strong>PROTOCOLO N°:</strong></label>
-                <input type="text" id="nro_prot" value="CONC-001-2024" readonly>
-            </div>
-            <div>
-                <label><strong>FECHA:</strong></label>
-                <input type="date" id="fecha_obra">
-            </div>
-            <div>
-                <label><strong>ELEMENTO:</strong></label>
-                <input type="text" id="elemento" placeholder="Ej. Buzón 42" required>
-            </div>
-            <div>
-                <label><strong>RESISTENCIA (f'c):</strong></label>
-                <input type="text" id="resistencia" placeholder="kg/cm²" required>
-            </div>
-        </div>
+    <div>
+        <label><strong>PROTOCOLO N°:</strong></label>
+        <input type="text" id="nro_prot" name="nro_protocolo" value="CONC-001-2024" readonly>
+    </div>
+    <div>
+        <label><strong>FECHA:</strong></label>
+        <input type="date" id="fecha_obra" name="fecha">
+    </div>
+    <div>
+        <label><strong>ELEMENTO:</strong></label>
+        <input type="text" id="elemento" name="elemento" placeholder="Ej. Buzón 42" required>
+    </div>
+    <div>
+        <label><strong>RESISTENCIA (f'c):</strong></label>
+        <input type="text" id="resistencia" name="resistencia_fc" placeholder="kg/cm²" required>
+    </div>
+</div>
+
+<script>
+    // CORRECCIÓN EN GENERAR PDF: Ahora mapea TODA la tabla automáticamente
+    function generarPDFSimilar() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        doc.setFontSize(8);
+        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(10);
+        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
+
+        // Captura automática de todas las filas de la tabla
+        const rows = [];
+        document.querySelectorAll('#puntosControl tr').forEach(tr => {
+            if (tr.classList.contains('category-row')) {
+                rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
+            } else {
+                const cells = tr.querySelectorAll('td');
+                const item = cells[0].innerText;
+                const actividad = cells[1].innerText;
+                const norma = cells[2].innerText;
+                const estado = tr.querySelector('select').value;
+                rows.push([item, actividad, norma, estado]);
+            }
+        });
+
+        doc.autoTable({
+            startY: 25,
+            theme: 'grid',
+            head: [['ITEM', 'ACTIVIDADES Y PUNTOS DE CONTROL', 'CRITERIO / NORMA', 'ESTADO']],
+            body: rows,
+            styles: { fontSize: 7 }
+        });
+
+        doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
+    }
 
         <table class="table-section">
             <thead>
@@ -167,16 +204,30 @@
         doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
     }
 
+    // CORRECCIÓN EN ENVÍO: Fetch compatible con fotos
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
-        btn.innerText = "GUARDANDO...";
+        btn.innerText = "ENVIANDO DATOS Y FOTOS...";
         
         const formData = new FormData(e.target);
-        // Lógica de envío a Render/Mongo
-        alert("✅ Protocolo " + document.getElementById('nro_prot').value + " enviado correctamente.");
-        btn.innerText = "🚀 GUARDAR EN MONGO";
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: formData // FormData gestiona automáticamente el boundary para las fotos
+            });
+            
+            if (response.ok) {
+                alert("✅ Protocolo y Fotos guardados en Mongo y Cloudinary");
+            }
+        } catch (error) {
+            alert("❌ Error de conexión con el servidor");
+        } finally {
+            btn.innerText = "🚀 GUARDAR EN MONGO";
+        }
     });
+</script>
 
     // Cargar correlativo al abrir
     consultarCorrelativo();
