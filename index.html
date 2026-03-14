@@ -86,7 +86,34 @@
                 <tr><td>5.2</td><td>Método de curado (Agua/Aditivo)</td><td>Mínimo 7 días</td><td><select name="st_5.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_5.2"></td></tr>
             </tbody>
         </table>
-
+<div class="section-title">6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO</div>
+        <div class="header-grid" style="margin-top:10px; grid-template-columns: 1fr 1fr 1fr;">
+            <div>
+                <label>Foto 1: Slump con wincha</label>
+                <input type="file" name="foto_slump" accept="image/*" capture="environment">
+            </div>
+            <div>
+                <label>Foto 2: Mezclado en trompo</label>
+                <input type="file" name="foto_mezclado" accept="image/*" capture="environment">
+            </div>
+            <div>
+                <label>Foto 3: Encofrado previo</label>
+                <input type="file" name="foto_encofrado" accept="image/*" capture="environment">
+            </div>
+            <div>
+                <label>Foto 4: Marcado de probetas</label>
+                <input type="file" name="foto_probetas" accept="image/*" capture="environment">
+            </div>
+            <div>
+                <label>Foto 5: Vibrado/Compactado</label>
+                <input type="file" name="foto_vibrado" accept="image/*" capture="environment">
+            </div>
+            <div>
+                <label>Foto 6: Curado del concreto</label>
+                <input type="file" name="foto_curado" accept="image/*" capture="environment">
+            </div>
+        </div>
+        
         <div class="btn-group">
             <button type="submit" class="btn-save">🚀 GUARDAR EN MONGO</button>
             <button type="button" class="btn-pdf" onclick="generarPDFSimilar()">📄 EXPORTAR PDF</button>
