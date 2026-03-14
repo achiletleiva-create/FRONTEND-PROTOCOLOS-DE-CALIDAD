@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Calidad - Víctor Larco</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 10px; background-color: #f0f2f5; }
+        .container { max-width: 600px; background: white; padding: 20px; border-radius: 12px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #1a73e8; text-align: center; font-size: 20px; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
+        label { font-weight: bold; display: block; margin-top: 12px; font-size: 13px; color: #444; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-send { background: #28a745; color: white; }
+        .btn-pdf { background: #dc3545; color: white; }
+        .btn-history { background: #1a73e8; color: white; grid-column: span 2; }
+        .history-section { margin-top: 30px; display: none; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ccc; }
+        .protocolo-card { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .upload-signed { font-size: 11px; background: #6c757d; color: white; padding: 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>CALIDAD: SECTOR LIBERACIÓN SOCIAL</h2>
+    
+    <form id="protocoloForm">
+        <label>Elemento:</label>
+        <input type="text" id="elemento" name="elemento" required>
+        <label>Slump (Max 4"):</label>
+        <input type="number" id="slump" name="slump_pulgadas" step="0.1" required>
+        <label>Resistencia f'c:</label>
+        <input type="text" id="resistencia" name="resistencia_fc" required>
+        
+        <div class="btn-group">
+            <button type="submit" class="btn-send" id="btnEnviar">🚀 Guardar Datos</button>
+            <button type="button" class="btn-pdf" onclick="descargarPDFManual()">📄 PDF para Firma</button>
+            <button type="button" class="btn-history" onclick="toggleHistorial()">📂 Ver Historial de Base de Datos</button>
+        </div>
+    </form>
+
+    <div id="historial" class="history-section">
+        <h3>📚 Protocolos Registrados</h3>
+        <div id="listaProtocolos">Cargando datos...</div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
+
+    // 1. FUNCIÓN PARA VER EL HISTORIAL (BOTÓN 3)
+    async function toggleHistorial() {
+        const div = document.getElementById('historial');
+        div.style.display = div.style.display === 'block' ? 'none' : 'block';
+        if(div.style.display === 'block') cargarDatos();
+    }
+
+    async function cargarDatos() {
+        try {
+            const res = await fetch(API_URL);
+            const datos = await res.json();
+            const container = document.getElementById('listaProtocolos');
+            container.innerHTML = '';
+
+            datos.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'protocolo-card';
+                item.innerHTML = `
+                    <div>
+                        <strong>${p.datos_tecnicos?.elemento || 'S/N'}</strong><br>
+                        <small>${new Date(p.fecha).toLocaleDateString()}</small>
+                    </div>
+                    <div>
+                        <button onclick='reimprimirPDF(${JSON.stringify(p)})' style="background:#eee; font-size:10px;">Re-PDF</button>
+                        <label class="upload-signed">
+                            Subir Firmado
+                            <input type="file" style="display:none" onchange="subirEscaneo('${p._id}', this)">
+                        </label>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        } catch (e) { alert("Error al conectar con MongoDB"); }
+    }
+
+    // 2. SUBIR ESCANEO FIRMADO (POST-FIRMA)
+    async function subirEscaneo(id, input) {
+        const file = input.files[0];
+        if(!file) return;
+
+        const formData = new FormData();
+        formData.append('foto_curado', file); // Reutilizamos un campo o podrías crear 'foto_firmada'
+
+        try {
+            const res = await fetch(`${API_URL}/${id}`, { method: 'PUT', body: formData });
+            if(res.ok) alert("✅ Escaneo firmado guardado en MongoDB y Cloudinary");
+        } catch (e) { alert("Error al subir escaneo"); }
+    }
+
+    // 3. GENERACIÓN DE PDF (REUTILIZABLE)
+    function descargarPDFManual() {
+        const data = {
+            datos_tecnicos: { elemento: document.getElementById('elemento').value },
+            ensayos: { slump_pulgadas: document.getElementById('slump').value }
+        };
+        reimprimirPDF(data);
+    }
+
+    function reimprimirPDF(p) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO", 105, 20, {align:"center"});
+        doc.text(`ELEMENTO: ${p.datos_tecnicos?.elemento}`, 20, 40);
+        doc.text(`SLUMP: ${p.ensayos?.slump_pulgadas}"`, 20, 50);
+        doc.line(20, 100, 80, 100); doc.text("Firma Calidad", 20, 105);
+        doc.save(`Protocolo_${p.datos_tecnicos?.elemento}.pdf`);
+    }
+
+    // ENVÍO INICIAL (BOTÓN 1)
+    document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        await fetch(API_URL, { method: 'POST', body: formData });
+        alert("✅ Datos base guardados");
+    });
+</script>
+</body>
+</html>
