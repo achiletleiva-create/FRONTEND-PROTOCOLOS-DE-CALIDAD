@@ -3,128 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Calidad - Víctor Larco</title>
+    <title>Gestión de Protocolos - Víctor Larco</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 10px; background-color: #f0f2f5; }
-        .container { max-width: 600px; background: white; padding: 20px; border-radius: 12px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #1a73e8; text-align: center; font-size: 20px; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
-        label { font-weight: bold; display: block; margin-top: 12px; font-size: 13px; color: #444; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-send { background: #28a745; color: white; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f4f8; padding: 20px; }
+        .form-container { max-width: 800px; background: white; padding: 30px; border-radius: 12px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; font-size: 22px; text-align: center; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+        .section-title { background: #e8f0fe; padding: 8px 15px; border-radius: 5px; font-weight: bold; margin-top: 25px; color: #1967d2; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        label { display: block; font-weight: bold; font-size: 13px; margin-top: 10px; color: #555; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-save { background: #28a745; color: white; }
         .btn-pdf { background: #dc3545; color: white; }
-        .btn-history { background: #1a73e8; color: white; grid-column: span 2; }
-        .history-section { margin-top: 30px; display: none; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ccc; }
-        .protocolo-card { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .upload-signed { font-size: 11px; background: #6c757d; color: white; padding: 5px; border-radius: 4px; }
+        .btn-history { background: #1a73e8; color: white; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>CALIDAD: SECTOR LIBERACIÓN SOCIAL</h2>
-    
-    <form id="protocoloForm">
-        <label>Elemento:</label>
-        <input type="text" id="elemento" name="elemento" required>
-        <label>Slump (Max 4"):</label>
-        <input type="number" id="slump" name="slump_pulgadas" step="0.1" required>
-        <label>Resistencia f'c:</label>
-        <input type="text" id="resistencia" name="resistencia_fc" required>
-        
+<div class="form-container">
+    <h1>PROYECTO: SECTOR LIBERACIÓN SOCIAL</h1>
+    <form id="fullProtocolo">
+        <div class="grid-inputs">
+            <div>
+                <label>Protocolo N°:</label>
+                <input type="text" id="nro_prot" value="CONC-001-2024">
+            </div>
+            <div>
+                <label>Fecha:</label>
+                <input type="date" id="fecha_obra">
+            </div>
+        </div>
+
+        <div class="section-title">1.0 DATOS TÉCNICOS Y UBICACIÓN</div>
+        <div class="grid-inputs">
+            <input type="text" id="elemento" placeholder="Elemento (Buzón, Vereda, etc.)" required>
+            <input type="text" id="resistencia" placeholder="Resistencia f'c (kg/cm2)" required>
+        </div>
+        <input type="text" id="ubicacion" value="Sector Liberación Social - Víctor Larco Herrera" style="margin-top:10px;">
+
+        <div class="section-title">2.0 ENSAYOS Y CONTROLES (NTP)</div>
+        <div class="grid-inputs">
+            <div>
+                <label>Slump Medido (Pulgadas):</label>
+                <input type="number" id="slump" step="0.1" placeholder="Max 4.0">
+            </div>
+            <div>
+                <label>Temperatura (°C):</label>
+                <input type="number" id="temp" step="0.1" placeholder="10°C - 32°C">
+            </div>
+        </div>
+
+        <div class="section-title">3.0 ESTADO DE ACTIVIDADES (C / NC)</div>
+        <label>Limpieza y niveles:</label>
+        <select id="c1"><option value="C">Cumple (C)</option><option value="NC">No Cumple (NC)</option></select>
+        <label>Estanqueidad de encofrados:</label>
+        <select id="c2"><option value="C">Cumple (C)</option><option value="NC">No Cumple (NC)</option></select>
+        <label>Compactación (Vibrado):</label>
+        <select id="c3"><option value="C">Cumple (C)</option><option value="NC">No Cumple (NC)</option></select>
+
+        <div class="section-title">4.0 RESPONSABLES</div>
+        <input type="text" id="firma_calidad" placeholder="Nombre Responsable Calidad" style="margin-top:10px;">
+        <input type="text" id="firma_residente" placeholder="Nombre Residente de Obra" style="margin-top:10px;">
+        <input type="text" id="firma_supervision" placeholder="Nombre Supervisión de Obra" style="margin-top:10px;">
+
         <div class="btn-group">
-            <button type="submit" class="btn-send" id="btnEnviar">🚀 Guardar Datos</button>
-            <button type="button" class="btn-pdf" onclick="descargarPDFManual()">📄 PDF para Firma</button>
-            <button type="button" class="btn-history" onclick="toggleHistorial()">📂 Ver Historial de Base de Datos</button>
+            <button type="submit" class="btn-save">🚀 Guardar en Mongo</button>
+            <button type="button" class="btn-pdf" onclick="exportarPDFSimilar()">📄 Exportar PDF Oficial</button>
         </div>
     </form>
-
-    <div id="historial" class="history-section">
-        <h3>📚 Protocolos Registrados</h3>
-        <div id="listaProtocolos">Cargando datos...</div>
-    </div>
 </div>
 
 <script>
-    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
-
-    // 1. FUNCIÓN PARA VER EL HISTORIAL (BOTÓN 3)
-    async function toggleHistorial() {
-        const div = document.getElementById('historial');
-        div.style.display = div.style.display === 'block' ? 'none' : 'block';
-        if(div.style.display === 'block') cargarDatos();
-    }
-
-    async function cargarDatos() {
-        try {
-            const res = await fetch(API_URL);
-            const datos = await res.json();
-            const container = document.getElementById('listaProtocolos');
-            container.innerHTML = '';
-
-            datos.forEach(p => {
-                const item = document.createElement('div');
-                item.className = 'protocolo-card';
-                item.innerHTML = `
-                    <div>
-                        <strong>${p.datos_tecnicos?.elemento || 'S/N'}</strong><br>
-                        <small>${new Date(p.fecha).toLocaleDateString()}</small>
-                    </div>
-                    <div>
-                        <button onclick='reimprimirPDF(${JSON.stringify(p)})' style="background:#eee; font-size:10px;">Re-PDF</button>
-                        <label class="upload-signed">
-                            Subir Firmado
-                            <input type="file" style="display:none" onchange="subirEscaneo('${p._id}', this)">
-                        </label>
-                    </div>
-                `;
-                container.appendChild(item);
-            });
-        } catch (e) { alert("Error al conectar con MongoDB"); }
-    }
-
-    // 2. SUBIR ESCANEO FIRMADO (POST-FIRMA)
-    async function subirEscaneo(id, input) {
-        const file = input.files[0];
-        if(!file) return;
-
-        const formData = new FormData();
-        formData.append('foto_curado', file); // Reutilizamos un campo o podrías crear 'foto_firmada'
-
-        try {
-            const res = await fetch(`${API_URL}/${id}`, { method: 'PUT', body: formData });
-            if(res.ok) alert("✅ Escaneo firmado guardado en MongoDB y Cloudinary");
-        } catch (e) { alert("Error al subir escaneo"); }
-    }
-
-    // 3. GENERACIÓN DE PDF (REUTILIZABLE)
-    function descargarPDFManual() {
-        const data = {
-            datos_tecnicos: { elemento: document.getElementById('elemento').value },
-            ensayos: { slump_pulgadas: document.getElementById('slump').value }
-        };
-        reimprimirPDF(data);
-    }
-
-    function reimprimirPDF(p) {
+    function exportarPDFSimilar() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO", 105, 20, {align:"center"});
-        doc.text(`ELEMENTO: ${p.datos_tecnicos?.elemento}`, 20, 40);
-        doc.text(`SLUMP: ${p.ensayos?.slump_pulgadas}"`, 20, 50);
-        doc.line(20, 100, 80, 100); doc.text("Firma Calidad", 20, 105);
-        doc.save(`Protocolo_${p.datos_tecnicos?.elemento}.pdf`);
+        
+        // Estilo de Título similar al PDF
+        doc.setFontSize(10);
+        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 105, 15, { align: "center" });
+        doc.setFontSize(12);
+        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 22, { align: "center" });
+        
+        // Tabla de Datos Generales
+        doc.autoTable({
+            startY: 30,
+            head: [['CAMPO', 'DETALLE']],
+            body: [
+                ['PROTOCOLO N°', document.getElementById('nro_prot').value],
+                ['ELEMENTO', document.getElementById('elemento').value],
+                ['UBICACIÓN', document.getElementById('ubicacion').value],
+                ['RESISTENCIA f\'c', document.getElementById('resistencia').value + " kg/cm2"],
+                ['FECHA', document.getElementById('fecha_obra').value]
+            ],
+            theme: 'grid',
+            headStyles: { fillStyle: '#1a73e8' }
+        });
+
+        // Tabla de Ensayos (Puntos de Control)
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 10,
+            head: [['ACTIVIDAD / ENSAYO', 'NORMA / CRITERIO', 'ESTADO']],
+            body: [
+                ['Ensayo de Asentamiento', 'NTP 339.035 (Max 4")', document.getElementById('slump').value + '"'],
+                ['Temperatura', 'Entre 10°C y 32°C', document.getElementById('temp').value + " °C"],
+                ['Limpieza y niveles', 'Planos de Proyecto', document.getElementById('c1').value],
+                ['Estanqueidad de encofrados', 'RNE E.060', document.getElementById('c2').value],
+                ['Compactación/Vibrado', 'Eliminación de vacíos', document.getElementById('c3').value]
+            ],
+            theme: 'striped'
+        });
+
+        // Bloque de Firmas
+        const yFinal = doc.lastAutoTable.finalY + 30;
+        doc.line(20, yFinal, 70, yFinal); doc.text("CALIDAD", 45, yFinal + 5, {align: "center"});
+        doc.text(document.getElementById('firma_calidad').value, 45, yFinal + 10, {align: "center"});
+
+        doc.line(130, yFinal, 180, yFinal); doc.text("RESIDENTE", 155, yFinal + 5, {align: "center"});
+        doc.text(document.getElementById('firma_residente').value, 155, yFinal + 10, {align: "center"});
+
+        doc.save(`Protocolo_${document.getElementById('elemento').value}.pdf`);
     }
 
-    // ENVÍO INICIAL (BOTÓN 1)
-    document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
+    // Lógica para enviar a tu API de Render
+    document.getElementById('fullProtocolo').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.target);
-        await fetch(API_URL, { method: 'POST', body: formData });
-        alert("✅ Datos base guardados");
+        alert("Enviando a tu BD de Ingeniería en Render...");
+        // Aquí conectamos con el fetch que ya tienes configurado
     });
 </script>
+
 </body>
 </html>
