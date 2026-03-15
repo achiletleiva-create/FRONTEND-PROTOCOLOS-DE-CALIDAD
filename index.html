@@ -207,15 +207,66 @@
     }
 
     // 3. Envío de datos a MongoDB
+    // 3. Envío de datos a MongoDB (Estructurado para los 16 campos)
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
         btn.innerText = "ENVIANDO DATOS...";
+        
+        // Creamos un objeto con la estructura que espera tu MongoDB
         const formData = new FormData(e.target);
+        const dataParaEnviar = {
+            nro_protocolo: formData.get('nro_protocolo'),
+            fecha: formData.get('fecha'),
+            elemento: formData.get('elemento'),
+            resistencia_fc: formData.get('resistencia_fc'),
+            // Agrupamos los 16 puntos de control en el objeto 'controles'
+            controles: {
+                limpieza_niveles: formData.get('st_1.1'),
+                estanqueidad_encofrado: formData.get('st_1.2'),
+                aplicacion_desmoldante: formData.get('st_1.3'),
+                agregados_limpios: formData.get('st_1.4'),
+                cemento_vigente: formData.get('st_1.5'),
+                dosificacion_mezcla: formData.get('st_2.1'),
+                tiempo_mezclado: formData.get('st_2.2'),
+                relacion_agua_cemento: formData.get('st_2.3'),
+                ensayo_slump: formData.get('st_3.1'),
+                temperatura_concreto: formData.get('st_3.2'),
+                toma_testigos: formData.get('st_3.3'),
+                altura_caida: formData.get('st_4.1'),
+                compactacion_vibrado: formData.get('st_4.2'),
+                acabado_superficial: formData.get('st_4.3'),
+                inicio_curado: formData.get('st_5.1'),
+                metodo_curado: formData.get('st_5.2')
+            },
+            ensayos: {
+                probetas_cantidad: 2 // Valor fijo según tu PDF [cite: 7]
+            }
+        };
+
+        // Para las fotos, seguimos usando FormData para que el backend las procese a Cloudinary
+        // Pero agregamos la estructura de texto como un campo JSON
+        const finalFormData = new FormData();
+        finalFormData.append("datos", JSON.stringify(dataParaEnviar));
+        
+        // Adjuntar archivos de imagen
+        const fileInputs = e.target.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            if (input.files[0]) finalFormData.append(input.name, input.files[0]);
+        });
+
         try {
-            const response = await fetch(API_URL, { method: 'POST', body: formData });
-            if (response.ok) alert("✅ Protocolo guardado con éxito");
-        } catch (error) { alert("❌ Error de conexión"); }
+            const response = await fetch(API_URL, { 
+                method: 'POST', 
+                body: finalFormData 
+            });
+            if (response.ok) {
+                alert("✅ Protocolo y los 16 campos guardados con éxito");
+                consultarCorrelativo();
+            }
+        } catch (error) { 
+            alert("❌ Error de conexión con el servidor"); 
+        }
         btn.innerText = "🚀 GUARDAR EN MONGO";
     });
 
