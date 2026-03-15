@@ -104,6 +104,26 @@
             <button type="button" class="btn-history" onclick="consultarCorrelativo()">📂 ACTUALIZAR N°</button>
         </div>
     </form>
+    <div class="container" style="margin-top: 30px;">
+    <div class="section-title">📂 HISTORIAL DE PROTOCOLOS REGISTRADOS</div>
+    <div style="overflow-x: auto;">
+        <table class="table-section" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <th>NRO PROTOCOLO</th>
+                    <th>FECHA</th>
+                    <th>ELEMENTO</th>
+                    <th>f'c</th>
+                    <th>SLUMP</th>
+                    <th>ESTADO GENERAL</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody id="tablaHistorial">
+                </tbody>
+        </table>
+    </div>
+</div>
 </div>
 
 <script>
@@ -271,4 +291,42 @@
     });
 
     consultarCorrelativo();
+
+    async function cargarHistorial() {
+    const tabla = document.getElementById('tablaHistorial');
+    try {
+        const res = await fetch(API_URL);
+        const protocolos = await res.json();
+        
+        tabla.innerHTML = ""; // Limpiar tabla
+
+        protocolos.forEach(p => {
+            const fila = document.createElement('tr');
+            
+            // Determinamos un color basado en si hay algún No Conforme (NC)
+            const tieneNC = Object.values(p.controles).includes("NC");
+            const colorEstado = tieneNC ? "#dc3545" : "#28a745";
+
+            fila.innerHTML = `
+                <td>${p.nro_protocolo}</td>
+                <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                <td>${p.datos_tecnicos.elemento}</td>
+                <td>${p.datos_tecnicos.resistencia_fc}</td>
+                <td>${p.controles.ensayo_slump || 'N/A'}</td>
+                <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
+                    ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
+                </td>
+                <td>
+                    <button onclick="verDetalles('${p._id}')" style="padding: 5px; background: #007bff; font-size: 9px;">👁️ VER</button>
+                </td>
+            `;
+            tabla.appendChild(fila);
+        });
+    } catch (e) {
+        console.error("Error al cargar historial:", e);
+    }
+}
+
+// Llamar a la función al cargar la página
+cargarHistorial();
 </script>
