@@ -161,7 +161,7 @@
         const rows = [];
         document.querySelectorAll('#puntosControl tr').forEach(tr => {
             if (tr.classList.contains('category-row')) {
-                rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
+                rows.push([{ content: tr.innerText, colSpan: 5, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
             } else {
                 // Busca esta parte en tu función de PDF y actualízala:
                     const cells = tr.querySelectorAll('td');
