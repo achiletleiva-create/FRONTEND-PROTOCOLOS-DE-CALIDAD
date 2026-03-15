@@ -119,37 +119,78 @@
         } catch (e) { console.error("Error correlativo"); }
     }
 
-    function generarPDFSimilar() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-        
-        doc.setFontSize(8);
-        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
-        doc.setFontSize(10);
-        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
-        doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
+    async function generarPDFSimilar() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    // --- PÁGINA 1: TABLA DE DATOS ---
+    doc.setFontSize(8);
+    doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+    doc.setFontSize(10);
+    doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
+    doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
 
-        const rows = [];
-        document.querySelectorAll('#puntosControl tr').forEach(tr => {
-            if (tr.classList.contains('category-row')) {
-                rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
-            } else {
-                const cells = tr.querySelectorAll('td');
-                const estado = tr.querySelector('select').value;
-                rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado]);
+    const rows = [];
+    document.querySelectorAll('#puntosControl tr').forEach(tr => {
+        if (tr.classList.contains('category-row')) {
+            rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
+        } else {
+            const cells = tr.querySelectorAll('td');
+            const estado = tr.querySelector('select').value;
+            rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado]);
+        }
+    });
+
+    doc.autoTable({
+        startY: 30,
+        theme: 'grid',
+        head: [['ITEM', 'ACTIVIDAD', 'NORMA', 'ESTADO']],
+        body: rows,
+        styles: { fontSize: 7 }
+    });
+
+    // --- PÁGINA 2: REGISTRO FOTOGRÁFICO ---
+    const fotosInputs = document.querySelectorAll('input[type="file"]');
+    let tieneFotos = false;
+
+    // Verificar si hay al menos una foto seleccionada
+    fotosInputs.forEach(input => { if (input.files.length > 0) tieneFotos = true; });
+
+    if (tieneFotos) {
+        doc.addPage();
+        doc.setFontSize(12);
+        doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
+
+        let xPos = [15, 110]; // Columnas Izquierda y Derecha
+        let yPos = [25, 110, 195]; // Filas (3 por página)
+        let fotoCount = 0;
+
+        for (let input of fotosInputs) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const imgData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+
+                const col = fotoCount % 2;
+                const row = Math.floor(fotoCount / 2);
+
+                // Dibujar Imagen (Ancho: 85mm, Alto: 65mm aprox para que quepan 6)
+                doc.addImage(imgData, 'JPEG', xPos[col], yPos[row], 85, 65);
+                
+                // Etiqueta de la foto abajo de la imagen
+                doc.setFontSize(8);
+                doc.text(input.previousElementSibling.innerText, xPos[col] + 42, yPos[row] + 72, {align: "center"});
+
+                fotoCount++;
             }
-        });
-
-        doc.autoTable({
-            startY: 30,
-            theme: 'grid',
-            head: [['ITEM', 'ACTIVIDAD', 'NORMA', 'ESTADO']],
-            body: rows,
-            styles: { fontSize: 7 }
-        });
-
-        doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
+        }
     }
+
+    doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
+}
 
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
