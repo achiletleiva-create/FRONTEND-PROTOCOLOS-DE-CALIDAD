@@ -346,8 +346,8 @@ finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
             fila.innerHTML = `
                 <td>${p.nro_protocolo}</td>
                 <td>${new Date(p.fecha).toLocaleDateString()}</td>
-                <td>${p.elemento}</td>
-                <td>${p.resistencia_fc}</td>
+                <td>${p.datos_tecnicos.elemento}</td>
+                <td>${p.datos_tecnicos.resistencia_fc}</td>
                 <td>${p.controles.ensayo_slump || 'N/A'}</td>
                 <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
                     ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
