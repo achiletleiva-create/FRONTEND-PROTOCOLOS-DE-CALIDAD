@@ -138,7 +138,8 @@
             const data = await res.json();
             if (Array.isArray(data)) {
                 // Cambia esta línea dentro de consultarCorrelativo:
-                    const anioActual = new Date().getFullYear();
+                  const correlativo = (data.length + 1).toString().padStart(3, '0');  
+                const anioActual = new Date().getFullYear();
                     document.getElementById('nro_prot').value = `CONC-${correlativo}-${anioActual}`;
             }
         } catch (e) { 
@@ -162,31 +163,47 @@
             if (tr.classList.contains('category-row')) {
                 rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
             } else {
-                const cells = tr.querySelectorAll('td');
-                const estado = tr.querySelector('select').value;
-                rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado]);
+                // Busca esta parte en tu función de PDF y actualízala:
+                    const cells = tr.querySelectorAll('td');
+                    const estado = tr.querySelector('select').value;
+                    const obs = tr.querySelector('input') ? tr.querySelector('input').value : ""; // <--- Captura la observación
+                    rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado, obs]); // <--- Agrégala al array
             }
         });
 
-        doc.autoTable({
-            startY: 30,
-            theme: 'grid',
-            head: [['ITEM', 'ACTIVIDAD', 'NORMA', 'ESTADO']],
-            body: rows,
-            styles: { fontSize: 7 },
-            didDrawPage: function (data) {
-                let finalY = data.cursor.y + 10;
-                if (finalY > 255) { doc.addPage(); finalY = 20; }
-                const anchoFirma = 50; const esp = 15; const inicioX = 15;
-                doc.setFontSize(7);
-                doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15); 
-                doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2*anchoFirma + esp, finalY + 15);
-                doc.line(inicioX + 2*anchoFirma + 2*esp, finalY + 15, inicioX + 3*anchoFirma + 2*esp, finalY + 15);
-                doc.text("RESPONSABLE CALIDAD", inicioX + 25, finalY + 19, {align: "center"});
-                doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + 25, finalY + 19, {align: "center"});
-                doc.text("SUPERVISIÓN DE OBRA", inicioX + 2*anchoFirma + 2*esp + 25, finalY + 19, {align: "center"});
-            }
-        });
+       doc.autoTable({
+    startY: 30,
+    theme: 'grid',
+    // Se añade 'OBSERVACIONES' al head
+    head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
+    body: rows,
+    styles: { fontSize: 7 },
+    // Ajustamos anchos para que las observaciones tengan espacio
+    columnStyles: {
+        0: { cellWidth: 10 }, // ITEM
+        1: { cellWidth: 55 }, // ACTIVIDAD
+        2: { cellWidth: 40 }, // NORMA
+        3: { cellWidth: 15 }, // ESTADO
+        4: { cellWidth: 'auto' } // OBSERVACIONES
+    },
+    didDrawPage: function (data) {
+        let finalY = data.cursor.y + 10;
+        if (finalY > 250) { doc.addPage(); finalY = 20; } // Margen de seguridad mayor
+        
+        const anchoFirma = 50; const esp = 12; const inicioX = 15;
+        doc.setFontSize(7);
+        
+        // Líneas de firma
+        doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15); 
+        doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2*anchoFirma + esp, finalY + 15);
+        doc.line(inicioX + 2*anchoFirma + 2*esp, finalY + 15, inicioX + 3*anchoFirma + 2*esp, finalY + 15);
+        
+        // Textos de firma
+        doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma/2), finalY + 19, {align: "center"});
+        doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma/2), finalY + 19, {align: "center"});
+        doc.text("SUPERVISIÓN DE OBRA", inicioX + 2*anchoFirma + 2*esp + (anchoFirma/2), finalY + 19, {align: "center"});
+    }
+});
 
         const fotosInputs = document.querySelectorAll('input[type="file"]');
         let fotosCargadas = [];
