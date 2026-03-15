@@ -137,8 +137,9 @@
             const res = await fetch(API_URL);
             const data = await res.json();
             if (Array.isArray(data)) {
-                const correlativo = (data.length + 1).toString().padStart(3, '0');
-                document.getElementById('nro_prot').value = `CONC-${correlativo}-2024`;
+                // Cambia esta línea dentro de consultarCorrelativo:
+                    const anioActual = new Date().getFullYear();
+                    document.getElementById('nro_prot').value = `CONC-${correlativo}-${anioActual}`;
             }
         } catch (e) { 
             console.error("Error al obtener correlativo:", e); 
@@ -330,4 +331,28 @@
 
 // Llamar a la función al cargar la página
 cargarHistorial();
+    
+    // Agrega esto al final de tu script
+async function verDetalles(id) {
+    try {
+        const res = await fetch(`${API_URL}`);
+        const protocolos = await res.json();
+        const p = protocolos.find(item => item._id === id);
+        
+        if (p && p.fotos) {
+            // Crea una lista de las URLs de las fotos existentes
+            const enlaces = Object.entries(p.fotos)
+                .map(([key, url]) => `<a href="${url}" target="_blank">${key}</a>`)
+                .join("<br>");
+            
+            // Un alert simple o puedes mejorarlo con un modal
+            const ventana = window.open("", "_blank", "width=400,height=400");
+            ventana.document.write(`<h3>Fotos del Protocolo ${p.nro_protocolo}</h3>${enlaces}`);
+        } else {
+            alert("No hay fotos registradas para este protocolo.");
+        }
+    } catch (e) {
+        alert("Error al recuperar detalles.");
+    }
+}
 </script>
