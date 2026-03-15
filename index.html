@@ -149,44 +149,62 @@
         styles: { fontSize: 7 }
     });
 
-    // --- PÁGINA 2: REGISTRO FOTOGRÁFICO ---
+    // --- PÁGINA 2: REGISTRO FOTOGRÁFICO PROPORCIONAL ---
     const fotosInputs = document.querySelectorAll('input[type="file"]');
-    let tieneFotos = false;
+    let fotosCargadas = [];
 
-    // Verificar si hay al menos una foto seleccionada
-    fotosInputs.forEach(input => { if (input.files.length > 0) tieneFotos = true; });
+    // Cargar imágenes y obtener dimensiones
+    for (let input of fotosInputs) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const data = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => resolve({ src: e.target.result, w: img.width, h: img.height, label: input.previousElementSibling.innerText });
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            fotosCargadas.push(data);
+        }
+    }
 
-    if (tieneFotos) {
+    if (fotosCargadas.length > 0) {
         doc.addPage();
         doc.setFontSize(12);
         doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
 
-        let xPos = [15, 110]; // Columnas Izquierda y Derecha
-        let yPos = [25, 110, 195]; // Filas (3 por página)
-        let fotoCount = 0;
+        const marginX = 15;
+        const marginY = 25;
+        const maxW = 85; // Ancho máximo permitido
+        const maxH = 65; // Alto máximo permitido
+        const gapX = 10;
+        const gapY = 25;
 
-        for (let input of fotosInputs) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const imgData = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
+        fotosCargadas.forEach((foto, i) => {
+            const col = i % 2;
+            const row = Math.floor(i / 2);
+            
+            // Calcular proporcionalidad (Aspect Ratio)
+            let finalW = maxW;
+            let finalH = (foto.h * maxW) / foto.w;
 
-                const col = fotoCount % 2;
-                const row = Math.floor(fotoCount / 2);
-
-                // Dibujar Imagen (Ancho: 85mm, Alto: 65mm aprox para que quepan 6)
-                doc.addImage(imgData, 'JPEG', xPos[col], yPos[row], 85, 65);
-                
-                // Etiqueta de la foto abajo de la imagen
-                doc.setFontSize(8);
-                doc.text(input.previousElementSibling.innerText, xPos[col] + 42, yPos[row] + 72, {align: "center"});
-
-                fotoCount++;
+            if (finalH > maxH) {
+                finalH = maxH;
+                finalW = (foto.w * maxH) / foto.h;
             }
-        }
+
+            const x = marginX + (col * (maxW + gapX)) + (maxW - finalW) / 2;
+            const y = marginY + (row * (maxH + gapY)) + (maxH - finalH) / 2;
+
+            // Insertar imagen sin estirar
+            doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
+            
+            // Texto descriptivo centrado bajo el marco
+            doc.setFontSize(8);
+            doc.text(foto.label, marginX + (col * (maxW + gapX)) + (maxW / 2), y + finalH + 5, {align: "center"});
+        });
     }
 
     doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
