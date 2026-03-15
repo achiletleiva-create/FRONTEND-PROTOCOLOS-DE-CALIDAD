@@ -119,109 +119,135 @@
         } catch (e) { console.error("Error correlativo"); }
     }
 
+    <script>
+    // Configuración inicial
+    document.getElementById('fecha_obra').valueAsDate = new Date();
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
+
+    // 1. Consultar correlativo desde Mongo
+    async function consultarCorrelativo() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            const correlativo = (data.length + 1).toString().padStart(3, '0');
+            document.getElementById('nro_prot').value = `CONC-${correlativo}-2024`;
+        } catch (e) { console.error("Error al obtener correlativo"); }
+    }
+
+    // 2. Función Principal: Generar PDF con Datos, Firmas y Fotos Proporcionales
     async function generarPDFSimilar() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    
-    // --- PÁGINA 1: TABLA DE DATOS ---
-    doc.setFontSize(8);
-    doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VICTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD", 10, 10);
-    doc.setFontSize(10);
-    doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
-    doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // --- PÁGINA 1: DATOS Y TABLA ---
+        doc.setFontSize(8);
+        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(10);
+        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
+        doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
 
-    const rows = [];
-    document.querySelectorAll('#puntosControl tr').forEach(tr => {
-        if (tr.classList.contains('category-row')) {
-            rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
-        } else {
-            const cells = tr.querySelectorAll('td');
-            const estado = tr.querySelector('select').value;
-            rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado]);
-        }
-    });
-
-    doc.autoTable({
-        startY: 30,
-        theme: 'grid',
-        head: [['ITEM', 'ACTIVIDAD', 'NORMA', 'ESTADO']],
-        body: rows,
-        styles: { fontSize: 7 }
-    });
-
-    // --- PÁGINA 2: REGISTRO FOTOGRÁFICO PROPORCIONAL ---
-    const fotosInputs = document.querySelectorAll('input[type="file"]');
-    let fotosCargadas = [];
-
-    // Cargar imágenes y obtener dimensiones
-    for (let input of fotosInputs) {
-        if (input.files && input.files[0]) {
-            const file = input.files[0];
-            const data = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => resolve({ src: e.target.result, w: img.width, h: img.height, label: input.previousElementSibling.innerText });
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-            fotosCargadas.push(data);
-        }
-    }
-
-    if (fotosCargadas.length > 0) {
-        doc.addPage();
-        doc.setFontSize(12);
-        doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
-
-        const marginX = 15;
-        const marginY = 25;
-        const maxW = 85; // Ancho máximo permitido
-        const maxH = 65; // Alto máximo permitido
-        const gapX = 10;
-        const gapY = 25;
-
-        fotosCargadas.forEach((foto, i) => {
-            const col = i % 2;
-            const row = Math.floor(i / 2);
-            
-            // Calcular proporcionalidad (Aspect Ratio)
-            let finalW = maxW;
-            let finalH = (foto.h * maxW) / foto.w;
-
-            if (finalH > maxH) {
-                finalH = maxH;
-                finalW = (foto.w * maxH) / foto.h;
+        const rows = [];
+        document.querySelectorAll('#puntosControl tr').forEach(tr => {
+            if (tr.classList.contains('category-row')) {
+                rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
+            } else {
+                const cells = tr.querySelectorAll('td');
+                const estado = tr.querySelector('select').value;
+                rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado]);
             }
-
-            const x = marginX + (col * (maxW + gapX)) + (maxW - finalW) / 2;
-            const y = marginY + (row * (maxH + gapY)) + (maxH - finalH) / 2;
-
-            // Insertar imagen sin estirar
-            doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
-            
-            // Texto descriptivo centrado bajo el marco
-            doc.setFontSize(8);
-            doc.text(foto.label, marginX + (col * (maxW + gapX)) + (maxW / 2), y + finalH + 5, {align: "center"});
         });
+
+        doc.autoTable({
+            startY: 30,
+            theme: 'grid',
+            head: [['ITEM', 'ACTIVIDAD', 'NORMA', 'ESTADO']],
+            body: rows,
+            styles: { fontSize: 7 },
+            didDrawPage: function (data) {
+                // --- SECCIÓN DE FIRMAS (Al final de la tabla) ---
+                let finalY = data.cursor.y + 10;
+                if (finalY > 255) { doc.addPage(); finalY = 20; }
+
+                const anchoFirma = 50;
+                const esp = 15;
+                const inicioX = 15;
+
+                doc.setFontSize(7);
+                // Líneas de firma
+                doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15); 
+                doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2*anchoFirma + esp, finalY + 15);
+                doc.line(inicioX + 2*anchoFirma + 2*esp, finalY + 15, inicioX + 3*anchoFirma + 2*esp, finalY + 15);
+
+                // Etiquetas de cargos
+                doc.text("RESPONSABLE CALIDAD", inicioX + 25, finalY + 19, {align: "center"});
+                doc.text("(CONTRATISTA)", inicioX + 25, finalY + 22, {align: "center"});
+
+                doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + 25, finalY + 19, {align: "center"});
+                doc.text("(CONTRATISTA)", inicioX + anchoFirma + esp + 25, finalY + 22, {align: "center"});
+
+                doc.text("SUPERVISIÓN DE OBRA", inicioX + 2*anchoFirma + 2*esp + 25, finalY + 19, {align: "center"});
+            }
+        });
+
+        // --- PÁGINA 2: FOTOS PROPORCIONALES ---
+        const fotosInputs = document.querySelectorAll('input[type="file"]');
+        let fotosCargadas = [];
+
+        for (let input of fotosInputs) {
+            if (input.files && input.files[0]) {
+                const data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => resolve({ src: e.target.result, w: img.width, h: img.height, label: input.previousElementSibling.innerText });
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                });
+                fotosCargadas.push(data);
+            }
+        }
+
+        if (fotosCargadas.length > 0) {
+            doc.addPage();
+            doc.setFontSize(10);
+            doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
+
+            const maxW = 85; const maxH = 60;
+            const gapX = 10; const gapY = 25;
+
+            fotosCargadas.forEach((foto, i) => {
+                const col = i % 2; const row = Math.floor(i / 2);
+                let finalW = maxW; let finalH = (foto.h * maxW) / foto.w;
+                if (finalH > maxH) { finalH = maxH; finalW = (foto.w * maxH) / foto.h; }
+
+                const x = 15 + (col * (maxW + gapX)) + (maxW - finalW) / 2;
+                const y = 25 + (row * (maxH + gapY)) + (maxH - finalH) / 2;
+
+                doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
+                doc.setFontSize(8);
+                doc.text(foto.label, 15 + (col * (maxW + gapX)) + 42, y + finalH + 5, {align: "center"});
+            });
+        }
+
+        doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
     }
 
-    doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
-}
-
+    // 3. Envío de datos a MongoDB (Mantiene funcionalidad de fotos)
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
-        btn.innerText = "ENVIANDO...";
+        btn.innerText = "ENVIANDO DATOS...";
+        
         const formData = new FormData(e.target);
         try {
             const response = await fetch(API_URL, { method: 'POST', body: formData });
-            if (response.ok) alert("✅ Guardado con éxito");
-        } catch (error) { alert("❌ Error de red"); }
+            if (response.ok) alert("✅ Protocolo guardado con éxito");
+        } catch (error) { alert("❌ Error de conexión con Render"); }
         btn.innerText = "🚀 GUARDAR EN MONGO";
     });
 
+    // Iniciar correlativo al cargar
     consultarCorrelativo();
 </script>
 </body>
