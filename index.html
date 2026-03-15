@@ -278,6 +278,7 @@
             if (response.ok) {
                 alert("✅ ¡Éxito! Registrado en MongoDB.");
                 consultarCorrelativo();
+                cargarHistorial();
             } else {
                 const err = await response.json();
                 alert("❌ Error: " + (err.message || "No se pudo guardar"));
