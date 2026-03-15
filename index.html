@@ -208,51 +208,52 @@
 
     // 3. Envío de datos a MongoDB
     // 3. Envío de datos a MongoDB (Estructurado para los 16 campos)
+    // === REEMPLAZA ESTA SECCIÓN EN TU SCRIPT ===
+    
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
         btn.innerText = "ENVIANDO DATOS...";
         
-        // Creamos un objeto con la estructura que espera tu MongoDB
         const formData = new FormData(e.target);
-        const dataParaEnviar = {
-            nro_protocolo: formData.get('nro_protocolo'),
-            fecha: formData.get('fecha'),
-            elemento: formData.get('elemento'),
-            resistencia_fc: formData.get('resistencia_fc'),
-            // Agrupamos los 16 puntos de control en el objeto 'controles'
-            controles: {
-                limpieza_niveles: formData.get('st_1.1'),
-                estanqueidad_encofrado: formData.get('st_1.2'),
-                aplicacion_desmoldante: formData.get('st_1.3'),
-                agregados_limpios: formData.get('st_1.4'),
-                cemento_vigente: formData.get('st_1.5'),
-                dosificacion_mezcla: formData.get('st_2.1'),
-                tiempo_mezclado: formData.get('st_2.2'),
-                relacion_agua_cemento: formData.get('st_2.3'),
-                ensayo_slump: formData.get('st_3.1'),
-                temperatura_concreto: formData.get('st_3.2'),
-                toma_testigos: formData.get('st_3.3'),
-                altura_caida: formData.get('st_4.1'),
-                compactacion_vibrado: formData.get('st_4.2'),
-                acabado_superficial: formData.get('st_4.3'),
-                inicio_curado: formData.get('st_5.1'),
-                metodo_curado: formData.get('st_5.2')
-            },
-            ensayos: {
-                probetas_cantidad: 2 // Valor fijo según tu PDF [cite: 7]
-            }
-        };
-
-        // Para las fotos, seguimos usando FormData para que el backend las procese a Cloudinary
-        // Pero agregamos la estructura de texto como un campo JSON
         const finalFormData = new FormData();
-        finalFormData.append("datos", JSON.stringify(dataParaEnviar));
         
-        // Adjuntar archivos de imagen
+        // 1. Datos principales del encabezado [cite: 7]
+        finalFormData.append("nro_protocolo", formData.get('nro_protocolo'));
+        finalFormData.append("fecha", formData.get('fecha'));
+        finalFormData.append("elemento", formData.get('elemento'));
+        finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
+        
+        // 2. Mapeo de los 16 puntos de control para MongoDB [cite: 7]
+        // Esto asegura que cada campo "st_X.X" se guarde con el nombre correcto
+        finalFormData.append("limpieza_niveles", formData.get('st_1.1'));
+        finalFormData.append("estanqueidad_encofrado", formData.get('st_1.2'));
+        finalFormData.append("aplicacion_desmoldante", formData.get('st_1.3'));
+        finalFormData.append("agregados_limpios", formData.get('st_1.4'));
+        finalFormData.append("cemento_vigente", formData.get('st_1.5'));
+        
+        finalFormData.append("dosificacion_mezcla", formData.get('st_2.1'));
+        finalFormData.append("tiempo_mezclado", formData.get('st_2.2'));
+        finalFormData.append("relacion_agua_cemento", formData.get('st_2.3'));
+        
+        finalFormData.append("ensayo_slump", formData.get('st_3.1'));
+        finalFormData.append("temperatura_concreto", formData.get('st_3.2'));
+        finalFormData.append("toma_testigos", formData.get('st_3.3'));
+        finalFormData.append("probetas_cantidad", 2); // Dato del protocolo [cite: 7]
+        
+        finalFormData.append("altura_caida", formData.get('st_4.1'));
+        finalFormData.append("compactacion_vibrado", formData.get('st_4.2'));
+        finalFormData.append("acabado_superficial", formData.get('st_4.3'));
+        
+        finalFormData.append("inicio_curado", formData.get('st_5.1'));
+        finalFormData.append("metodo_curado", formData.get('st_5.2'));
+
+        // 3. Adjuntar las 6 fotos obligatorias [cite: 14]
         const fileInputs = e.target.querySelectorAll('input[type="file"]');
         fileInputs.forEach(input => {
-            if (input.files[0]) finalFormData.append(input.name, input.files[0]);
+            if (input.files[0]) {
+                finalFormData.append(input.name, input.files[0]);
+            }
         });
 
         try {
@@ -261,11 +262,13 @@
                 body: finalFormData 
             });
             if (response.ok) {
-                alert("✅ Protocolo y los 16 campos guardados con éxito");
-                consultarCorrelativo();
+                alert("✅ ¡Éxito! Protocolo y los 16 campos registrados en la base de datos.");
+                consultarCorrelativo(); // Actualiza el número para el siguiente registro
+            } else {
+                alert("❌ Error en el servidor al guardar.");
             }
         } catch (error) { 
-            alert("❌ Error de conexión con el servidor"); 
+            alert("❌ Error de conexión: Verifica que el Backend en Render esté activo."); 
         }
         btn.innerText = "🚀 GUARDAR EN MONGO";
     });
