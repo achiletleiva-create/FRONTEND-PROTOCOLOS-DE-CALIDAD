@@ -279,6 +279,23 @@
         finalFormData.append("acabado_superficial", formData.get('st_4.3'));
         finalFormData.append("inicio_curado", formData.get('st_5.1'));
         finalFormData.append("metodo_curado", formData.get('st_5.2'));
+        // --- AGREGA ESTO EN LA SECCIÓN DE ENVÍO (Submit) ---
+finalFormData.append("obs_limpieza", formData.get('obs_1.1'));
+finalFormData.append("obs_estanqueidad", formData.get('obs_1.2'));
+finalFormData.append("obs_desmoldante", formData.get('obs_1.3'));
+finalFormData.append("obs_agregados", formData.get('obs_1.4'));
+finalFormData.append("obs_cemento", formData.get('obs_1.5'));
+finalFormData.append("obs_dosificacion", formData.get('obs_2.1'));
+finalFormData.append("obs_tiempo_mezcla", formData.get('obs_2.2'));
+finalFormData.append("obs_agua_cemento", formData.get('obs_2.3'));
+finalFormData.append("obs_slump", formData.get('obs_3.1'));
+finalFormData.append("obs_temperatura", formData.get('obs_3.2'));
+finalFormData.append("obs_testigos", formData.get('obs_3.3'));
+finalFormData.append("obs_caida", formData.get('obs_4.1'));
+finalFormData.append("obs_vibrado", formData.get('obs_4.2'));
+finalFormData.append("obs_acabado", formData.get('obs_4.3'));
+finalFormData.append("obs_inicio_curado", formData.get('obs_5.1'));
+finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
 
         // Adjuntar archivos
         const fileInputs = e.target.querySelectorAll('input[type="file"]');
@@ -329,8 +346,8 @@
             fila.innerHTML = `
                 <td>${p.nro_protocolo}</td>
                 <td>${new Date(p.fecha).toLocaleDateString()}</td>
-                <td>${p.datos_tecnicos.elemento}</td>
-                <td>${p.datos_tecnicos.resistencia_fc}</td>
+                <td>${p.elemento}</td>
+                <td>${p.resistencia_fc}</td>
                 <td>${p.controles.ensayo_slump || 'N/A'}</td>
                 <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
                     ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
