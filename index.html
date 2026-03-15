@@ -207,9 +207,7 @@
     }
 
     // 3. Envío de datos a MongoDB
-    // 3. Envío de datos a MongoDB (Estructurado para los 16 campos)
-    // === REEMPLAZA ESTA SECCIÓN EN TU SCRIPT ===
-    
+   // 3. Envío de datos a MongoDB
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
@@ -218,14 +216,13 @@
         const formData = new FormData(e.target);
         const finalFormData = new FormData();
         
-        // 1. Datos principales del encabezado [cite: 7]
+        // 1. Datos principales del encabezado
         finalFormData.append("nro_protocolo", formData.get('nro_protocolo'));
         finalFormData.append("fecha", formData.get('fecha'));
         finalFormData.append("elemento", formData.get('elemento'));
         finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
         
-        // 2. Mapeo de los 16 puntos de control para MongoDB [cite: 7]
-        // Esto asegura que cada campo "st_X.X" se guarde con el nombre correcto
+        // 2. Mapeo de los 16 puntos de control para MongoDB
         finalFormData.append("limpieza_niveles", formData.get('st_1.1'));
         finalFormData.append("estanqueidad_encofrado", formData.get('st_1.2'));
         finalFormData.append("aplicacion_desmoldante", formData.get('st_1.3'));
@@ -239,7 +236,7 @@
         finalFormData.append("ensayo_slump", formData.get('st_3.1'));
         finalFormData.append("temperatura_concreto", formData.get('st_3.2'));
         finalFormData.append("toma_testigos", formData.get('st_3.3'));
-        finalFormData.append("probetas_cantidad", 2); // Dato del protocolo [cite: 7]
+        finalFormData.append("probetas_cantidad", 2); 
         
         finalFormData.append("altura_caida", formData.get('st_4.1'));
         finalFormData.append("compactacion_vibrado", formData.get('st_4.2'));
@@ -248,7 +245,7 @@
         finalFormData.append("inicio_curado", formData.get('st_5.1'));
         finalFormData.append("metodo_curado", formData.get('st_5.2'));
 
-        // 3. Adjuntar las 6 fotos obligatorias [cite: 14]
+        // 3. Adjuntar las 6 fotos obligatorias
         const fileInputs = e.target.querySelectorAll('input[type="file"]');
         fileInputs.forEach(input => {
             if (input.files[0]) {
@@ -263,7 +260,7 @@
             });
             if (response.ok) {
                 alert("✅ ¡Éxito! Protocolo y los 16 campos registrados en la base de datos.");
-                consultarCorrelativo(); // Actualiza el número para el siguiente registro
+                consultarCorrelativo(); 
             } else {
                 alert("❌ Error en el servidor al guardar.");
             }
@@ -272,7 +269,6 @@
         }
         btn.innerText = "🚀 GUARDAR EN MONGO";
     });
-
     // Iniciar correlativo
     consultarCorrelativo();
 </script>
