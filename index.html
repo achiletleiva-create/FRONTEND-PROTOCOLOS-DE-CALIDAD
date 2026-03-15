@@ -107,19 +107,21 @@
 </div>
 
 <script>
-   // Configuración Inicial
-    document.getElementById('fecha_obra').valueAsDate = new Date();
+    // Configuración Inicial
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
+    document.getElementById('fecha_obra').valueAsDate = new Date();
 
-    // 1. Consultar correlativo desde MongoDB
+    // 1. Consultar correlativo
     async function consultarCorrelativo() {
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
-            const correlativo = (data.length + 1).toString().padStart(3, '0');
-            document.getElementById('nro_prot').value = `CONC-${correlativo}-2024`;
+            if (Array.isArray(data)) {
+                const correlativo = (data.length + 1).toString().padStart(3, '0');
+                document.getElementById('nro_prot').value = `CONC-${correlativo}-2024`;
+            }
         } catch (e) { 
-            console.error("Error al obtener correlativo"); 
+            console.error("Error al obtener correlativo:", e); 
         }
     }
 
@@ -173,7 +175,12 @@
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const img = new Image();
-                        img.onload = () => resolve({ src: e.target.result, w: img.width, h: img.height, label: input.previousElementSibling.innerText });
+                        img.onload = () => resolve({ 
+                            src: e.target.result, 
+                            w: img.width, 
+                            h: img.height, 
+                            label: input.parentElement.querySelector('label').innerText 
+                        });
                         img.src = e.target.result;
                     };
                     reader.readAsDataURL(input.files[0]);
@@ -192,7 +199,7 @@
                 if (finalH > maxH) { finalH = maxH; finalW = (foto.w * maxH) / foto.h; }
                 const x = 15 + (col * (maxW + gapX)) + (maxW - finalW) / 2;
                 const y = 25 + (row * (maxH + gapY)) + (maxH - finalH) / 2;
-                doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH);
+                doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
                 doc.text(foto.label, 15 + (col * (maxW + gapX)) + 42, y + finalH + 5, {align: "center"});
             });
         }
@@ -203,40 +210,39 @@
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
-        btn.innerText = "ENVIANDO...";
+        const originalText = btn.innerText;
+        btn.innerText = "ENVIANDO DATOS...";
+        btn.disabled = true;
         
         const formData = new FormData(e.target);
         const finalFormData = new FormData();
         
-        // Mapeo manual para asegurar que los nombres coincidan con el Schema de MongoDB
+        // Datos principales (Usando ID para nro_prot por seguridad)
         finalFormData.append("nro_protocolo", document.getElementById('nro_prot').value);
         finalFormData.append("fecha", formData.get('fecha'));
         finalFormData.append("elemento", formData.get('elemento'));
         finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
         
+        // Mapeo de puntos de control
         finalFormData.append("limpieza_niveles", formData.get('st_1.1'));
         finalFormData.append("estanqueidad_encofrado", formData.get('st_1.2'));
         finalFormData.append("aplicacion_desmoldante", formData.get('st_1.3'));
         finalFormData.append("agregados_limpios", formData.get('st_1.4'));
         finalFormData.append("cemento_vigente", formData.get('st_1.5'));
-        
         finalFormData.append("dosificacion_mezcla", formData.get('st_2.1'));
         finalFormData.append("tiempo_mezclado", formData.get('st_2.2'));
         finalFormData.append("relacion_agua_cemento", formData.get('st_2.3'));
-        
         finalFormData.append("ensayo_slump", formData.get('st_3.1'));
         finalFormData.append("temperatura_concreto", formData.get('st_3.2'));
         finalFormData.append("toma_testigos", formData.get('st_3.3'));
-        finalFormData.append("probetas_cantidad", 2); 
-        
+        finalFormData.append("probetas_cantidad", 2);
         finalFormData.append("altura_caida", formData.get('st_4.1'));
         finalFormData.append("compactacion_vibrado", formData.get('st_4.2'));
         finalFormData.append("acabado_superficial", formData.get('st_4.3'));
-        
         finalFormData.append("inicio_curado", formData.get('st_5.1'));
         finalFormData.append("metodo_curado", formData.get('st_5.2'));
 
-        // Adjuntar fotos
+        // Adjuntar archivos
         const fileInputs = e.target.querySelectorAll('input[type="file"]');
         fileInputs.forEach(input => {
             if (input.files[0]) {
@@ -245,20 +251,24 @@
         });
 
         try {
-            const response = await fetch(API_URL, { method: 'POST', body: finalFormData });
+            const response = await fetch(API_URL, { 
+                method: 'POST', 
+                body: finalFormData 
+            });
             if (response.ok) {
-                alert("✅ Registrado con éxito en MongoDB.");
+                alert("✅ ¡Éxito! Registrado en MongoDB.");
                 consultarCorrelativo();
             } else {
-                alert("❌ Error en el servidor.");
+                const err = await response.json();
+                alert("❌ Error: " + (err.message || "No se pudo guardar"));
             }
         } catch (error) { 
-            alert("❌ Error de conexión."); 
+            alert("❌ Error de conexión con el servidor."); 
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
         }
-        btn.innerText = "🚀 GUARDAR EN MONGO";
     });
 
     consultarCorrelativo();
 </script>
-</body>
-</html>
