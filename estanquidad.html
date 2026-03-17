@@ -189,16 +189,54 @@
         doc.line(140, finalY, 185, finalY); doc.text("SUPERVISIÓN", 162, finalY + 5, {align:"center"});
 
         // FOTOS EN PÁGINA NUEVA
-        const img1 = await leerImagen(document.getElementById('f_antes'));
-        const img2 = await leerImagen(document.getElementById('f_durante'));
-        const img3 = await leerImagen(document.getElementById('f_despues'));
-        if (img1 || img2 || img3) {
-            doc.addPage();
-            doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
-            if (img1) { doc.addImage(img1, 'JPEG', 15, 25, 80, 60); doc.text("FOTO: ANTES", 15, 90); }
-            if (img2) { doc.addImage(img2, 'JPEG', 110, 25, 80, 60); doc.text("FOTO: DURANTE", 110, 90); }
-            if (img3) { doc.addImage(img3, 'JPEG', 15, 110, 80, 60); doc.text("FOTO: DESPUÉS", 15, 175); }
-        }
+        // --- SECCIÓN DE FOTOS OPTIMIZADA (GRANDE Y EN UNA HOJA) ---
+
+const img1 = await leerImagen(document.getElementById('f_antes'));
+const img2 = await leerImagen(document.getElementById('f_durante'));
+const img3 = await leerImagen(document.getElementById('f_despues'));
+
+if (img1 || img2 || img3) {
+    doc.addPage();
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 74, 153); // Azul institucional
+    doc.setFont("helvetica", "bold");
+    doc.text("PANEL FOTOGRÁFICO", 105, 15, { align: "center" });
+
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "normal");
+
+    // Configuración de tamaño para 3 fotos en vertical (Ancho x Alto en mm)
+    const anchoImg = 160; // Maximizamos ancho (márgenes de 25mm aprox)
+    const altoImg = 85;   // Altura óptima para 3 fotos en una hoja A4
+
+    // FOTO 1: ANTES (Arriba)
+    if (img1) {
+        doc.addImage(img1, 'JPEG', 25, 25, anchoImg, altoImg);
+        doc.text("FOTO 1: ESTADO INICIAL / PREPARACIÓN", 25, 25 + altoImg + 5);
+    }
+
+    // FOTO 2: DURANTE (Medio)
+    // Coordenada Y = 25 (inicio) + 85 (alto1) + 15 (espacio para texto y separación) = 125
+    if (img2) {
+        const y2 = img1 ? 125 : 25; // Si no hay foto1, empieza arriba
+        doc.addImage(img2, 'JPEG', 25, y2, anchoImg, altoImg);
+        doc.text("FOTO 2: PROCEDIMIENTO / LLENADO", 25, y2 + altoImg + 5);
+    }
+
+    // FOTO 3: DESPUÉS (Abajo)
+    // Coordenada Y = 125 (inicio2) + 85 (alto2) + 15 (espacio) = 225
+    // Una hoja A4 tiene 297mm de alto, esto queda perfecto.
+    if (img3) {
+        let y3 = 225;
+        if (!img2 && img1) y3 = 125; // Si falta la 2 pero está la 1, sube
+        if (!img1 && !img2) y3 = 25; // Si faltan las 2 de arriba, empieza arriba
+        
+        doc.addImage(img3, 'JPEG', 25, y3, anchoImg, altoImg);
+        doc.text("FOTO 3: ESTADO FINAL / ACABADO", 25, y3 + altoImg + 5);
+    }
+}
 
         // Definimos un nombre seguro por si el campo está vacío
 const nombreBuzon = document.getElementsByName('id_buzon')[0]?.value || "SIN-ID";
