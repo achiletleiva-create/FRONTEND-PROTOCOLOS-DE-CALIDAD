@@ -281,6 +281,15 @@
             rows.push([cells[0].innerText, cells[1].innerText, estado, obs]);
         }
     });
+        function leerImagen(input) {
+    return new Promise((resolve) => {
+        const file = input.files[0];
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+    });
+}
 
     doc.autoTable({
         startY: 65,
