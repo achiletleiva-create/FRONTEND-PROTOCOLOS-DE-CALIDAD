@@ -116,7 +116,7 @@
     formData.append('veredicto', document.getElementById('veredicto').innerText);
 
     try {
-        const response = await fetch(API_URL_EST, {
+        const response = await fetch(API_URL, {
             method: 'POST',
             body: formData // Enviamos FormData directamente para que Cloudinary reciba las fotos
         });
@@ -157,7 +157,7 @@
         // DATOS
         doc.setFontSize(9); doc.setTextColor(0);
         doc.text(`PROTOCOLO: ${document.getElementById('nro_prot').value}`, 15, 30);
-        doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0].value}`, 15, 35);
+        doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0]?.value || "S/N"}`, 15, 35);
         
         // TABLA
         const rows = [];
