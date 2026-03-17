@@ -108,12 +108,22 @@
         </div>
 
         <div style="margin-top: 20px;">
-            <label><strong>FOTOS OBLIGATORIAS:</strong></label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <input type="file" name="foto_buzon" accept="image/*">
-                <input type="file" name="foto_nivel" accept="image/*">
-            </div>
+    <label><strong>REGISTRO FOTOGRÁFICO:</strong></label>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <div>
+            <label style="font-size: 10px;">Foto Antes:</label>
+            <input type="file" id="f_antes" name="foto_antes" accept="image/*">
         </div>
+        <div>
+            <label style="font-size: 10px;">Foto Durante:</label>
+            <input type="file" id="f_durante" name="foto_durante" accept="image/*">
+        </div>
+        <div>
+            <label style="font-size: 10px;">Foto Después:</label>
+            <input type="file" id="f_despues" name="foto_despues" accept="image/*">
+        </div>
+    </div>
+</div>
 
         <div class="btn-group">
             <button type="button" class="btn-back" onclick="window.location.href='menu.html'">⬅ VOLVER</button>
