@@ -158,6 +158,26 @@
     
     // Convertir FormData a un objeto simple para JSON
     const formData = new FormData(e.target);
+    
+    // Si tienes objetos anidados en tu modelo (como datos_elemento), 
+    // es mejor aplanarlos o agregarlos manualmente al formData.
+    
+    try {
+        const response = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/estanquidad', {
+            method: 'POST',
+            body: formData // NOTA: No poner headers de Content-Type, el navegador lo hará solo
+        });
+
+        if (response.ok) {
+            alert("✅ Guardado con éxito en la nube.");
+            window.location.href = 'index.html';
+        } else {
+            alert("❌ Error al guardar.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+});
     const data = {
         nro_protocolo: formData.get('nro_protocolo'),
         fecha: formData.get('fecha'),
