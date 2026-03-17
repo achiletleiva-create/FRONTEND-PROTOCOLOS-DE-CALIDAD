@@ -109,16 +109,30 @@
     }
 
     document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        formData.append('veredicto', document.getElementById('veredicto').innerText);
-        
-        try {
-            const resp = await fetch(API_URL, { method: 'POST', body: formData });
-            if (resp.ok) alert("✅ Guardado correctamente");
-            else alert("❌ Error al guardar");
-        } catch (err) { console.error(err); }
-    });
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    // Agregamos manualmente el veredicto porque no es un input, es un div
+    formData.append('veredicto', document.getElementById('veredicto').innerText);
+
+    try {
+        const response = await fetch(API_URL_EST, {
+            method: 'POST',
+            body: formData // Enviamos FormData directamente para que Cloudinary reciba las fotos
+        });
+
+        if (response.ok) {
+            alert("✅ Protocolo de Estanquidad guardado con éxito.");
+            window.location.href = 'index.html';
+        } else {
+            const errorData = await response.json();
+            alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("No se pudo conectar con el servidor.");
+    }
+});
 
     function leerImagen(input) {
         return new Promise(res => {
