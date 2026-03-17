@@ -195,14 +195,121 @@
 });
 
     async function generarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('p', 'mm', 'a4');
-        doc.setFontSize(10);
-        doc.text("PROTOCOLO DE PRUEBA DE ESTANQUIDAD EN BUZONES", 105, 20, {align: "center"});
-        doc.text(`NRO: ${document.getElementById('nro_prot').value}`, 105, 28, {align: "center"});
-        // Lógica similar a tu PDF de concreto pero con los campos de estanquidad
-        doc.save("Prueba_Estanquidad.pdf");
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    // --- CONFIGURACIÓN DE CABECERA ---
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - SECTOR LIBERACIÓN SOCIAL", 10, 10);
+    doc.text("DISTRITO DE VICTOR LARCO HERRERA - TRUJILLO", 10, 14);
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 74, 153); // Azul institucional
+    doc.setFont("helvetica", "bold");
+    doc.text("PROTOCOLO DE PRUEBA DE ESTANQUIDAD EN BUZONES", 105, 25, { align: "center" });
+    
+    // --- DATOS GENERALES ---
+    doc.setFontSize(9);
+    doc.setTextColor(0);
+    doc.setFont("helvetica", "normal");
+    const nroProt = document.getElementById('nro_prot').value;
+    const fecha = document.getElementById('fecha_obra').value;
+    const idBuzon = document.getElementsByName('id_buzon')[0].value;
+    
+    doc.text(`PROTOCOLO N°: ${nroProt}`, 15, 35);
+    doc.text(`FECHA DE PRUEBA: ${fecha}`, 15, 40);
+    doc.text(`ID BUZÓN / TIPO: ${idBuzon}`, 105, 35);
+    doc.text(`MATERIAL TUBERÍA: ${document.getElementsByName('material_tuberia')[0].value}`, 105, 40);
+
+    // --- SECCIÓN 2.0: CÁLCULOS TÉCNICOS ---
+    doc.setDrawColor(0, 74, 153);
+    doc.setFillColor(238, 242, 247);
+    doc.rect(10, 45, 190, 15, 'F');
+    doc.setFont("helvetica", "bold");
+    doc.text("2.0 DATOS TÉCNICOS Y TOLERANCIA", 15, 50);
+    doc.setFont("helvetica", "normal");
+    
+    const d = document.getElementById('diam_d').value;
+    const h = document.getElementById('alt_h').value;
+    const vp = document.getElementById('vp_resultado').value;
+    doc.text(`Diámetro (D): ${d} m`, 15, 56);
+    doc.text(`Altura Agua (H): ${h} m`, 60, 56);
+    doc.text(`Pérdida Máx. Permitida (Vp): ${vp} L/h`, 110, 56);
+
+    // --- SECCIÓN 3.0: TABLA DE VERIFICACIÓN ---
+    const rows = [];
+    const tableRows = document.querySelectorAll('.table-section tbody tr');
+    
+    tableRows.forEach(tr => {
+        if (tr.classList.contains('category-row')) {
+            rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
+        } else {
+            const cells = tr.querySelectorAll('td');
+            const estado = tr.querySelector('select').value;
+            const obs = tr.querySelector('input').value;
+            rows.push([cells[0].innerText, cells[1].innerText, estado, obs]);
+        }
+    });
+
+    doc.autoTable({
+        startY: 65,
+        head: [['ITEM', 'VERIFICACIÓN DE CALIDAD', 'ESTADO', 'OBSERVACIONES']],
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [0, 74, 153], fontSize: 8 },
+        styles: { fontSize: 7, cellPadding: 2 },
+        columnStyles: {
+            0: { cellWidth: 10 },
+            1: { cellWidth: 90 },
+            2: { cellWidth: 20, halign: 'center' },
+            3: { cellWidth: 'auto' }
+        }
+    });
+
+    // --- SECCIÓN 4.0: RESULTADOS ---
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFont("helvetica", "bold");
+    doc.text("4.0 RESULTADOS FINALES", 15, finalY);
+    
+    const ini = document.getElementById('l_ini').value;
+    const fin = document.getElementById('l_fin').value;
+    const veredicto = document.getElementById('veredicto').innerText;
+    
+    doc.setFont("helvetica", "normal");
+    doc.text(`Lectura Inicial: ${ini} mm`, 15, finalY + 7);
+    doc.text(`Lectura Final: ${fin} mm`, 60, finalY + 7);
+    
+    // Color del veredicto
+    if (veredicto === "APROBADO") {
+        doc.setTextColor(40, 167, 69);
+    } else {
+        doc.setTextColor(220, 53, 69);
     }
+    doc.setFontSize(11);
+    doc.text(`VEREDICTO: ${veredicto}`, 110, finalY + 7);
+    doc.setTextColor(0); // Reset color
+
+    // --- FIRMAS ---
+    finalY += 35;
+    const anchoFirma = 50;
+    const esp = 12;
+    const inicioX = 15;
+    
+    doc.setFontSize(7);
+    // Líneas
+    doc.line(inicioX, finalY, inicioX + anchoFirma, finalY);
+    doc.line(inicioX + anchoFirma + esp, finalY, inicioX + 2*anchoFirma + esp, finalY);
+    doc.line(inicioX + 2*anchoFirma + 2*esp, finalY, inicioX + 3*anchoFirma + 2*esp, finalY);
+    
+    // Textos
+    doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma/2), finalY + 4, {align: "center"});
+    doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma/2), finalY + 4, {align: "center"});
+    doc.text("SUPERVISIÓN DE OBRA", inicioX + 2*anchoFirma + 2*esp + (anchoFirma/2), finalY + 4, {align: "center"});
+
+    // --- GUARDAR ---
+    doc.save(`Estanquidad_${idBuzon}_${nroProt}.pdf`);
+}
 </script>
 </body>
 </html>
