@@ -281,6 +281,48 @@
             rows.push([cells[0].innerText, cells[1].innerText, estado, obs]);
         }
     });
+
+      // --- SECCIÓN DE FOTOS (NUEVA) ---
+    // Obtenemos los base64 de los inputs
+    const imgAntes = await leerImagen(document.getElementById('f_antes'));
+    const imgDurante = await leerImagen(document.getElementById('f_durante'));
+    const imgDespues = await leerImagen(document.getElementById('f_despues'));
+
+    // Si hay fotos, creamos una nueva página para el panel fotográfico
+    if (imgAntes || imgDurante || imgDespues) {
+        doc.addPage();
+        doc.setFontSize(12);
+        doc.setTextColor(0, 74, 153);
+        doc.text("PANEL FOTOGRÁFICO - PRUEBA DE ESTANQUIDAD", 105, 15, { align: "center" });
+
+        const anchoImg = 80;
+        const altoImg = 60;
+
+        if (imgAntes) {
+            doc.addImage(imgAntes, 'JPEG', 15, 25, anchoImg, altoImg);
+            doc.setFontSize(9);
+            doc.text("FOTO 1: ESTADO INICIAL / PREPARACIÓN", 15, 25 + altoImg + 5);
+        }
+
+        if (imgDurante) {
+            doc.addImage(imgDurante, 'JPEG', 110, 25, anchoImg, altoImg);
+            doc.text("FOTO 2: LLENADO / PRUEBA", 110, 25 + altoImg + 5);
+        }
+
+        if (imgDespues) {
+            doc.addImage(imgDespues, 'JPEG', 15, 100, anchoImg, altoImg);
+            doc.text("FOTO 3: ESTADO FINAL", 15, 100 + altoImg + 5);
+        }
+    }
+
+    // --- FIRMAS (Mover al final si no hay fotos, o después de las fotos) ---
+    // Si quieres las firmas en la última página, asegúrate de calcular el finalY correctamente
+    
+    const idBuzon = document.getElementsByName('id_buzon')[0].value;
+    const nroProt = document.getElementById('nro_prot').value;
+    doc.save(`Estanquidad_${idBuzon}_${nroProt}.pdf`);
+}  
+        
         function leerImagen(input) {
     return new Promise((resolve) => {
         const file = input.files[0];
