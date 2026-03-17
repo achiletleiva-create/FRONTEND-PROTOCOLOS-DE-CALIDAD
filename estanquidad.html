@@ -154,11 +154,45 @@
     }
 
     document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        // Aquí conectarías con tu nueva ruta app.post('/api/estanquidad'...)
-        alert("Enviando datos de estanquidad al servidor...");
-    });
+    e.preventDefault();
+    
+    // Convertir FormData a un objeto simple para JSON
+    const formData = new FormData(e.target);
+    const data = {
+        nro_protocolo: formData.get('nro_protocolo'),
+        fecha: formData.get('fecha'),
+        datos_elemento: {
+            id_buzon: formData.get('id_buzon'),
+            material_tuberia: formData.get('material_tuberia'),
+            diametro_d: parseFloat(document.getElementById('diam_d').value),
+            altura_h: parseFloat(document.getElementById('alt_h').value)
+        },
+        resultados: {
+            perdida_max_permitida_vp: parseFloat(document.getElementById('vp_resultado').value),
+            lectura_inicial: parseFloat(document.getElementById('l_ini').value),
+            lectura_final: parseFloat(document.getElementById('l_fin').value),
+            resultado_final: document.getElementById('veredicto').innerText
+        }
+    };
+
+    try {
+        const response = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/estanquidad', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert("✅ Protocolo de Estanquidad guardado correctamente.");
+            window.location.href = 'index.html'; // O tu menú principal
+        } else {
+            alert("❌ Error al guardar en el servidor.");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("No se pudo conectar con el servidor.");
+    }
+});
 
     async function generarPDF() {
         const { jsPDF } = window.jspdf;
