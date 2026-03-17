@@ -191,11 +191,13 @@
         // FOTOS EN PÁGINA NUEVA
         const img1 = await leerImagen(document.getElementById('f_antes'));
         const img2 = await leerImagen(document.getElementById('f_durante'));
-        if (img1 || img2) {
+        const img3 = await leerImagen(document.getElementById('f_despues'));
+        if (img1 || img2 || img3) {
             doc.addPage();
             doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
             if (img1) { doc.addImage(img1, 'JPEG', 15, 25, 80, 60); doc.text("FOTO: ANTES", 15, 90); }
             if (img2) { doc.addImage(img2, 'JPEG', 110, 25, 80, 60); doc.text("FOTO: DURANTE", 110, 90); }
+            if (img3) { doc.addImage(img3, 'JPEG', 15, 110, 80, 60); doc.text("FOTO: DESPUÉS", 15, 175); }
         }
 
         // Definimos un nombre seguro por si el campo está vacío
