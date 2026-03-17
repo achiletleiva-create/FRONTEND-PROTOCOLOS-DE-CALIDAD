@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba de Estanquidad - Víctor Larco</title>
+    <title>Protocolo Estanquidad - Víctor Larco</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background: #f4f7f6; padding: 10px; font-size: 14px; }
         .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { font-size: 14px; text-align: center; color: #004a99; margin-bottom: 20px; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
-        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #eef2f7; padding: 15px; border-radius: 5px; }
+        h1 { font-size: 14px; text-align: center; color: #004a99; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #eef2f7; padding: 15px; border-radius: 5px; margin-top: 15px; }
         .table-section { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
-        .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+        .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; }
         .table-section th { background: #004a99; color: white; text-align: center; }
         .category-row { background: #d1dbe5; font-weight: bold; }
         .calculo-box { background: #fff3cd; padding: 15px; border: 1px solid #ffeeba; margin-top: 20px; border-radius: 5px; }
@@ -21,7 +21,7 @@
         .btn-save { background: #28a745; }
         .btn-pdf { background: #dc3545; }
         .btn-back { background: #6c757d; }
-        input, select { width: 100%; padding: 5px; border-radius: 3px; border: 1px solid #bbb; box-sizing: border-box; }
+        input, select { width: 100%; padding: 5px; box-sizing: border-box; }
         .res-aprobado { color: green; font-weight: bold; }
         .res-rechazado { color: red; font-weight: bold; }
     </style>
@@ -29,24 +29,14 @@
 <body>
 
 <div class="container">
-    <h1>PROTOCOLO DE PRUEBA DE ESTANQUIDAD EN BUZONES DE CONCRETO - SECTOR LIBERACIÓN SOCIAL</h1>
+    <h1>PROTOCOLO DE PRUEBA DE ESTANQUIDAD EN BUZONES - LIBERACIÓN SOCIAL</h1>
     
     <form id="estanquidadForm">
         <div class="header-grid">
-            <div>
-                <label><strong>PROTOCOLO N°:</strong></label>
-                <input type="text" id="nro_prot" name="nro_protocolo" value="EST-001-2024" readonly>
-            </div>
-            <div>
-                <label><strong>FECHA DE PRUEBA:</strong></label>
-                <input type="date" id="fecha_obra" name="fecha">
-            </div>
-            <div>
-                <label><strong>ID BUZÓN / TIPO:</strong></label>
-                <input type="text" name="id_buzon" placeholder="Ej. BZ-42 / Prefabricado" required>
-            </div>
-            <div>
-                <label><strong>MATERIAL TUBERÍA:</strong></label>
+            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" value="EST-001-2024" readonly></div>
+            <div><label>FECHA:</label><input type="date" id="fecha_obra" name="fecha"></div>
+            <div><label>ID BUZÓN:</label><input type="text" name="id_buzon" required></div>
+            <div><label>MATERIAL:</label>
                 <select name="material_tuberia">
                     <option>PVC TDP Eurotubo</option>
                     <option>HDPE</option>
@@ -55,342 +45,140 @@
         </div>
 
         <div class="calculo-box">
-            <strong>2.0 CÁLCULO DE TOLERANCIA MÁXIMA (Vp)</strong>
+            <strong>CÁLCULO DE TOLERANCIA (Vp)</strong>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <div>
-                    <label>Diámetro D (m):</label>
-                    <input type="number" step="0.01" id="diam_d" name="diam_d" value="1.20" oninput="calcularVp()">
-                </div>
-                <div>
-                    <label>Altura H (m):</label>
-                    <input type="number" step="0.01" id="alt_h" name="alt_h" placeholder="m" oninput="calcularVp()">
-                </div>
-                <div>
-                    <label>Pérdida Max (Vp - L/h):</label>
-                    <input type="text" id="vp_resultado" name="vp_max" readonly style="background: #e9ecef; font-weight: bold;">
-                </div>
+                <div><label>D (m):</label><input type="number" step="0.01" id="diam_d" name="diam_d" value="1.20" oninput="calcularVp()"></div>
+                <div><label>H (m):</label><input type="number" step="0.01" id="alt_h" name="alt_h" oninput="calcularVp()"></div>
+                <div><label>Vp (L/h):</label><input type="text" id="vp_resultado" name="vp_max" readonly></div>
             </div>
         </div>
 
         <table class="table-section">
-            <thead>
-                <tr>
-                    <th style="width: 40px;">ITEM</th>
-                    <th>VERIFICACIÓN DE CALIDAD</th>
-                    <th style="width: 80px;">ESTADO</th>
-                    <th>OBSERVACIONES</th>
-                </tr>
-            </thead>
+            <thead><tr><th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th></tr></thead>
             <tbody>
                 <tr class="category-row"><td colspan="4">1.0 PREPARACIÓN</td></tr>
-                <tr><td>1.1</td><td>Limpieza interior de buzón (libre de escombros)</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
-                <tr><td>1.2</td><td>Sellado de tuberías (Tapones)</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
-                <tr><td>1.3</td><td>Conexión Sello estanco (Eurotubo)</td><td><select name="st_1.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.3"></td></tr>
-                
+                <tr><td>1.1</td><td>Limpieza interior</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
+                <tr><td>1.2</td><td>Sellado tuberías</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
                 <tr class="category-row"><td colspan="4">2.0 PROCEDIMIENTO</td></tr>
-                <tr><td>2.1</td><td>Periodo de saturación (24 horas)</td><td><select name="st_2.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.1"></td></tr>
-                <tr><td>2.2</td><td>Marcado de nivel inicial de agua</td><td><select name="st_2.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.2"></td></tr>
-                <tr><td>2.3</td><td>Tiempo de prueba (Mín. 30 min)</td><td><select name="st_2.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.3"></td></tr>
-
-                <tr class="category-row"><td colspan="4">3.0 ESTADO FINAL</td></tr>
-                <tr><td>3.1</td><td>Ausencia de filtraciones visibles</td><td><select name="st_3.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.1"></td></tr>
-                <tr><td>3.2</td><td>Descenso dentro de tolerancia (Vp)</td><td><select name="st_3.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.2"></td></tr>
+                <tr><td>2.1</td><td>Saturación 24h</td><td><select name="st_2.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.1"></td></tr>
+                <tr><td>2.2</td><td>Tiempo mín 30 min</td><td><select name="st_2.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.3"></td></tr>
             </tbody>
         </table>
 
-        <div class="calculo-box" style="background: #d4edda; border-color: #c3e6cb;">
-            <strong>4.0 RESULTADOS DE LA PRUEBA</strong>
+        <div class="calculo-box" style="background: #d4edda;">
+            <strong>RESULTADOS</strong>
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <div><label>Lec. Inicial (mm):</label><input type="number" id="l_ini" name="l_ini" oninput="validarResultado()"></div>
-                <div><label>Lec. Final (mm):</label><input type="number" id="l_fin" name="l_fin" oninput="validarResultado()"></div>
-                <div><label>VEREDICTO:</label><div id="veredicto" style="padding-top: 5px; font-weight: bold;">---</div></div>
+                <div><label>Lect. Inicial (mm):</label><input type="number" id="l_ini" name="l_ini" oninput="validarResultado()"></div>
+                <div><label>Lect. Final (mm):</label><input type="number" id="l_fin" name="l_fin" oninput="validarResultado()"></div>
+                <div><label>VEREDICTO:</label><div id="veredicto" style="font-weight: bold;">---</div></div>
             </div>
         </div>
 
         <div style="margin-top: 20px;">
-    <label><strong>REGISTRO FOTOGRÁFICO:</strong></label>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-        <div>
-            <label style="font-size: 10px;">Foto Antes:</label>
-            <input type="file" id="f_antes" name="foto_antes" accept="image/*">
+            <label><strong>FOTOS:</strong></label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
+                <input type="file" id="f_antes" name="foto_antes" accept="image/*">
+                <input type="file" id="f_durante" name="foto_durante" accept="image/*">
+                <input type="file" id="f_despues" name="foto_despues" accept="image/*">
+            </div>
         </div>
-        <div>
-            <label style="font-size: 10px;">Foto Durante:</label>
-            <input type="file" id="f_durante" name="foto_durante" accept="image/*">
-        </div>
-        <div>
-            <label style="font-size: 10px;">Foto Después:</label>
-            <input type="file" id="f_despues" name="foto_despues" accept="image/*">
-        </div>
-    </div>
-</div>
 
         <div class="btn-group">
-            <button type="button" class="btn-back" onclick="window.location.href='menu.html'">⬅ VOLVER</button>
-            <button type="submit" class="btn-save">🚀 GUARDAR PRUEBA</button>
-            <button type="button" class="btn-pdf" onclick="generarPDF()">📄 PDF</button>
+            <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
+            <button type="submit" class="btn-save">🚀 GUARDAR NUBE</button>
+            <button type="button" class="btn-pdf" onclick="generarPDF()">📄 GENERAR PDF</button>
         </div>
     </form>
 </div>
 
 <script>
-    const API_URL_EST = 'https://backend-protocolos-de-calidad.onrender.com/api/estanquidad';
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/estanquidad';
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
     function calcularVp() {
         const d = parseFloat(document.getElementById('diam_d').value) || 0;
         const h = parseFloat(document.getElementById('alt_h').value) || 0;
-        const p = 1; // Presión constante segun PDF
-        // Formula: Vp = 0.001 * D * H * sqrt(P) -> Resultado en Litros/Hora
-        const vp = 0.001 * d * h * Math.sqrt(p);
-        document.getElementById('vp_resultado').value = vp.toFixed(4);
+        document.getElementById('vp_resultado').value = (0.001 * d * h * 1).toFixed(4);
     }
 
     function validarResultado() {
-        const ini = parseFloat(document.getElementById('l_ini').value) || 0;
-        const fin = parseFloat(document.getElementById('l_fin').value) || 0;
-        const desc = Math.abs(ini - fin);
-        const veredicto = document.getElementById('veredicto');
-        
-        if (fin > 0) {
-            if (desc <= 5) { // Ejemplo de tolerancia en mm
-                veredicto.innerHTML = "APROBADO";
-                veredicto.className = "res-aprobado";
-            } else {
-                veredicto.innerHTML = "RECHAZADO";
-                veredicto.className = "res-rechazado";
-            }
-        }
+        const diff = Math.abs(document.getElementById('l_ini').value - document.getElementById('l_fin').value);
+        const v = document.getElementById('veredicto');
+        if (diff <= 5) { v.innerText = "APROBADO"; v.className = "res-aprobado"; }
+        else { v.innerText = "RECHAZADO"; v.className = "res-rechazado"; }
     }
 
     document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    // Convertir FormData a un objeto simple para JSON
-    const formData = new FormData(e.target);
-    
-    // Si tienes objetos anidados en tu modelo (como datos_elemento), 
-    // es mejor aplanarlos o agregarlos manualmente al formData.
-    
-    try {
-        const response = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/estanquidad', {
-            method: 'POST',
-            body: formData // NOTA: No poner headers de Content-Type, el navegador lo hará solo
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        formData.append('veredicto', document.getElementById('veredicto').innerText);
+        
+        try {
+            const resp = await fetch(API_URL, { method: 'POST', body: formData });
+            if (resp.ok) alert("✅ Guardado correctamente");
+            else alert("❌ Error al guardar");
+        } catch (err) { console.error(err); }
+    });
+
+    function leerImagen(input) {
+        return new Promise(res => {
+            const file = input.files[0];
+            if (!file) return res(null);
+            const reader = new FileReader();
+            reader.onload = (e) => res(e.target.result);
+            reader.readAsDataURL(file);
         });
-
-        if (response.ok) {
-            alert("✅ Guardado con éxito en la nube.");
-            window.location.href = 'index.html';
-        } else {
-            alert("❌ Error al guardar.");
-        }
-    } catch (error) {
-        console.error("Error:", error);
     }
-});
-    const data = {
-        nro_protocolo: formData.get('nro_protocolo'),
-        fecha: formData.get('fecha'),
-        datos_elemento: {
-            id_buzon: formData.get('id_buzon'),
-            material_tuberia: formData.get('material_tuberia'),
-            diametro_d: parseFloat(document.getElementById('diam_d').value),
-            altura_h: parseFloat(document.getElementById('alt_h').value)
-        },
-        resultados: {
-            perdida_max_permitida_vp: parseFloat(document.getElementById('vp_resultado').value),
-            lectura_inicial: parseFloat(document.getElementById('l_ini').value),
-            lectura_final: parseFloat(document.getElementById('l_fin').value),
-            resultado_final: document.getElementById('veredicto').innerText
-        }
-    };
-
-    try {
-        const response = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/estanquidad', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-
-        if (response.ok) {
-            alert("✅ Protocolo de Estanquidad guardado correctamente.");
-            window.location.href = 'index.html'; // O tu menú principal
-        } else {
-            alert("❌ Error al guardar en el servidor.");
-        }
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo conectar con el servidor.");
-    }
-});
 
     async function generarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
 
-    // --- CONFIGURACIÓN DE CABECERA ---
-    doc.setFontSize(8);
-    doc.setTextColor(100);
-    doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - SECTOR LIBERACIÓN SOCIAL", 10, 10);
-    doc.text("DISTRITO DE VICTOR LARCO HERRERA - TRUJILLO", 10, 14);
+        // CABECERA
+        doc.setFontSize(8);
+        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(12); doc.setTextColor(0, 74, 153);
+        doc.text("PROTOCOLO DE PRUEBA DE ESTANQUIDAD", 105, 20, {align:"center"});
 
-    doc.setFontSize(12);
-    doc.setTextColor(0, 74, 153); // Azul institucional
-    doc.setFont("helvetica", "bold");
-    doc.text("PROTOCOLO DE PRUEBA DE ESTANQUIDAD EN BUZONES", 105, 25, { align: "center" });
-    
-    // --- DATOS GENERALES ---
-    doc.setFontSize(9);
-    doc.setTextColor(0);
-    doc.setFont("helvetica", "normal");
-    const nroProt = document.getElementById('nro_prot').value;
-    const fecha = document.getElementById('fecha_obra').value;
-    const idBuzon = document.getElementsByName('id_buzon')[0].value;
-    
-    doc.text(`PROTOCOLO N°: ${nroProt}`, 15, 35);
-    doc.text(`FECHA DE PRUEBA: ${fecha}`, 15, 40);
-    doc.text(`ID BUZÓN / TIPO: ${idBuzon}`, 105, 35);
-    doc.text(`MATERIAL TUBERÍA: ${document.getElementsByName('material_tuberia')[0].value}`, 105, 40);
-
-    // --- SECCIÓN 2.0: CÁLCULOS TÉCNICOS ---
-    doc.setDrawColor(0, 74, 153);
-    doc.setFillColor(238, 242, 247);
-    doc.rect(10, 45, 190, 15, 'F');
-    doc.setFont("helvetica", "bold");
-    doc.text("2.0 DATOS TÉCNICOS Y TOLERANCIA", 15, 50);
-    doc.setFont("helvetica", "normal");
-    
-    const d = document.getElementById('diam_d').value;
-    const h = document.getElementById('alt_h').value;
-    const vp = document.getElementById('vp_resultado').value;
-    doc.text(`Diámetro (D): ${d} m`, 15, 56);
-    doc.text(`Altura Agua (H): ${h} m`, 60, 56);
-    doc.text(`Pérdida Máx. Permitida (Vp): ${vp} L/h`, 110, 56);
-
-    // --- SECCIÓN 3.0: TABLA DE VERIFICACIÓN ---
-    const rows = [];
-    const tableRows = document.querySelectorAll('.table-section tbody tr');
-    
-    tableRows.forEach(tr => {
-        if (tr.classList.contains('category-row')) {
-            rows.push([{ content: tr.innerText, colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
-        } else {
-            const cells = tr.querySelectorAll('td');
-            const estado = tr.querySelector('select').value;
-            const obs = tr.querySelector('input').value;
-            rows.push([cells[0].innerText, cells[1].innerText, estado, obs]);
-        }
-    });
-
-      // --- SECCIÓN DE FOTOS (NUEVA) ---
-    // Obtenemos los base64 de los inputs
-    const imgAntes = await leerImagen(document.getElementById('f_antes'));
-    const imgDurante = await leerImagen(document.getElementById('f_durante'));
-    const imgDespues = await leerImagen(document.getElementById('f_despues'));
-
-    // Si hay fotos, creamos una nueva página para el panel fotográfico
-    if (imgAntes || imgDurante || imgDespues) {
-        doc.addPage();
-        doc.setFontSize(12);
-        doc.setTextColor(0, 74, 153);
-        doc.text("PANEL FOTOGRÁFICO - PRUEBA DE ESTANQUIDAD", 105, 15, { align: "center" });
-
-        const anchoImg = 80;
-        const altoImg = 60;
-
-        if (imgAntes) {
-            doc.addImage(imgAntes, 'JPEG', 15, 25, anchoImg, altoImg);
-            doc.setFontSize(9);
-            doc.text("FOTO 1: ESTADO INICIAL / PREPARACIÓN", 15, 25 + altoImg + 5);
-        }
-
-        if (imgDurante) {
-            doc.addImage(imgDurante, 'JPEG', 110, 25, anchoImg, altoImg);
-            doc.text("FOTO 2: LLENADO / PRUEBA", 110, 25 + altoImg + 5);
-        }
-
-        if (imgDespues) {
-            doc.addImage(imgDespues, 'JPEG', 15, 100, anchoImg, altoImg);
-            doc.text("FOTO 3: ESTADO FINAL", 15, 100 + altoImg + 5);
-        }
-    }
-
-    // --- FIRMAS (Mover al final si no hay fotos, o después de las fotos) ---
-    // Si quieres las firmas en la última página, asegúrate de calcular el finalY correctamente
-    
-    const idBuzon = document.getElementsByName('id_buzon')[0].value;
-    const nroProt = document.getElementById('nro_prot').value;
-    doc.save(`Estanquidad_${idBuzon}_${nroProt}.pdf`);
-}  
+        // DATOS
+        doc.setFontSize(9); doc.setTextColor(0);
+        doc.text(`PROTOCOLO: ${document.getElementById('nro_prot').value}`, 15, 30);
+        doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0].value}`, 15, 35);
         
-        function leerImagen(input) {
-    return new Promise((resolve) => {
-        const file = input.files[0];
-        if (!file) return resolve(null);
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(file);
-    });
-}
+        // TABLA
+        const rows = [];
+        document.querySelectorAll('.table-section tbody tr').forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            if (cells.length > 1) rows.push([cells[0].innerText, cells[1].innerText, tr.querySelector('select')?.value || "", tr.querySelector('input')?.value || ""]);
+        });
 
-    doc.autoTable({
-        startY: 65,
-        head: [['ITEM', 'VERIFICACIÓN DE CALIDAD', 'ESTADO', 'OBSERVACIONES']],
-        body: rows,
-        theme: 'grid',
-        headStyles: { fillColor: [0, 74, 153], fontSize: 8 },
-        styles: { fontSize: 7, cellPadding: 2 },
-        columnStyles: {
-            0: { cellWidth: 10 },
-            1: { cellWidth: 90 },
-            2: { cellWidth: 20, halign: 'center' },
-            3: { cellWidth: 'auto' }
+        doc.autoTable({
+            startY: 45,
+            head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBS']],
+            body: rows,
+            theme: 'grid'
+        });
+
+        // RESULTADOS Y FIRMAS
+        let finalY = doc.lastAutoTable.finalY + 10;
+        doc.text(`VEREDICTO: ${document.getElementById('veredicto').innerText}`, 15, finalY);
+        
+        finalY += 30;
+        doc.line(15, finalY, 60, finalY); doc.text("CALIDAD", 37, finalY + 5, {align:"center"});
+        doc.line(140, finalY, 185, finalY); doc.text("SUPERVISIÓN", 162, finalY + 5, {align:"center"});
+
+        // FOTOS EN PÁGINA NUEVA
+        const img1 = await leerImagen(document.getElementById('f_antes'));
+        const img2 = await leerImagen(document.getElementById('f_durante'));
+        if (img1 || img2) {
+            doc.addPage();
+            doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
+            if (img1) { doc.addImage(img1, 'JPEG', 15, 25, 80, 60); doc.text("FOTO: ANTES", 15, 90); }
+            if (img2) { doc.addImage(img2, 'JPEG', 110, 25, 80, 60); doc.text("FOTO: DURANTE", 110, 90); }
         }
-    });
 
-    // --- SECCIÓN 4.0: RESULTADOS ---
-    let finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFont("helvetica", "bold");
-    doc.text("4.0 RESULTADOS FINALES", 15, finalY);
-    
-    const ini = document.getElementById('l_ini').value;
-    const fin = document.getElementById('l_fin').value;
-    const veredicto = document.getElementById('veredicto').innerText;
-    
-    doc.setFont("helvetica", "normal");
-    doc.text(`Lectura Inicial: ${ini} mm`, 15, finalY + 7);
-    doc.text(`Lectura Final: ${fin} mm`, 60, finalY + 7);
-    
-    // Color del veredicto
-    if (veredicto === "APROBADO") {
-        doc.setTextColor(40, 167, 69);
-    } else {
-        doc.setTextColor(220, 53, 69);
+        doc.save(`Estanquidad_${document.getElementsByName('id_buzon')[0].value}.pdf`);
     }
-    doc.setFontSize(11);
-    doc.text(`VEREDICTO: ${veredicto}`, 110, finalY + 7);
-    doc.setTextColor(0); // Reset color
-
-    // --- FIRMAS ---
-    finalY += 35;
-    const anchoFirma = 50;
-    const esp = 12;
-    const inicioX = 15;
-    
-    doc.setFontSize(7);
-    // Líneas
-    doc.line(inicioX, finalY, inicioX + anchoFirma, finalY);
-    doc.line(inicioX + anchoFirma + esp, finalY, inicioX + 2*anchoFirma + esp, finalY);
-    doc.line(inicioX + 2*anchoFirma + 2*esp, finalY, inicioX + 3*anchoFirma + 2*esp, finalY);
-    
-    // Textos
-    doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma/2), finalY + 4, {align: "center"});
-    doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma/2), finalY + 4, {align: "center"});
-    doc.text("SUPERVISIÓN DE OBRA", inicioX + 2*anchoFirma + 2*esp + (anchoFirma/2), finalY + 4, {align: "center"});
-
-    // --- GUARDAR ---
-    doc.save(`Estanquidad_${idBuzon}_${nroProt}.pdf`);
-}
 </script>
 </body>
 </html>
