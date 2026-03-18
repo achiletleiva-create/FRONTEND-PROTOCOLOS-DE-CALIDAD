@@ -180,22 +180,30 @@
                 4: { cellWidth: 'auto' }
             },
             didDrawPage: function (data) {
-                // --- LAS 3 FIRMAS (IGUAL QUE EN CONCRETO) ---
-                let finalY = data.cursor.y + 15;
-                if (finalY > 260) { doc.addPage(); finalY = 20; }
+                // --- AJUSTE DE FIRMAS (3 COLUMNAS FIJAS) ---
+                let finalY = data.cursor.y + 20;
+                if (finalY > 265) { doc.addPage(); finalY = 30; }
                 
-                const anchoFirma = 50; const esp = 12; const inicioX = 15;
-                doc.setFontSize(8); doc.setFont("helvetica", "bold");
+                const anchoFirma = 50; 
+                const esp = 12; 
+                const inicioX = 15;
+
+                doc.setFontSize(7);
+                doc.setFont("helvetica", "bold");
                 
-                // Líneas
-                doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15);
-                doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2 * anchoFirma + esp, finalY + 15);
-                doc.line(inicioX + 2 * anchoFirma + 2 * esp, finalY + 15, inicioX + 3 * anchoFirma + 2 * esp, finalY + 15);
-                
-                // Textos
-                doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 20, { align: "center" });
-                doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma / 2), finalY + 20, { align: "center" });
-                doc.text("SUPERVISIÓN DE OBRA", inicioX + 2 * anchoFirma + 2 * esp + (anchoFirma / 2), finalY + 20, { align: "center" });
+                // Columna 1: Calidad
+                doc.line(inicioX, finalY, inicioX + anchoFirma, finalY);
+                doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 5, { align: "center" });
+
+                // Columna 2: Residente
+                const xRes = inicioX + anchoFirma + esp;
+                doc.line(xRes, finalY, xRes + anchoFirma, finalY);
+                doc.text("RESIDENTE DE OBRA", xRes + (anchoFirma / 2), finalY + 5, { align: "center" });
+
+                // Columna 3: Supervisión
+                const xSup = xRes + anchoFirma + esp;
+                doc.line(xSup, finalY, xSup + anchoFirma, finalY);
+                doc.text("SUPERVISIÓN DE OBRA", xSup + (anchoFirma / 2), finalY + 5, { align: "center" });
             }
         });
 
@@ -222,6 +230,7 @@
 
         if (fotosCargadas.length > 0) {
             doc.addPage();
+            doc.setFontSize(10);
             doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
             const maxW = 85; const maxH = 60; const gapX = 10; const gapY = 25;
             fotosCargadas.forEach((foto, i) => {
@@ -231,6 +240,7 @@
                 const x = 15 + (col * (maxW + gapX)) + (maxW - finalW) / 2;
                 const y = 25 + (row * (maxH + gapY)) + (maxH - finalH) / 2;
                 doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
+                doc.setFontSize(8);
                 doc.text(foto.label, 15 + (col * (maxW + gapX)) + 42, y + finalH + 5, {align: "center"});
             });
         }
@@ -251,17 +261,15 @@
         finalFormData.append("elemento", formData.get('elemento'));
         finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
         
-        // Mapeo Controles
         const mapping = {
             "limpieza_niveles": "st_1.1", "estanqueidad_encofrado": "st_1.2", "aplicacion_desmoldante": "st_1.3",
             "agregados_limpios": "st_1.4", "cemento_vigente": "st_1.5", "dosificacion_mezcla": "st_2.1",
             "tiempo_mezclado": "st_2.2", "relacion_agua_cemento": "st_2.3", "ensayo_slump": "st_3.1",
-            "temperatura_concreto": "st_3.2", "toma_testigos": "st_3.3", "altura_caida": "4.1",
-            "compactacion_vibrado": "4.2", "acabado_superficial": "4.3", "inicio_curado": "5.1", "metodo_curado": "5.2"
+            "temperatura_concreto": "st_3.2", "toma_testigos": "st_3.3", "altura_caida": "st_4.1",
+            "compactacion_vibrado": "st_4.2", "acabado_superficial": "st_4.3", "inicio_curado": "st_5.1", "metodo_curado": "st_5.2"
         };
         for(let key in mapping) { finalFormData.append(key, formData.get(mapping[key])); }
         
-        // Observaciones
         for(let i=1; i<=5; i++){
             for(let j=1; j<=5; j++){
                 let val = formData.get(`obs_${i}.${j}`);
