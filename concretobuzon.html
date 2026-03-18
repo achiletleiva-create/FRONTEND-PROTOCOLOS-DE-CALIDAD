@@ -127,17 +127,14 @@
 </div>
 
 <script>
-    // Configuración Inicial
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
-    // 1. Consultar correlativo
     async function consultarCorrelativo() {
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
             if (Array.isArray(data)) {
-                // Cambia esta línea dentro de consultarCorrelativo:
                   const correlativo = (data.length + 1).toString().padStart(3, '0');  
                 const anioActual = new Date().getFullYear();
                     document.getElementById('nro_prot').value = `CONC-${correlativo}-${anioActual}`;
@@ -147,7 +144,6 @@
         }
     }
 
-    // 2. Función PDF
     async function generarPDFSimilar() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -163,67 +159,40 @@
             if (tr.classList.contains('category-row')) {
                 rows.push([{ content: tr.innerText, colSpan: 5, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
             } else {
-                // Busca esta parte en tu función de PDF y actualízala:
                     const cells = tr.querySelectorAll('td');
                     const estado = tr.querySelector('select').value;
-                    const obs = tr.querySelector('input') ? tr.querySelector('input').value : ""; // <--- Captura la observación
-                    rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado, obs]); // <--- Agrégala al array
+                    const obs = tr.querySelector('input') ? tr.querySelector('input').value : ""; 
+                    rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado, obs]); 
             }
         });
 
        doc.autoTable({
-    startY: 30,
-    theme: 'grid',
-    // Se añade 'OBSERVACIONES' al head
-    head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
-    body: rows,
-    styles: { fontSize: 7 },
-    // Ajustamos anchos para que las observaciones tengan espacio
-    columnStyles: {
-        0: { cellWidth: 10 }, // ITEM
-        1: { cellWidth: 55 }, // ACTIVIDAD
-        2: { cellWidth: 40 }, // NORMA
-        3: { cellWidth: 15 }, // ESTADO
-        4: { cellWidth: 'auto' } // OBSERVACIONES
-    },
-    doc.autoTable({
-            startY: 45, // Ajustado para dar espacio al encabezado
+            startY: 30,
             theme: 'grid',
-            head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBSERVACIONES']],
+            head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
             body: rows,
-            styles: { fontSize: 8 },
+            styles: { fontSize: 7 },
             columnStyles: {
-                0: { cellWidth: 15 },
-                1: { cellWidth: 80 },
-                2: { cellWidth: 20 },
-                3: { cellWidth: 'auto' }
+                0: { cellWidth: 10 }, 
+                1: { cellWidth: 55 }, 
+                2: { cellWidth: 40 }, 
+                3: { cellWidth: 15 }, 
+                4: { cellWidth: 'auto' } 
             },
             didDrawPage: function (data) {
-                // Calculamos el final de la tabla para situar las firmas
                 let finalY = data.cursor.y + 15;
-                
-                // Si las firmas no caben, las pasamos a la siguiente hoja
                 if (finalY > 260) { 
                     doc.addPage(); 
                     finalY = 20; 
                 }
-                
                 const anchoFirma = 50; 
                 const esp = 12; 
                 const inicioX = 15;
-                
                 doc.setFontSize(8);
                 doc.setFont("helvetica", "bold");
-                
-                // --- DIBUJO DE LAS 3 LÍNEAS DE FIRMA ---
-                // 1. Responsable Calidad
                 doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15);
-                // 2. Residente de Obra
                 doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2 * anchoFirma + esp, finalY + 15);
-                // 3. Supervisión de Obra
                 doc.line(inicioX + 2 * anchoFirma + 2 * esp, finalY + 15, inicioX + 3 * anchoFirma + 2 * esp, finalY + 15);
-                
-                // --- TEXTOS BAJO LAS LÍNEAS ---
                 doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 20, { align: "center" });
                 doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma / 2), finalY + 20, { align: "center" });
                 doc.text("SUPERVISIÓN DE OBRA", inicioX + 2 * anchoFirma + 2 * esp + (anchoFirma / 2), finalY + 20, { align: "center" });
@@ -269,7 +238,6 @@
         doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
     }
 
-    // 3. Envío de datos a MongoDB
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
@@ -280,13 +248,11 @@
         const formData = new FormData(e.target);
         const finalFormData = new FormData();
         
-        // Datos principales (Usando ID para nro_prot por seguridad)
         finalFormData.append("nro_protocolo", document.getElementById('nro_prot').value);
         finalFormData.append("fecha", formData.get('fecha'));
         finalFormData.append("elemento", formData.get('elemento'));
         finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
         
-        // Mapeo de puntos de control
         finalFormData.append("limpieza_niveles", formData.get('st_1.1'));
         finalFormData.append("estanqueidad_encofrado", formData.get('st_1.2'));
         finalFormData.append("aplicacion_desmoldante", formData.get('st_1.3'));
@@ -304,25 +270,24 @@
         finalFormData.append("acabado_superficial", formData.get('st_4.3'));
         finalFormData.append("inicio_curado", formData.get('st_5.1'));
         finalFormData.append("metodo_curado", formData.get('st_5.2'));
-        // --- AGREGA ESTO EN LA SECCIÓN DE ENVÍO (Submit) ---
-finalFormData.append("obs_limpieza", formData.get('obs_1.1'));
-finalFormData.append("obs_estanqueidad", formData.get('obs_1.2'));
-finalFormData.append("obs_desmoldante", formData.get('obs_1.3'));
-finalFormData.append("obs_agregados", formData.get('obs_1.4'));
-finalFormData.append("obs_cemento", formData.get('obs_1.5'));
-finalFormData.append("obs_dosificacion", formData.get('obs_2.1'));
-finalFormData.append("obs_tiempo_mezcla", formData.get('obs_2.2'));
-finalFormData.append("obs_agua_cemento", formData.get('obs_2.3'));
-finalFormData.append("obs_slump", formData.get('obs_3.1'));
-finalFormData.append("obs_temperatura", formData.get('obs_3.2'));
-finalFormData.append("obs_testigos", formData.get('obs_3.3'));
-finalFormData.append("obs_caida", formData.get('obs_4.1'));
-finalFormData.append("obs_vibrado", formData.get('obs_4.2'));
-finalFormData.append("obs_acabado", formData.get('obs_4.3'));
-finalFormData.append("obs_inicio_curado", formData.get('obs_5.1'));
-finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
 
-        // Adjuntar archivos
+        finalFormData.append("obs_limpieza", formData.get('obs_1.1'));
+        finalFormData.append("obs_estanqueidad", formData.get('obs_1.2'));
+        finalFormData.append("obs_desmoldante", formData.get('obs_1.3'));
+        finalFormData.append("obs_agregados", formData.get('obs_1.4'));
+        finalFormData.append("obs_cemento", formData.get('obs_1.5'));
+        finalFormData.append("obs_dosificacion", formData.get('obs_2.1'));
+        finalFormData.append("obs_tiempo_mezcla", formData.get('obs_2.2'));
+        finalFormData.append("obs_agua_cemento", formData.get('obs_2.3'));
+        finalFormData.append("obs_slump", formData.get('obs_3.1'));
+        finalFormData.append("obs_temperatura", formData.get('obs_3.2'));
+        finalFormData.append("obs_testigos", formData.get('obs_3.3'));
+        finalFormData.append("obs_caida", formData.get('obs_4.1'));
+        finalFormData.append("obs_vibrado", formData.get('obs_4.2'));
+        finalFormData.append("obs_acabado", formData.get('obs_4.3'));
+        finalFormData.append("obs_inicio_curado", formData.get('obs_5.1'));
+        finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
+
         const fileInputs = e.target.querySelectorAll('input[type="file"]');
         fileInputs.forEach(input => {
             if (input.files[0]) {
@@ -354,64 +319,55 @@ finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
     consultarCorrelativo();
 
     async function cargarHistorial() {
-    const tabla = document.getElementById('tablaHistorial');
-    try {
-        const res = await fetch(API_URL);
-        const protocolos = await res.json();
-        
-        tabla.innerHTML = ""; // Limpiar tabla
-
-        protocolos.forEach(p => {
-            const fila = document.createElement('tr');
-            
-            // Determinamos un color basado en si hay algún No Conforme (NC)
-            const tieneNC = Object.values(p.controles).includes("NC");
-            const colorEstado = tieneNC ? "#dc3545" : "#28a745";
-
-            fila.innerHTML = `
-                <td>${p.nro_protocolo}</td>
-                <td>${new Date(p.fecha).toLocaleDateString()}</td>
-                <td>${p.datos_tecnicos.elemento}</td>
-                <td>${p.datos_tecnicos.resistencia_fc}</td>
-                <td>${p.controles.ensayo_slump || 'N/A'}</td>
-                <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
-                    ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
-                </td>
-                <td>
-                    <button onclick="verDetalles('${p._id}')" style="padding: 5px; background: #007bff; font-size: 9px;">👁️ VER</button>
-                </td>
-            `;
-            tabla.appendChild(fila);
-        });
-    } catch (e) {
-        console.error("Error al cargar historial:", e);
-    }
-}
-
-// Llamar a la función al cargar la página
-cargarHistorial();
-    
-    // Agrega esto al final de tu script
-async function verDetalles(id) {
-    try {
-        const res = await fetch(`${API_URL}`);
-        const protocolos = await res.json();
-        const p = protocolos.find(item => item._id === id);
-        
-        if (p && p.fotos) {
-            // Crea una lista de las URLs de las fotos existentes
-            const enlaces = Object.entries(p.fotos)
-                .map(([key, url]) => `<a href="${url}" target="_blank">${key}</a>`)
-                .join("<br>");
-            
-            // Un alert simple o puedes mejorarlo con un modal
-            const ventana = window.open("", "_blank", "width=400,height=400");
-            ventana.document.write(`<h3>Fotos del Protocolo ${p.nro_protocolo}</h3>${enlaces}`);
-        } else {
-            alert("No hay fotos registradas para este protocolo.");
+        const tabla = document.getElementById('tablaHistorial');
+        try {
+            const res = await fetch(API_URL);
+            const protocolos = await res.json();
+            tabla.innerHTML = ""; 
+            protocolos.forEach(p => {
+                const fila = document.createElement('tr');
+                const tieneNC = Object.values(p.controles).includes("NC");
+                const colorEstado = tieneNC ? "#dc3545" : "#28a745";
+                fila.innerHTML = `
+                    <td>${p.nro_protocolo}</td>
+                    <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                    <td>${p.datos_tecnicos.elemento}</td>
+                    <td>${p.datos_tecnicos.resistencia_fc}</td>
+                    <td>${p.controles.ensayo_slump || 'N/A'}</td>
+                    <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
+                        ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
+                    </td>
+                    <td>
+                        <button onclick="verDetalles('${p._id}')" style="padding: 5px; background: #007bff; font-size: 9px;">👁️ VER</button>
+                    </td>
+                `;
+                tabla.appendChild(fila);
+            });
+        } catch (e) {
+            console.error("Error al cargar historial:", e);
         }
-    } catch (e) {
-        alert("Error al recuperar detalles.");
     }
-}
+
+    cargarHistorial();
+    
+    async function verDetalles(id) {
+        try {
+            const res = await fetch(`${API_URL}`);
+            const protocolos = await res.json();
+            const p = protocolos.find(item => item._id === id);
+            if (p && p.fotos) {
+                const enlaces = Object.entries(p.fotos)
+                    .map(([key, url]) => `<a href="${url}" target="_blank">${key}</a>`)
+                    .join("<br>");
+                const ventana = window.open("", "_blank", "width=400,height=400");
+                ventana.document.write(`<h3>Fotos del Protocolo ${p.nro_protocolo}</h3>${enlaces}`);
+            } else {
+                alert("No hay fotos registradas para este protocolo.");
+            }
+        } catch (e) {
+            alert("Error al recuperar detalles.");
+        }
+    }
 </script>
+</body>
+</html>
