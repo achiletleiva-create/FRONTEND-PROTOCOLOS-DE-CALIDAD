@@ -54,23 +54,21 @@
         </div>
 
         <table class="table-section">
-    <thead><tr><th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th></tr></thead>
-    <tbody>
-        <tr class="category-row"><td colspan="4">1.0 PREPARACIÓN</td></tr>
-        <tr><td>1.1</td><td>Limpieza interior</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
-        <tr><td>1.2</td><td>Sellado tuberías</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
-        <tr><td>1.3</td><td>Conexión sello estanco</td><td><select name="st_1.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.3"></td></tr>
-        
-        <tr class="category-row"><td colspan="4">2.0 PROCEDIMIENTO</td></tr>
-        <tr><td>2.1</td><td>Saturación 24h</td><td><select name="st_2.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.1"></td></tr>
-        <tr><td>2.2</td><td>Marcado nivel inicial</td><td><select name="st_2.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.2"></td></tr>
-        <tr><td>2.3</td><td>Tiempo mín 30 min</td><td><select name="st_2.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.3"></td></tr>
-
-        <tr class="category-row"><td colspan="4">3.0 RESULTADOS FINALES</td></tr>
-        <tr><td>3.1</td><td>Ausencia filtraciones</td><td><select name="st_3.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.1"></td></tr>
-        <tr><td>3.2</td><td>Descenso tolerancia</td><td><select name="st_3.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.2"></td></tr>
-    </tbody>
-</table>
+            <thead><tr><th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th></tr></thead>
+            <tbody>
+                <tr class="category-row"><td colspan="4">1.0 PREPARACIÓN</td></tr>
+                <tr><td>1.1</td><td>Limpieza interior</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
+                <tr><td>1.2</td><td>Sellado tuberías</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
+                <tr><td>1.3</td><td>Conexión sello estanco</td><td><select name="st_1.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.3"></td></tr>
+                <tr class="category-row"><td colspan="4">2.0 PROCEDIMIENTO</td></tr>
+                <tr><td>2.1</td><td>Saturación 24h</td><td><select name="st_2.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.1"></td></tr>
+                <tr><td>2.2</td><td>Marcado nivel inicial</td><td><select name="st_2.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.2"></td></tr>
+                <tr><td>2.3</td><td>Tiempo mín 30 min</td><td><select name="st_2.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.3"></td></tr>
+                <tr class="category-row"><td colspan="4">3.0 RESULTADOS FINALES</td></tr>
+                <tr><td>3.1</td><td>Ausencia filtraciones</td><td><select name="st_3.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.1"></td></tr>
+                <tr><td>3.2</td><td>Descenso tolerancia</td><td><select name="st_3.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.2"></td></tr>
+            </tbody>
+        </table>
 
         <div class="calculo-box" style="background: #d4edda;">
             <strong>RESULTADOS</strong>
@@ -116,30 +114,23 @@
     }
 
     document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        formData.append('veredicto', document.getElementById('veredicto').innerText);
 
-    // Agregamos manualmente el veredicto porque no es un input, es un div
-    formData.append('veredicto', document.getElementById('veredicto').innerText);
-
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: formData // Enviamos FormData directamente para que Cloudinary reciba las fotos
-        });
-
-        if (response.ok) {
-            alert("✅ Protocolo de Estanquidad guardado con éxito.");
-            window.location.href = 'index.html';
-        } else {
-            const errorData = await response.json();
-            alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
+        try {
+            const response = await fetch(API_URL, { method: 'POST', body: formData });
+            if (response.ok) {
+                alert("✅ Protocolo de Estanquidad guardado con éxito.");
+                window.location.href = 'index.html';
+            } else {
+                const errorData = await response.json();
+                alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
+            }
+        } catch (error) {
+            alert("No se pudo conectar con el servidor.");
         }
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo conectar con el servidor.");
-    }
-});
+    });
 
     function leerImagen(input) {
         return new Promise(res => {
@@ -155,18 +146,15 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
 
-        // CABECERA
         doc.setFontSize(8);
         doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
         doc.setFontSize(12); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE PRUEBA DE ESTANQUIDAD", 105, 20, {align:"center"});
 
-        // DATOS
         doc.setFontSize(9); doc.setTextColor(0);
         doc.text(`PROTOCOLO: ${document.getElementById('nro_prot').value}`, 15, 30);
         doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0]?.value || "S/N"}`, 15, 35);
         
-        // TABLA
         const rows = [];
         document.querySelectorAll('.table-section tbody tr').forEach(tr => {
             const cells = tr.querySelectorAll('td');
@@ -180,61 +168,37 @@
             theme: 'grid'
         });
 
-        // RESULTADOS Y FIRMAS
         let finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFont("helvetica", "bold");
         doc.text(`VEREDICTO: ${document.getElementById('veredicto').innerText}`, 15, finalY);
         
-        finalY += 30;
-        doc.line(15, finalY, 60, finalY); doc.text("CALIDAD", 37, finalY + 5, {align:"center"});
-        doc.line(140, finalY, 185, finalY); doc.text("SUPERVISIÓN", 162, finalY + 5, {align:"center"});
+        // --- BLOQUE DE LAS 3 FIRMAS CORREGIDO ---
+        finalY += 25;
+        if (finalY > 270) { doc.addPage(); finalY = 30; }
+        const anchoF = 50; const esp = 12; const inicioX = 15;
+        doc.setFontSize(7);
+        doc.line(inicioX, finalY, inicioX + anchoF, finalY);
+        doc.line(inicioX + anchoF + esp, finalY, inicioX + 2*anchoF + esp, finalY);
+        doc.line(inicioX + 2*anchoF + 2*esp, finalY, inicioX + 3*anchoF + 2*esp, finalY);
+        doc.text("RESP. CALIDAD", inicioX + (anchoF/2), finalY + 4, {align:"center"});
+        doc.text("RESIDENTE", inicioX + anchoF + esp + (anchoF/2), finalY + 4, {align:"center"});
+        doc.text("SUPERVISIÓN", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
 
-        // FOTOS EN PÁGINA NUEVA
-        // --- SECCIÓN DE FOTOS OPTIMIZADA (GRANDE Y EN UNA HOJA) ---
+        const img1 = await leerImagen(document.getElementById('f_antes'));
+        const img2 = await leerImagen(document.getElementById('f_durante'));
+        const img3 = await leerImagen(document.getElementById('f_despues'));
 
-// --- SECCIÓN DE FOTOS CORREGIDA PARA NO PEGAR AL BORDE ---
-const img1 = await leerImagen(document.getElementById('f_antes'));
-const img2 = await leerImagen(document.getElementById('f_durante'));
-const img3 = await leerImagen(document.getElementById('f_despues'));
+        if (img1 || img2 || img3) {
+            doc.addPage();
+            doc.setFontSize(12); doc.setTextColor(0, 74, 153);
+            doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
+            const ancho = 150; const alto = 75; const xC = (210 - ancho) / 2;
+            if (img1) { doc.addImage(img1, 'JPEG', xC, 25, ancho, alto); doc.setFontSize(10); doc.setTextColor(0); doc.text("FOTO 1: ANTES", xC, 25 + alto + 5); }
+            if (img2) { const y2 = img1 ? 110 : 25; doc.addImage(img2, 'JPEG', xC, y2, ancho, alto); doc.text("FOTO 2: DURANTE", xC, y2 + alto + 5); }
+            if (img3) { let y3 = 195; if (!img1 && !img2) y3 = 25; else if (!img1 || !img2) y3 = 110; doc.addImage(img3, 'JPEG', xC, y3, ancho, alto); doc.text("FOTO 3: DESPUÉS", xC, y3 + alto + 5); }
+        }
 
-if (img1 || img2 || img3) {
-    doc.addPage();
-    doc.setFontSize(12);
-    doc.setTextColor(0, 74, 153);
-    doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
-
-    // Configuramos un tamaño que respete los márgenes (A4 = 210x297mm)
-    const ancho = 150; 
-    const alto = 75; // Reducido de 85 a 75 para evitar el borde inferior
-    const xCentrado = (210 - ancho) / 2; // Calcula el margen para centrar horizontalmente
-
-    if (img1) { 
-        doc.addImage(img1, 'JPEG', xCentrado, 25, ancho, alto); 
-        doc.setFontSize(10);
-        doc.setTextColor(0);
-        doc.text("FOTO 1: ANTES", xCentrado, 25 + alto + 5); 
-    }
-    
-    if (img2) { 
-        // Posición Y ajustada para dejar aire
-        const y2 = img1 ? 110 : 25; 
-        doc.addImage(img2, 'JPEG', xCentrado, y2, ancho, alto); 
-        doc.text("FOTO 2: DURANTE", xCentrado, y2 + alto + 5); 
-    }
-    
-    if (img3) { 
-        // Posición Y final en 195mm. Deja casi 3cm libres al final de la hoja.
-        let y3 = 195;
-        if (!img1 && !img2) y3 = 25;
-        else if (!img1 || !img2) y3 = 110;
-
-        doc.addImage(img3, 'JPEG', xCentrado, y3, ancho, alto); 
-        doc.text("FOTO 3: DESPUÉS", xCentrado, y3 + alto + 5); 
-    }
-}
-
-        // Definimos un nombre seguro por si el campo está vacío
-const nombreBuzon = document.getElementsByName('id_buzon')[0]?.value || "SIN-ID";
-doc.save(`Estanquidad_${nombreBuzon}.pdf`);
+        doc.save(`Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`);
     }
 </script>
 </body>
