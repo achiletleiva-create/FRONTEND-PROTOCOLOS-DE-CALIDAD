@@ -3,239 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocolo Estanquidad - Víctor Larco</title>
+    <title>Protocolo de Calidad - Víctor Larco</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background: #f4f7f6; padding: 10px; font-size: 14px; }
         .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { font-size: 14px; text-align: center; color: #004a99; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
-        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #eef2f7; padding: 15px; border-radius: 5px; margin-top: 15px; }
+        h1 { font-size: 14px; text-align: center; color: #004a99; margin-bottom: 20px; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #eef2f7; padding: 15px; border-radius: 5px; }
         .table-section { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
-        .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; }
+        .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; text-align: left; }
         .table-section th { background: #004a99; color: white; text-align: center; }
         .category-row { background: #d1dbe5; font-weight: bold; }
-        .calculo-box { background: #fff3cd; padding: 15px; border: 1px solid #ffeeba; margin-top: 20px; border-radius: 5px; }
+        .section-title { background: #004a99; color: white; padding: 8px; margin-top: 20px; font-weight: bold; border-radius: 4px; }
         .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
         button { flex: 1; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
         .btn-save { background: #28a745; }
         .btn-pdf { background: #dc3545; }
-        .btn-back { background: #6c757d; }
-        input, select { width: 100%; padding: 5px; box-sizing: border-box; }
-        .res-aprobado { color: green; font-weight: bold; }
-        .res-rechazado { color: red; font-weight: bold; }
+        .btn-history { background: #007bff; }
+        input, select { width: 100%; padding: 5px; border-radius: 3px; border: 1px solid #bbb; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>PROTOCOLO DE PRUEBA DE ESTANQUIDAD EN BUZONES - LIBERACIÓN SOCIAL</h1>
+    <h1>MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VICTOR LARCO HERRERA - TRUJILLO</h1>
     
-    <form id="estanquidadForm">
+    <form id="protocoloForm">
         <div class="header-grid">
-            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" value="EST-001-2024" readonly></div>
-            <div><label>FECHA:</label><input type="date" id="fecha_obra" name="fecha"></div>
-            <div><label>ID BUZÓN:</label><input type="text" name="id_buzon" required></div>
-            <div><label>MATERIAL:</label>
-                <select name="material_tuberia">
-                    <option>PVC TDP Eurotubo</option>
-                    <option>HDPE</option>
-                </select>
+            <div>
+                <label><strong>PROTOCOLO N°:</strong></label>
+                <input type="text" id="nro_prot" name="nro_protocolo" value="CONC-001-2024" readonly>
             </div>
-        </div>
-
-        <div class="calculo-box">
-            <strong>CÁLCULO DE TOLERANCIA (Vp)</strong>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <div><label>D (m):</label><input type="number" step="0.01" id="diam_d" name="diam_d" value="1.20" oninput="calcularVp()"></div>
-                <div><label>H (m):</label><input type="number" step="0.01" id="alt_h" name="alt_h" oninput="calcularVp()"></div>
-                <div><label>Vp (L/h):</label><input type="text" id="vp_resultado" name="vp_max" readonly></div>
+            <div>
+                <label><strong>FECHA:</strong></label>
+                <input type="date" id="fecha_obra" name="fecha">
+            </div>
+            <div>
+                <label><strong>ELEMENTO:</strong></label>
+                <input type="text" id="elemento" name="elemento" placeholder="Ej. Buzón 42" required>
+            </div>
+            <div>
+                <label><strong>RESISTENCIA (f'c):</strong></label>
+                <input type="text" id="resistencia" name="resistencia_fc" placeholder="kg/cm²" required>
             </div>
         </div>
 
         <table class="table-section">
-    <thead><tr><th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th></tr></thead>
-    <tbody>
-        <tr class="category-row"><td colspan="4">1.0 PREPARACIÓN</td></tr>
-        <tr><td>1.1</td><td>Limpieza interior</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
-        <tr><td>1.2</td><td>Sellado tuberías</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
-        <tr><td>1.3</td><td>Conexión sello estanco</td><td><select name="st_1.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.3"></td></tr>
+            <thead>
+                <tr>
+                    <th style="width: 40px;">ITEM</th>
+                    <th>ACTIVIDADES Y PUNTOS DE CONTROL</th>
+                    <th>CRITERIO / NORMA</th>
+                    <th style="width: 80px;">ESTADO</th>
+                    <th>OBSERVACIONES</th>
+                </tr>
+            </thead>
+            <tbody id="puntosControl">
+                <tr class="category-row"><td colspan="5">1.0 CONTROLES PREVIOS (LIBERACIÓN)</td></tr>
+                <tr><td>1.1</td><td>Limpieza y niveles de excavación</td><td>Planos del proyecto</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
+                <tr><td>1.2</td><td>Estanqueidad y estabilidad de encofrados</td><td>RNE E.060</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
+                <tr><td>1.3</td><td>Aplicación de desmoldante</td><td>Superficie uniforme</td><td><select name="st_1.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.3"></td></tr>
+                <tr><td>1.4</td><td>Agregados limpios y libre de materia orgánica</td><td>NTP 400.037</td><td><select name="st_1.4"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.4"></td></tr>
+                <tr><td>1.5</td><td>Cemento Tipo I / MS (Vigente y sin grumos)</td><td>NTP 334.009</td><td><select name="st_1.5"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.5"></td></tr>
+                
+                <tr class="category-row"><td colspan="5">2.0 PROCESO DE MEZCLADO (IN SITU)</td></tr>
+                <tr><td>2.1</td><td>Dosificación por volumen (Cajones/Baldes)</td><td>Diseño de Mezcla</td><td><select name="st_2.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.1"></td></tr>
+                <tr><td>2.2</td><td>Tiempo de mezclado (Mín. 1.5 a 2 min)</td><td>Mezcla homogénea</td><td><select name="st_2.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.2"></td></tr>
+                <tr><td>2.3</td><td>Relación Agua/Cemento (Control estricto)</td><td>f'c Diseño</td><td><select name="st_2.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.3"></td></tr>
+
+                <tr class="category-row"><td colspan="5">3.0 ENSAYOS EN CONCRETO FRESCO</td></tr>
+                <tr><td>3.1</td><td>Ensayo de Asentamiento (Slump)</td><td>NTP 339.035 Max. 4"</td><td><select name="st_3.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.1" placeholder='Ej: 3.5"'></td></tr>
+                <tr><td>3.2</td><td>Temperatura del concreto</td><td>10°C - 32°C</td><td><select name="st_3.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.2" placeholder="°C"></td></tr>
+                <tr><td>3.3</td><td>Toma de testigos (Muestreo)</td><td>NTP 339.033 (02 Prob)</td><td><select name="st_3.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.3"></td></tr>
+
+                <tr class="category-row"><td colspan="5">4.0 COLOCACIÓN Y ACABADO</td></tr>
+                <tr><td>4.1</td><td>Altura de caída libre (< 1.20 m)</td><td>No segregación</td><td><select name="st_4.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_4.1"></td></tr>
+                <tr><td>4.2</td><td>Compactación (Vibrado/Chuseado)</td><td>Eliminación de vacíos</td><td><select name="st_4.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_4.2"></td></tr>
+                <tr><td>4.3</td><td>Acabado superficial</td><td>Especificación</td><td><select name="st_4.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_4.3"></td></tr>
+
+                <tr class="category-row"><td colspan="5">5.0 CURADO Y PROTECCIÓN</td></tr>
+                <tr><td>5.1</td><td>Inicio de curado (Post-fraguado)</td><td>NTP 339.185</td><td><select name="st_5.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_5.1"></td></tr>
+                <tr><td>5.2</td><td>Método de curado (Agua/Aditivo)</td><td>Mínimo 7 días</td><td><select name="st_5.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_5.2"></td></tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO</div>
+        <div class="header-grid" style="margin-top:10px; grid-template-columns: 1fr 1fr 1fr;">
+            <div><label>Foto 1: Slump</label><input type="file" name="foto_slump" accept="image/*"></div>
+            <div><label>Foto 2: Mezclado</label><input type="file" name="foto_mezclado" accept="image/*"></div>
+            <div><label>Foto 3: Encofrado</label><input type="file" name="foto_encofrado" accept="image/*"></div>
+            <div><label>Foto 4: Probetas</label><input type="file" name="foto_probetas" accept="image/*"></div>
+            <div><label>Foto 5: Vibrado</label><input type="file" name="foto_vibrado" accept="image/*"></div>
+            <div><label>Foto 6: Curado</label><input type="file" name="foto_curado" accept="image/*"></div>
+        </div>
         
-        <tr class="category-row"><td colspan="4">2.0 PROCEDIMIENTO</td></tr>
-        <tr><td>2.1</td><td>Saturación 24h</td><td><select name="st_2.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.1"></td></tr>
-        <tr><td>2.2</td><td>Marcado nivel inicial</td><td><select name="st_2.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.2"></td></tr>
-        <tr><td>2.3</td><td>Tiempo mín 30 min</td><td><select name="st_2.3"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_2.3"></td></tr>
-
-        <tr class="category-row"><td colspan="4">3.0 RESULTADOS FINALES</td></tr>
-        <tr><td>3.1</td><td>Ausencia filtraciones</td><td><select name="st_3.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.1"></td></tr>
-        <tr><td>3.2</td><td>Descenso tolerancia</td><td><select name="st_3.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_3.2"></td></tr>
-    </tbody>
-</table>
-
-        <div class="calculo-box" style="background: #d4edda;">
-            <strong>RESULTADOS</strong>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <div><label>Lect. Inicial (mm):</label><input type="number" id="l_ini" name="l_ini" oninput="validarResultado()"></div>
-                <div><label>Lect. Final (mm):</label><input type="number" id="l_fin" name="l_fin" oninput="validarResultado()"></div>
-                <div><label>VEREDICTO:</label><div id="veredicto" style="font-weight: bold;">---</div></div>
-            </div>
-        </div>
-
-        <div style="margin-top: 20px;">
-            <label><strong>FOTOS:</strong></label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px;">
-                <input type="file" id="f_antes" name="foto_antes" accept="image/*">
-                <input type="file" id="f_durante" name="foto_durante" accept="image/*">
-                <input type="file" id="f_despues" name="foto_despues" accept="image/*">
-            </div>
-        </div>
-
         <div class="btn-group">
-            <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
-            <button type="submit" class="btn-save">🚀 GUARDAR NUBE</button>
-            <button type="button" class="btn-pdf" onclick="generarPDF()">📄 GENERAR PDF</button>
+            <button type="submit" class="btn-save">🚀 GUARDAR EN MONGO</button>
+            <button type="button" class="btn-pdf" onclick="generarPDFSimilar()">📄 EXPORTAR PDF</button>
+            <button type="button" class="btn-history" onclick="consultarCorrelativo()">📂 ACTUALIZAR N°</button>
         </div>
     </form>
+    
+    <div class="container" style="margin-top: 30px;">
+        <div class="section-title">📂 HISTORIAL DE PROTOCOLOS REGISTRADOS</div>
+        <div style="overflow-x: auto;">
+            <table class="table-section" style="font-size: 10px;">
+                <thead>
+                    <tr>
+                        <th>NRO PROTOCOLO</th>
+                        <th>FECHA</th>
+                        <th>ELEMENTO</th>
+                        <th>f'c</th>
+                        <th>SLUMP</th>
+                        <th>ESTADO GENERAL</th>
+                        <th>ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaHistorial"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>
-    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/estanquidad';
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
-    function calcularVp() {
-        const d = parseFloat(document.getElementById('diam_d').value) || 0;
-        const h = parseFloat(document.getElementById('alt_h').value) || 0;
-        document.getElementById('vp_resultado').value = (0.001 * d * h * 1).toFixed(4);
+    async function consultarCorrelativo() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                const correlativo = (data.length + 1).toString().padStart(3, '0');  
+                const anioActual = new Date().getFullYear();
+                document.getElementById('nro_prot').value = `CONC-${correlativo}-${anioActual}`;
+            }
+        } catch (e) { console.error("Error al obtener correlativo:", e); }
     }
 
-    function validarResultado() {
-        const diff = Math.abs(document.getElementById('l_ini').value - document.getElementById('l_fin').value);
-        const v = document.getElementById('veredicto');
-        if (diff <= 5) { v.innerText = "APROBADO"; v.className = "res-aprobado"; }
-        else { v.innerText = "RECHAZADO"; v.className = "res-rechazado"; }
-    }
-
-    document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-
-    // Agregamos manualmente el veredicto porque no es un input, es un div
-    formData.append('veredicto', document.getElementById('veredicto').innerText);
-
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: formData // Enviamos FormData directamente para que Cloudinary reciba las fotos
-        });
-
-        if (response.ok) {
-            alert("✅ Protocolo de Estanquidad guardado con éxito.");
-            window.location.href = 'index.html';
-        } else {
-            const errorData = await response.json();
-            alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
-        }
-    } catch (error) {
-        console.error("Error:", error);
-        alert("No se pudo conectar con el servidor.");
-    }
-});
-
-    function leerImagen(input) {
-        return new Promise(res => {
-            const file = input.files[0];
-            if (!file) return res(null);
-            const reader = new FileReader();
-            reader.onload = (e) => res(e.target.result);
-            reader.readAsDataURL(file);
-        });
-    }
-
-    async function generarPDF() {
+    async function generarPDFSimilar() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-
-        // CABECERA
+        
         doc.setFontSize(8);
         doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
-        doc.setFontSize(12); doc.setTextColor(0, 74, 153);
-        doc.text("PROTOCOLO DE PRUEBA DE ESTANQUIDAD", 105, 20, {align:"center"});
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
+        doc.setFontSize(9);
+        doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
 
-        // DATOS
-        doc.setFontSize(9); doc.setTextColor(0);
-        doc.text(`PROTOCOLO: ${document.getElementById('nro_prot').value}`, 15, 30);
-        doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0]?.value || "S/N"}`, 15, 35);
-        
-        // TABLA
         const rows = [];
-        document.querySelectorAll('.table-section tbody tr').forEach(tr => {
-            const cells = tr.querySelectorAll('td');
-            if (cells.length > 1) rows.push([cells[0].innerText, cells[1].innerText, tr.querySelector('select')?.value || "", tr.querySelector('input')?.value || ""]);
+        document.querySelectorAll('#puntosControl tr').forEach(tr => {
+            if (tr.classList.contains('category-row')) {
+                rows.push([{ content: tr.innerText, colSpan: 5, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
+            } else {
+                const cells = tr.querySelectorAll('td');
+                const estado = tr.querySelector('select').value;
+                const obs = tr.querySelector('input') ? tr.querySelector('input').value : ""; 
+                rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado, obs]);
+            }
         });
 
         doc.autoTable({
-            startY: 45,
-            head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBS']],
+            startY: 30,
+            theme: 'grid',
+            head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
             body: rows,
-            theme: 'grid'
+            styles: { fontSize: 7 },
+            columnStyles: {
+                0: { cellWidth: 10 },
+                1: { cellWidth: 55 },
+                2: { cellWidth: 40 },
+                3: { cellWidth: 15 },
+                4: { cellWidth: 'auto' }
+            },
+            didDrawPage: function (data) {
+                // --- AJUSTE DE FIRMAS (3 COLUMNAS FIJAS) ---
+                let finalY = data.cursor.y + 20;
+                if (finalY > 265) { doc.addPage(); finalY = 30; }
+                
+                const anchoFirma = 50; 
+                const esp = 12; 
+                const inicioX = 15;
+
+                doc.setFontSize(7);
+                doc.setFont("helvetica", "bold");
+                
+                // Columna 1: Calidad
+                doc.line(inicioX, finalY, inicioX + anchoFirma, finalY);
+                doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 5, { align: "center" });
+
+                // Columna 2: Residente
+                const xRes = inicioX + anchoFirma + esp;
+                doc.line(xRes, finalY, xRes + anchoFirma, finalY);
+                doc.text("RESIDENTE DE OBRA", xRes + (anchoFirma / 2), finalY + 5, { align: "center" });
+
+                // Columna 3: Supervisión
+                const xSup = xRes + anchoFirma + esp;
+                doc.line(xSup, finalY, xSup + anchoFirma, finalY);
+                doc.text("SUPERVISIÓN DE OBRA", xSup + (anchoFirma / 2), finalY + 5, { align: "center" });
+            }
         });
 
-        // RESULTADOS Y FIRMAS
-        let finalY = doc.lastAutoTable.finalY + 10;
-        doc.text(`VEREDICTO: ${document.getElementById('veredicto').innerText}`, 15, finalY);
+        // Registro Fotográfico
+        const fotosInputs = document.querySelectorAll('input[type="file"]');
+        let fotosCargadas = [];
+        for (let input of fotosInputs) {
+            if (input.files && input.files[0]) {
+                const data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => resolve({ 
+                            src: e.target.result, w: img.width, h: img.height, 
+                            label: input.parentElement.querySelector('label').innerText 
+                        });
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                });
+                fotosCargadas.push(data);
+            }
+        }
+
+        if (fotosCargadas.length > 0) {
+            doc.addPage();
+            doc.setFontSize(10);
+            doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
+            const maxW = 85; const maxH = 60; const gapX = 10; const gapY = 25;
+            fotosCargadas.forEach((foto, i) => {
+                const col = i % 2; const row = Math.floor(i / 2);
+                let finalW = maxW; let finalH = (foto.h * maxW) / foto.w;
+                if (finalH > maxH) { finalH = maxH; finalW = (foto.w * maxH) / foto.h; }
+                const x = 15 + (col * (maxW + gapX)) + (maxW - finalW) / 2;
+                const y = 25 + (row * (maxH + gapY)) + (maxH - finalH) / 2;
+                doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
+                doc.setFontSize(8);
+                doc.text(foto.label, 15 + (col * (maxW + gapX)) + 42, y + finalH + 5, {align: "center"});
+            });
+        }
+        doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
+    }
+
+    document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('.btn-save');
+        const originalText = btn.innerText;
+        btn.innerText = "ENVIANDO..."; btn.disabled = true;
         
-        finalY += 30;
-        doc.line(15, finalY, 60, finalY); doc.text("CALIDAD", 37, finalY + 5, {align:"center"});
-        doc.line(140, finalY, 185, finalY); doc.text("SUPERVISIÓN", 162, finalY + 5, {align:"center"});
+        const formData = new FormData(e.target);
+        const finalFormData = new FormData();
+        
+        finalFormData.append("nro_protocolo", document.getElementById('nro_prot').value);
+        finalFormData.append("fecha", formData.get('fecha'));
+        finalFormData.append("elemento", formData.get('elemento'));
+        finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
+        
+        const mapping = {
+            "limpieza_niveles": "st_1.1", "estanqueidad_encofrado": "st_1.2", "aplicacion_desmoldante": "st_1.3",
+            "agregados_limpios": "st_1.4", "cemento_vigente": "st_1.5", "dosificacion_mezcla": "st_2.1",
+            "tiempo_mezclado": "st_2.2", "relacion_agua_cemento": "st_2.3", "ensayo_slump": "st_3.1",
+            "temperatura_concreto": "st_3.2", "toma_testigos": "st_3.3", "altura_caida": "st_4.1",
+            "compactacion_vibrado": "st_4.2", "acabado_superficial": "st_4.3", "inicio_curado": "st_5.1", "metodo_curado": "st_5.2"
+        };
+        for(let key in mapping) { finalFormData.append(key, formData.get(mapping[key])); }
+        
+        for(let i=1; i<=5; i++){
+            for(let j=1; j<=5; j++){
+                let val = formData.get(`obs_${i}.${j}`);
+                if(val) finalFormData.append(`obs_${i}_${j}`, val);
+            }
+        }
 
-        // FOTOS EN PÁGINA NUEVA
-        // --- SECCIÓN DE FOTOS OPTIMIZADA (GRANDE Y EN UNA HOJA) ---
+        const fileInputs = e.target.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => { if (input.files[0]) finalFormData.append(input.name, input.files[0]); });
 
-// --- SECCIÓN DE FOTOS CORREGIDA PARA NO PEGAR AL BORDE ---
-const img1 = await leerImagen(document.getElementById('f_antes'));
-const img2 = await leerImagen(document.getElementById('f_durante'));
-const img3 = await leerImagen(document.getElementById('f_despues'));
+        try {
+            const response = await fetch(API_URL, { method: 'POST', body: finalFormData });
+            if (response.ok) { alert("✅ Guardado en MongoDB"); consultarCorrelativo(); cargarHistorial(); }
+            else { alert("❌ Error al guardar"); }
+        } catch (error) { alert("❌ Error de conexión"); } 
+        finally { btn.innerText = originalText; btn.disabled = false; }
+    });
 
-if (img1 || img2 || img3) {
-    doc.addPage();
-    doc.setFontSize(12);
-    doc.setTextColor(0, 74, 153);
-    doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
-
-    // Configuramos un tamaño que respete los márgenes (A4 = 210x297mm)
-    const ancho = 150; 
-    const alto = 75; // Reducido de 85 a 75 para evitar el borde inferior
-    const xCentrado = (210 - ancho) / 2; // Calcula el margen para centrar horizontalmente
-
-    if (img1) { 
-        doc.addImage(img1, 'JPEG', xCentrado, 25, ancho, alto); 
-        doc.setFontSize(10);
-        doc.setTextColor(0);
-        doc.text("FOTO 1: ANTES", xCentrado, 25 + alto + 5); 
+    async function cargarHistorial() {
+        const tabla = document.getElementById('tablaHistorial');
+        try {
+            const res = await fetch(API_URL);
+            const protocolos = await res.json();
+            tabla.innerHTML = ""; 
+            protocolos.forEach(p => {
+                const tieneNC = Object.values(p.controles).includes("NC");
+                const colorEstado = tieneNC ? "#dc3545" : "#28a745";
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${p.nro_protocolo}</td>
+                    <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                    <td>${p.datos_tecnicos.elemento}</td>
+                    <td>${p.datos_tecnicos.resistencia_fc}</td>
+                    <td>${p.controles.ensayo_slump || 'N/A'}</td>
+                    <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
+                        ${tieneNC ? "OBSERVADO" : "LIBERADO"}
+                    </td>
+                    <td><button onclick="verDetalles('${p._id}')" style="padding: 5px; background: #007bff; font-size: 9px;">👁️</button></td>
+                `;
+                tabla.appendChild(fila);
+            });
+        } catch (e) { console.error(e); }
     }
-    
-    if (img2) { 
-        // Posición Y ajustada para dejar aire
-        const y2 = img1 ? 110 : 25; 
-        doc.addImage(img2, 'JPEG', xCentrado, y2, ancho, alto); 
-        doc.text("FOTO 2: DURANTE", xCentrado, y2 + alto + 5); 
-    }
-    
-    if (img3) { 
-        // Posición Y final en 195mm. Deja casi 3cm libres al final de la hoja.
-        let y3 = 195;
-        if (!img1 && !img2) y3 = 25;
-        else if (!img1 || !img2) y3 = 110;
 
-        doc.addImage(img3, 'JPEG', xCentrado, y3, ancho, alto); 
-        doc.text("FOTO 3: DESPUÉS", xCentrado, y3 + alto + 5); 
+    async function verDetalles(id) {
+        try {
+            const res = await fetch(API_URL);
+            const protocolos = await res.json();
+            const p = protocolos.find(item => item._id === id);
+            if (p && p.fotos) {
+                const enlaces = Object.entries(p.fotos).map(([key, url]) => `<a href="${url}" target="_blank">${key}</a>`).join("<br>");
+                const ventana = window.open("", "_blank", "width=400,height=400");
+                ventana.document.write(`<h3>Fotos ${p.nro_protocolo}</h3>${enlaces}`);
+            } else { alert("Sin fotos"); }
+        } catch (e) { alert("Error"); }
     }
-}
 
-        // Definimos un nombre seguro por si el campo está vacío
-const nombreBuzon = document.getElementsByName('id_buzon')[0]?.value || "SIN-ID";
-doc.save(`Estanquidad_${nombreBuzon}.pdf`);
-    }
+    consultarCorrelativo();
+    cargarHistorial();
 </script>
 </body>
 </html>
