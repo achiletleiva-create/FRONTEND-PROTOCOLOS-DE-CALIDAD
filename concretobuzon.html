@@ -104,44 +104,50 @@
             <button type="button" class="btn-history" onclick="consultarCorrelativo()">📂 ACTUALIZAR N°</button>
         </div>
     </form>
-    
     <div class="container" style="margin-top: 30px;">
-        <div class="section-title">📂 HISTORIAL DE PROTOCOLOS REGISTRADOS</div>
-        <div style="overflow-x: auto;">
-            <table class="table-section" style="font-size: 10px;">
-                <thead>
-                    <tr>
-                        <th>NRO PROTOCOLO</th>
-                        <th>FECHA</th>
-                        <th>ELEMENTO</th>
-                        <th>f'c</th>
-                        <th>SLUMP</th>
-                        <th>ESTADO GENERAL</th>
-                        <th>ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaHistorial"></tbody>
-            </table>
-        </div>
+    <div class="section-title">📂 HISTORIAL DE PROTOCOLOS REGISTRADOS</div>
+    <div style="overflow-x: auto;">
+        <table class="table-section" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <th>NRO PROTOCOLO</th>
+                    <th>FECHA</th>
+                    <th>ELEMENTO</th>
+                    <th>f'c</th>
+                    <th>SLUMP</th>
+                    <th>ESTADO GENERAL</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody id="tablaHistorial">
+                </tbody>
+        </table>
     </div>
+</div>
 </div>
 
 <script>
+    // Configuración Inicial
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
+    // 1. Consultar correlativo
     async function consultarCorrelativo() {
         try {
             const res = await fetch(API_URL);
             const data = await res.json();
             if (Array.isArray(data)) {
-                const correlativo = (data.length + 1).toString().padStart(3, '0');  
+                // Cambia esta línea dentro de consultarCorrelativo:
+                  const correlativo = (data.length + 1).toString().padStart(3, '0');  
                 const anioActual = new Date().getFullYear();
-                document.getElementById('nro_prot').value = `CONC-${correlativo}-${anioActual}`;
+                    document.getElementById('nro_prot').value = `CONC-${correlativo}-${anioActual}`;
             }
-        } catch (e) { console.error("Error al obtener correlativo:", e); }
+        } catch (e) { 
+            console.error("Error al obtener correlativo:", e); 
+        }
     }
 
+    // 2. Función PDF
     async function generarPDFSimilar() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -149,9 +155,7 @@
         doc.setFontSize(8);
         doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
         doc.setFontSize(10);
-        doc.setFont("helvetica", "bold");
         doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
-        doc.setFontSize(9);
         doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
 
         const rows = [];
@@ -159,55 +163,73 @@
             if (tr.classList.contains('category-row')) {
                 rows.push([{ content: tr.innerText, colSpan: 5, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
             } else {
-                const cells = tr.querySelectorAll('td');
-                const estado = tr.querySelector('select').value;
-                const obs = tr.querySelector('input') ? tr.querySelector('input').value : ""; 
-                rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado, obs]);
+                // Busca esta parte en tu función de PDF y actualízala:
+                    const cells = tr.querySelectorAll('td');
+                    const estado = tr.querySelector('select').value;
+                    const obs = tr.querySelector('input') ? tr.querySelector('input').value : ""; // <--- Captura la observación
+                    rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado, obs]); // <--- Agrégala al array
             }
         });
 
-        doc.autoTable({
-            startY: 30,
+       doc.autoTable({
+    startY: 30,
+    theme: 'grid',
+    // Se añade 'OBSERVACIONES' al head
+    head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
+    body: rows,
+    styles: { fontSize: 7 },
+    // Ajustamos anchos para que las observaciones tengan espacio
+    columnStyles: {
+        0: { cellWidth: 10 }, // ITEM
+        1: { cellWidth: 55 }, // ACTIVIDAD
+        2: { cellWidth: 40 }, // NORMA
+        3: { cellWidth: 15 }, // ESTADO
+        4: { cellWidth: 'auto' } // OBSERVACIONES
+    },
+    doc.autoTable({
+            startY: 45, // Ajustado para dar espacio al encabezado
             theme: 'grid',
-            head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
+            head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBSERVACIONES']],
             body: rows,
-            styles: { fontSize: 7 },
+            styles: { fontSize: 8 },
             columnStyles: {
-                0: { cellWidth: 10 },
-                1: { cellWidth: 55 },
-                2: { cellWidth: 40 },
-                3: { cellWidth: 15 },
-                4: { cellWidth: 'auto' }
+                0: { cellWidth: 15 },
+                1: { cellWidth: 80 },
+                2: { cellWidth: 20 },
+                3: { cellWidth: 'auto' }
             },
             didDrawPage: function (data) {
-                // --- AJUSTE DE FIRMAS (3 COLUMNAS FIJAS) ---
-                let finalY = data.cursor.y + 20;
-                if (finalY > 265) { doc.addPage(); finalY = 30; }
+                // Calculamos el final de la tabla para situar las firmas
+                let finalY = data.cursor.y + 15;
+                
+                // Si las firmas no caben, las pasamos a la siguiente hoja
+                if (finalY > 260) { 
+                    doc.addPage(); 
+                    finalY = 20; 
+                }
                 
                 const anchoFirma = 50; 
                 const esp = 12; 
                 const inicioX = 15;
-
-                doc.setFontSize(7);
+                
+                doc.setFontSize(8);
                 doc.setFont("helvetica", "bold");
                 
-                // Columna 1: Calidad
-                doc.line(inicioX, finalY, inicioX + anchoFirma, finalY);
-                doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 5, { align: "center" });
-
-                // Columna 2: Residente
-                const xRes = inicioX + anchoFirma + esp;
-                doc.line(xRes, finalY, xRes + anchoFirma, finalY);
-                doc.text("RESIDENTE DE OBRA", xRes + (anchoFirma / 2), finalY + 5, { align: "center" });
-
-                // Columna 3: Supervisión
-                const xSup = xRes + anchoFirma + esp;
-                doc.line(xSup, finalY, xSup + anchoFirma, finalY);
-                doc.text("SUPERVISIÓN DE OBRA", xSup + (anchoFirma / 2), finalY + 5, { align: "center" });
+                // --- DIBUJO DE LAS 3 LÍNEAS DE FIRMA ---
+                // 1. Responsable Calidad
+                doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15);
+                // 2. Residente de Obra
+                doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2 * anchoFirma + esp, finalY + 15);
+                // 3. Supervisión de Obra
+                doc.line(inicioX + 2 * anchoFirma + 2 * esp, finalY + 15, inicioX + 3 * anchoFirma + 2 * esp, finalY + 15);
+                
+                // --- TEXTOS BAJO LAS LÍNEAS ---
+                doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 20, { align: "center" });
+                doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma / 2), finalY + 20, { align: "center" });
+                doc.text("SUPERVISIÓN DE OBRA", inicioX + 2 * anchoFirma + 2 * esp + (anchoFirma / 2), finalY + 20, { align: "center" });
             }
         });
 
-        // Registro Fotográfico
         const fotosInputs = document.querySelectorAll('input[type="file"]');
         let fotosCargadas = [];
         for (let input of fotosInputs) {
@@ -217,7 +239,9 @@
                     reader.onload = (e) => {
                         const img = new Image();
                         img.onload = () => resolve({ 
-                            src: e.target.result, w: img.width, h: img.height, 
+                            src: e.target.result, 
+                            w: img.width, 
+                            h: img.height, 
                             label: input.parentElement.querySelector('label').innerText 
                         });
                         img.src = e.target.result;
@@ -230,7 +254,6 @@
 
         if (fotosCargadas.length > 0) {
             doc.addPage();
-            doc.setFontSize(10);
             doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
             const maxW = 85; const maxH = 60; const gapX = 10; const gapY = 25;
             fotosCargadas.forEach((foto, i) => {
@@ -240,95 +263,155 @@
                 const x = 15 + (col * (maxW + gapX)) + (maxW - finalW) / 2;
                 const y = 25 + (row * (maxH + gapY)) + (maxH - finalH) / 2;
                 doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
-                doc.setFontSize(8);
                 doc.text(foto.label, 15 + (col * (maxW + gapX)) + 42, y + finalH + 5, {align: "center"});
             });
         }
         doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
     }
 
+    // 3. Envío de datos a MongoDB
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
         const originalText = btn.innerText;
-        btn.innerText = "ENVIANDO..."; btn.disabled = true;
+        btn.innerText = "ENVIANDO DATOS...";
+        btn.disabled = true;
         
         const formData = new FormData(e.target);
         const finalFormData = new FormData();
         
+        // Datos principales (Usando ID para nro_prot por seguridad)
         finalFormData.append("nro_protocolo", document.getElementById('nro_prot').value);
         finalFormData.append("fecha", formData.get('fecha'));
         finalFormData.append("elemento", formData.get('elemento'));
         finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
         
-        const mapping = {
-            "limpieza_niveles": "st_1.1", "estanqueidad_encofrado": "st_1.2", "aplicacion_desmoldante": "st_1.3",
-            "agregados_limpios": "st_1.4", "cemento_vigente": "st_1.5", "dosificacion_mezcla": "st_2.1",
-            "tiempo_mezclado": "st_2.2", "relacion_agua_cemento": "st_2.3", "ensayo_slump": "st_3.1",
-            "temperatura_concreto": "st_3.2", "toma_testigos": "st_3.3", "altura_caida": "st_4.1",
-            "compactacion_vibrado": "st_4.2", "acabado_superficial": "st_4.3", "inicio_curado": "st_5.1", "metodo_curado": "st_5.2"
-        };
-        for(let key in mapping) { finalFormData.append(key, formData.get(mapping[key])); }
-        
-        for(let i=1; i<=5; i++){
-            for(let j=1; j<=5; j++){
-                let val = formData.get(`obs_${i}.${j}`);
-                if(val) finalFormData.append(`obs_${i}_${j}`, val);
-            }
-        }
+        // Mapeo de puntos de control
+        finalFormData.append("limpieza_niveles", formData.get('st_1.1'));
+        finalFormData.append("estanqueidad_encofrado", formData.get('st_1.2'));
+        finalFormData.append("aplicacion_desmoldante", formData.get('st_1.3'));
+        finalFormData.append("agregados_limpios", formData.get('st_1.4'));
+        finalFormData.append("cemento_vigente", formData.get('st_1.5'));
+        finalFormData.append("dosificacion_mezcla", formData.get('st_2.1'));
+        finalFormData.append("tiempo_mezclado", formData.get('st_2.2'));
+        finalFormData.append("relacion_agua_cemento", formData.get('st_2.3'));
+        finalFormData.append("ensayo_slump", formData.get('st_3.1'));
+        finalFormData.append("temperatura_concreto", formData.get('st_3.2'));
+        finalFormData.append("toma_testigos", formData.get('st_3.3'));
+        finalFormData.append("probetas_cantidad", 2);
+        finalFormData.append("altura_caida", formData.get('st_4.1'));
+        finalFormData.append("compactacion_vibrado", formData.get('st_4.2'));
+        finalFormData.append("acabado_superficial", formData.get('st_4.3'));
+        finalFormData.append("inicio_curado", formData.get('st_5.1'));
+        finalFormData.append("metodo_curado", formData.get('st_5.2'));
+        // --- AGREGA ESTO EN LA SECCIÓN DE ENVÍO (Submit) ---
+finalFormData.append("obs_limpieza", formData.get('obs_1.1'));
+finalFormData.append("obs_estanqueidad", formData.get('obs_1.2'));
+finalFormData.append("obs_desmoldante", formData.get('obs_1.3'));
+finalFormData.append("obs_agregados", formData.get('obs_1.4'));
+finalFormData.append("obs_cemento", formData.get('obs_1.5'));
+finalFormData.append("obs_dosificacion", formData.get('obs_2.1'));
+finalFormData.append("obs_tiempo_mezcla", formData.get('obs_2.2'));
+finalFormData.append("obs_agua_cemento", formData.get('obs_2.3'));
+finalFormData.append("obs_slump", formData.get('obs_3.1'));
+finalFormData.append("obs_temperatura", formData.get('obs_3.2'));
+finalFormData.append("obs_testigos", formData.get('obs_3.3'));
+finalFormData.append("obs_caida", formData.get('obs_4.1'));
+finalFormData.append("obs_vibrado", formData.get('obs_4.2'));
+finalFormData.append("obs_acabado", formData.get('obs_4.3'));
+finalFormData.append("obs_inicio_curado", formData.get('obs_5.1'));
+finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
 
+        // Adjuntar archivos
         const fileInputs = e.target.querySelectorAll('input[type="file"]');
-        fileInputs.forEach(input => { if (input.files[0]) finalFormData.append(input.name, input.files[0]); });
+        fileInputs.forEach(input => {
+            if (input.files[0]) {
+                finalFormData.append(input.name, input.files[0]);
+            }
+        });
 
         try {
-            const response = await fetch(API_URL, { method: 'POST', body: finalFormData });
-            if (response.ok) { alert("✅ Guardado en MongoDB"); consultarCorrelativo(); cargarHistorial(); }
-            else { alert("❌ Error al guardar"); }
-        } catch (error) { alert("❌ Error de conexión"); } 
-        finally { btn.innerText = originalText; btn.disabled = false; }
+            const response = await fetch(API_URL, { 
+                method: 'POST', 
+                body: finalFormData 
+            });
+            if (response.ok) {
+                alert("✅ ¡Éxito! Registrado en MongoDB.");
+                consultarCorrelativo();
+                cargarHistorial();
+            } else {
+                const err = await response.json();
+                alert("❌ Error: " + (err.message || "No se pudo guardar"));
+            }
+        } catch (error) { 
+            alert("❌ Error de conexión con el servidor."); 
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     });
 
-    async function cargarHistorial() {
-        const tabla = document.getElementById('tablaHistorial');
-        try {
-            const res = await fetch(API_URL);
-            const protocolos = await res.json();
-            tabla.innerHTML = ""; 
-            protocolos.forEach(p => {
-                const tieneNC = Object.values(p.controles).includes("NC");
-                const colorEstado = tieneNC ? "#dc3545" : "#28a745";
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
-                    <td>${p.nro_protocolo}</td>
-                    <td>${new Date(p.fecha).toLocaleDateString()}</td>
-                    <td>${p.datos_tecnicos.elemento}</td>
-                    <td>${p.datos_tecnicos.resistencia_fc}</td>
-                    <td>${p.controles.ensayo_slump || 'N/A'}</td>
-                    <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
-                        ${tieneNC ? "OBSERVADO" : "LIBERADO"}
-                    </td>
-                    <td><button onclick="verDetalles('${p._id}')" style="padding: 5px; background: #007bff; font-size: 9px;">👁️</button></td>
-                `;
-                tabla.appendChild(fila);
-            });
-        } catch (e) { console.error(e); }
-    }
-
-    async function verDetalles(id) {
-        try {
-            const res = await fetch(API_URL);
-            const protocolos = await res.json();
-            const p = protocolos.find(item => item._id === id);
-            if (p && p.fotos) {
-                const enlaces = Object.entries(p.fotos).map(([key, url]) => `<a href="${url}" target="_blank">${key}</a>`).join("<br>");
-                const ventana = window.open("", "_blank", "width=400,height=400");
-                ventana.document.write(`<h3>Fotos ${p.nro_protocolo}</h3>${enlaces}`);
-            } else { alert("Sin fotos"); }
-        } catch (e) { alert("Error"); }
-    }
-
     consultarCorrelativo();
-    cargarHistorial();
+
+    async function cargarHistorial() {
+    const tabla = document.getElementById('tablaHistorial');
+    try {
+        const res = await fetch(API_URL);
+        const protocolos = await res.json();
+        
+        tabla.innerHTML = ""; // Limpiar tabla
+
+        protocolos.forEach(p => {
+            const fila = document.createElement('tr');
+            
+            // Determinamos un color basado en si hay algún No Conforme (NC)
+            const tieneNC = Object.values(p.controles).includes("NC");
+            const colorEstado = tieneNC ? "#dc3545" : "#28a745";
+
+            fila.innerHTML = `
+                <td>${p.nro_protocolo}</td>
+                <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                <td>${p.datos_tecnicos.elemento}</td>
+                <td>${p.datos_tecnicos.resistencia_fc}</td>
+                <td>${p.controles.ensayo_slump || 'N/A'}</td>
+                <td style="color: white; background: ${colorEstado}; font-weight: bold; text-align: center;">
+                    ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
+                </td>
+                <td>
+                    <button onclick="verDetalles('${p._id}')" style="padding: 5px; background: #007bff; font-size: 9px;">👁️ VER</button>
+                </td>
+            `;
+            tabla.appendChild(fila);
+        });
+    } catch (e) {
+        console.error("Error al cargar historial:", e);
+    }
+}
+
+// Llamar a la función al cargar la página
+cargarHistorial();
+    
+    // Agrega esto al final de tu script
+async function verDetalles(id) {
+    try {
+        const res = await fetch(`${API_URL}`);
+        const protocolos = await res.json();
+        const p = protocolos.find(item => item._id === id);
+        
+        if (p && p.fotos) {
+            // Crea una lista de las URLs de las fotos existentes
+            const enlaces = Object.entries(p.fotos)
+                .map(([key, url]) => `<a href="${url}" target="_blank">${key}</a>`)
+                .join("<br>");
+            
+            // Un alert simple o puedes mejorarlo con un modal
+            const ventana = window.open("", "_blank", "width=400,height=400");
+            ventana.document.write(`<h3>Fotos del Protocolo ${p.nro_protocolo}</h3>${enlaces}`);
+        } else {
+            alert("No hay fotos registradas para este protocolo.");
+        }
+    } catch (e) {
+        alert("Error al recuperar detalles.");
+    }
+}
 </script>
-</body>
-</html>
