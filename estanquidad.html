@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocolo de Estanqueidad - Víctor Larco</title>
+    <title>Prueba de Estanqueidad - Víctor Larco</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
@@ -14,17 +14,16 @@
         .table-section { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
         .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; text-align: left; }
         .table-section th { background: #004a99; color: white; text-align: center; }
-        .category-row { background: #d1dbe5; font-weight: bold; }
-        .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; }
         button { flex: 1; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
         .btn-pdf { background: #dc3545; }
-        input, select { width: 100%; padding: 5px; border-radius: 3px; border: 1px solid #bbb; box-sizing: border-box; }
+        input { width: 100%; padding: 5px; border-radius: 3px; border: 1px solid #bbb; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL - PRUEBA DE ESTANQUEIDAD HIDRÁULICA</h1>
+    <h1>PRUEBA DE ESTANQUEIDAD HIDRÁULICA - SECTOR LIBERACIÓN SOCIAL</h1>
     
     <form id="estanqueidadForm">
         <div class="header-grid">
@@ -33,108 +32,80 @@
                 <input type="text" id="nro_prot" value="EST-001-2024">
             </div>
             <div>
-                <label><strong>FECHA DE PRUEBA:</strong></label>
-                <input type="date" id="fecha_prueba">
-            </div>
-            <div>
-                <label><strong>TRAMO (BZ A - BZ B):</strong></label>
-                <input type="text" id="elemento" placeholder="Ej. BZ-42 a BZ-43" required>
-            </div>
-            <div>
-                <label><strong>DIÁMETRO / MATERIAL:</strong></label>
-                <input type="text" id="material" placeholder="Ej. 200mm PVC-U" required>
+                <label><strong>TRAMO / ELEMENTO:</strong></label>
+                <input type="text" id="elemento" placeholder="Ej. BZ-01 a BZ-02" required>
             </div>
         </div>
 
         <table class="table-section">
             <thead>
                 <tr>
-                    <th style="width: 40px;">ITEM</th>
-                    <th>ACTIVIDADES Y PUNTOS DE CONTROL</th>
-                    <th>CRITERIO / NORMA</th>
-                    <th style="width: 80px;">ESTADO</th>
+                    <th>ITEM</th>
+                    <th>DESCRIPCIÓN DE LA VERIFICACIÓN</th>
+                    <th>ESTADO (C/NC)</th>
                     <th>OBSERVACIONES</th>
                 </tr>
             </thead>
-            <tbody id="puntosControl">
-                <tr class="category-row"><td colspan="5">1.0 PREPARACIÓN DEL TRAMO</td></tr>
-                <tr><td>1.1</td><td>Limpieza de tubería y fondos de buzón</td><td>Libre de sedimentos</td><td><select><option>C</option><option>NC</option></select></td><td><input type="text"></td></tr>
-                <tr><td>1.2</td><td>Instalación y anclaje de tapones</td><td>Hermeticidad total</td><td><select><option>C</option><option>NC</option></select></td><td><input type="text"></td></tr>
-                
-                <tr class="category-row"><td colspan="5">2.0 PROCEDIMIENTO DE PRUEBA (HIDRÁULICA)</td></tr>
-                <tr><td>2.1</td><td>Llenado de agua y tiempo de saturación</td><td>24 Horas (Saturación)</td><td><select><option>C</option><option>NC</option></select></td><td><input type="text"></td></tr>
-                <tr><td>2.2</td><td>Carga de agua sobre clave de tubo (m)</td><td>H min = 1.00 m</td><td><select><option>C</option><option>NC</option></select></td><td><input type="text"></td></tr>
-                <tr><td>2.3</td><td>Tiempo de duración de la prueba</td><td>30 Minutos</td><td><select><option>C</option><option>NC</option></select></td><td><input type="text"></td></tr>
-
-                <tr class="category-row"><td colspan="5">3.0 RESULTADOS DE EXFILTRACIÓN</td></tr>
-                <tr><td>3.1</td><td>Pérdida de agua medida (Litros)</td><td>Volumen observado</td><td><select><option>C</option><option>NC</option></select></td><td><input type="text"></td></tr>
-                <tr><td>3.2</td><td>Pérdida Máxima Admisible (Fórmula)</td><td>Norma OS.070</td><td><select><option>C</option><option>NC</option></select></td><td><input type="text"></td></tr>
+            <tbody id="puntosEstanqueidad">
+                <tr><td>1</td><td>Limpieza interna de la tubería/buzón</td><td><input type="text" class="estado" value="C"></td><td><input type="text" class="obs"></td></tr>
+                <tr><td>2</td><td>Instalación de tapones herméticos</td><td><input type="text" class="estado" value="C"></td><td><input type="text" class="obs"></td></tr>
+                <tr><td>3</td><td>Llenado de agua (Tiempo de saturación)</td><td><input type="text" class="estado" value="C"></td><td><input type="text" class="obs"></td></tr>
+                <tr><td>4</td><td>Medición de espejo de agua (Inicio)</td><td><input type="text" class="estado" value="C"></td><td><input type="text" class="obs"></td></tr>
+                <tr><td>5</td><td>Verificación de filtraciones (Exfiltración)</td><td><input type="text" class="estado" value="C"></td><td><input type="text" class="obs"></td></tr>
             </tbody>
         </table>
-        
+
         <div class="btn-group">
-            <button type="button" class="btn-pdf" onclick="generarPDFSimilar()">📄 EXPORTAR PDF CON FIRMAS</button>
+            <button type="button" class="btn-pdf" onclick="generarPDFEstanqueidad()">📄 EXPORTAR PDF CON FIRMAS</button>
         </div>
     </form>
 </div>
 
 <script>
-    document.getElementById('fecha_prueba').valueAsDate = new Date();
-
-    async function generarPDFSimilar() {
+    async function generarPDFEstanqueidad() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         
         doc.setFontSize(8);
         doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
-        doc.setFontSize(10);
-        doc.text("PROTOCOLO DE PRUEBA DE ESTANQUEIDAD HIDRÁULICA", 105, 18, {align: "center"});
-        doc.text(`NRO: ${document.getElementById('nro_prot').value} | TRAMO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
+        doc.setFontSize(11);
+        doc.text("PROTOCOLO DE PRUEBA DE ESTANQUEIDAD", 105, 18, {align: "center"});
+        doc.setFontSize(9);
+        doc.text(`NRO: ${document.getElementById('nro_prot').value} | TRAMO: ${document.getElementById('elemento').value}`, 105, 25, {align: "center"});
 
         const rows = [];
-        document.querySelectorAll('#puntosControl tr').forEach(tr => {
-            if (tr.classList.contains('category-row')) {
-                rows.push([{ content: tr.innerText, colSpan: 5, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
-            } else {
-                const cells = tr.querySelectorAll('td');
-                const estado = tr.querySelector('select').value;
-                const obs = tr.querySelector('input') ? tr.querySelector('input').value : ""; 
-                rows.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, estado, obs]); 
-            }
+        document.querySelectorAll('#puntosEstanqueidad tr').forEach(tr => {
+            const cells = tr.querySelectorAll('td');
+            const estado = tr.querySelector('.estado').value;
+            const obs = tr.querySelector('.obs').value;
+            rows.push([cells[0].innerText, cells[1].innerText, estado, obs]);
         });
 
         doc.autoTable({
-            startY: 30,
+            startY: 35,
             theme: 'grid',
-            head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
+            head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBSERVACIONES']],
             body: rows,
-            styles: { fontSize: 7 },
+            styles: { fontSize: 8 },
             columnStyles: {
-                0: { cellWidth: 10 }, 
-                1: { cellWidth: 55 }, 
-                2: { cellWidth: 40 }, 
-                3: { cellWidth: 15 }, 
-                4: { cellWidth: 'auto' } 
+                0: { cellWidth: 15 },
+                1: { cellWidth: 90 },
+                2: { cellWidth: 20 },
+                3: { cellWidth: 'auto' }
             },
             didDrawPage: function (data) {
-                // AQUÍ ESTÁN LAS 3 FIRMAS QUE FALTABAN
+                // BLOQUE DE FIRMAS IDENTICO A CONCRETO BUZON
                 let finalY = data.cursor.y + 15;
-                if (finalY > 255) { 
-                    doc.addPage(); 
-                    finalY = 20; 
-                }
-                const anchoFirma = 50; 
-                const esp = 12; 
-                const inicioX = 15;
-                doc.setFontSize(8);
-                doc.setFont("helvetica", "bold");
+                if (finalY > 260) { doc.addPage(); finalY = 20; }
+                const anchoFirma = 50; const esp = 12; const inicioX = 15;
+                doc.setFontSize(8); doc.setFont("helvetica", "bold");
                 
-                // Línea 1, 2 y 3
+                // Las 3 líneas de firma
                 doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15);
                 doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2 * anchoFirma + esp, finalY + 15);
                 doc.line(inicioX + 2 * anchoFirma + 2 * esp, finalY + 15, inicioX + 3 * anchoFirma + 2 * esp, finalY + 15);
                 
-                // Textos de firmas
+                // Los 3 cargos
                 doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 20, { align: "center" });
                 doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma / 2), finalY + 20, { align: "center" });
                 doc.text("SUPERVISIÓN DE OBRA", inicioX + 2 * anchoFirma + 2 * esp + (anchoFirma / 2), finalY + 20, { align: "center" });
