@@ -180,9 +180,9 @@
         doc.line(inicioX, finalY, inicioX + anchoF, finalY);
         doc.line(inicioX + anchoF + esp, finalY, inicioX + 2*anchoF + esp, finalY);
         doc.line(inicioX + 2*anchoF + 2*esp, finalY, inicioX + 3*anchoF + 2*esp, finalY);
-        doc.text("RESP. CALIDAD", inicioX + (anchoF/2), finalY + 4, {align:"center"});
-        doc.text("RESIDENTE", inicioX + anchoF + esp + (anchoF/2), finalY + 4, {align:"center"});
-        doc.text("SUPERVISIÓN", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
+        doc.text("ESP. CALIDAD", inicioX + (anchoF/2), finalY + 4, {align:"center"});
+        doc.text("RESIDENTE DE OBRA", inicioX + anchoF + esp + (anchoF/2), finalY + 4, {align:"center"});
+        doc.text("SUPERVISOR DE OBRA", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
 
         const img1 = await leerImagen(document.getElementById('f_antes'));
         const img2 = await leerImagen(document.getElementById('f_durante'));
