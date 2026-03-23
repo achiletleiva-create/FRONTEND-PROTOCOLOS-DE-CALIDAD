@@ -171,65 +171,32 @@
             }
         });
 
-       doc.autoTable({
+      doc.autoTable({
     startY: 30,
     theme: 'grid',
-    // Se añade 'OBSERVACIONES' al head
-    head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']], 
+    head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']],
     body: rows,
     styles: { fontSize: 7 },
-    // Ajustamos anchos para que las observaciones tengan espacio
     columnStyles: {
-        0: { cellWidth: 10 }, // ITEM
-        1: { cellWidth: 55 }, // ACTIVIDAD
-        2: { cellWidth: 40 }, // NORMA
-        3: { cellWidth: 15 }, // ESTADO
-        4: { cellWidth: 'auto' } // OBSERVACIONES
+        0: { cellWidth: 10 },
+        1: { cellWidth: 55 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 15 },
+        4: { cellWidth: 'auto' }
     },
-    doc.autoTable({
-            startY: 45, // Ajustado para dar espacio al encabezado
-            theme: 'grid',
-            head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBSERVACIONES']],
-            body: rows,
-            styles: { fontSize: 8 },
-            columnStyles: {
-                0: { cellWidth: 15 },
-                1: { cellWidth: 80 },
-                2: { cellWidth: 20 },
-                3: { cellWidth: 'auto' }
-            },
-            didDrawPage: function (data) {
-                // Calculamos el final de la tabla para situar las firmas
-                let finalY = data.cursor.y + 15;
-                
-                // Si las firmas no caben, las pasamos a la siguiente hoja
-                if (finalY > 260) { 
-                    doc.addPage(); 
-                    finalY = 20; 
-                }
-                
-                const anchoFirma = 50; 
-                const esp = 12; 
-                const inicioX = 15;
-                
-                doc.setFontSize(8);
-                doc.setFont("helvetica", "bold");
-                
-                // --- DIBUJO DE LAS 3 LÍNEAS DE FIRMA ---
-                // 1. Responsable Calidad
-                doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15);
-                // 2. Residente de Obra
-                doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2 * anchoFirma + esp, finalY + 15);
-                // 3. Supervisión de Obra
-                doc.line(inicioX + 2 * anchoFirma + 2 * esp, finalY + 15, inicioX + 3 * anchoFirma + 2 * esp, finalY + 15);
-                
-                // --- TEXTOS BAJO LAS LÍNEAS ---
-                doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 20, { align: "center" });
-                doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma / 2), finalY + 20, { align: "center" });
-                doc.text("SUPERVISIÓN DE OBRA", inicioX + 2 * anchoFirma + 2 * esp + (anchoFirma / 2), finalY + 20, { align: "center" });
-            }
-        });
-
+    didDrawPage: function (data) {
+        let finalY = data.cursor.y + 15;
+        if (finalY > 260) { doc.addPage(); finalY = 20; }
+        const anchoFirma = 50; const esp = 12; const inicioX = 15;
+        doc.setFontSize(8);
+        doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15);
+        doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2 * anchoFirma + esp, finalY + 15);
+        doc.line(inicioX + 2 * anchoFirma + 2 * esp, finalY + 15, inicioX + 3 * anchoFirma + 2 * esp, finalY + 15);
+        doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 20, { align: "center" });
+        doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma / 2), finalY + 20, { align: "center" });
+        doc.text("SUPERVISIÓN DE OBRA", inicioX + 2 * anchoFirma + 2 * esp + (anchoFirma / 2), finalY + 20, { align: "center" });
+    }
+});
         const fotosInputs = document.querySelectorAll('input[type="file"]');
         let fotosCargadas = [];
         for (let input of fotosInputs) {
