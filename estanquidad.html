@@ -24,6 +24,7 @@
         input, select { width: 100%; padding: 5px; box-sizing: border-box; }
         .res-aprobado { color: green; font-weight: bold; }
         .res-rechazado { color: red; font-weight: bold; }
+        .section-title { background: #004a99; color: white; padding: 8px; margin-top: 20px; font-weight: bold; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -33,7 +34,7 @@
     
     <form id="estanquidadForm">
         <div class="header-grid">
-            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" value="EST-001-2024" readonly></div>
+            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" value="EST-001-2025" readonly></div>
             <div><label>FECHA:</label><input type="date" id="fecha_obra" name="fecha"></div>
             <div><label>ID BUZÓN:</label><input type="text" name="id_buzon" required></div>
             <div><label>MATERIAL:</label>
@@ -96,16 +97,101 @@
     </form>
 </div>
 
+<!-- ===================== HISTORIAL ===================== -->
+<div class="container" style="margin-top: 30px;">
+    <div class="section-title">📂 HISTORIAL DE PRUEBAS DE ESTANQUIDAD</div>
+    <div style="overflow-x: auto;">
+        <table class="table-section" style="font-size: 10px;">
+            <thead>
+                <tr>
+                    <th>NRO PROTOCOLO</th>
+                    <th>FECHA</th>
+                    <th>ID BUZÓN</th>
+                    <th>MATERIAL</th>
+                    <th>Vp (L/h)</th>
+                    <th>VEREDICTO</th>
+                    <th>ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody id="tablaHistorial"></tbody>
+        </table>
+    </div>
+</div>
+
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/estanquidad';
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
+    // ── NUEVO: Correlativo dinámico desde la BD ──
+    async function consultarCorrelativo() {
+        try {
+            const res = await fetch(`${API_URL}/siguiente-correlativo`);
+            const data = await res.json();
+            document.getElementById('nro_prot').value = data.correlativo;
+        } catch (e) {
+            console.error("Error al obtener correlativo:", e);
+        }
+    }
+
+    // ── NUEVO: Cargar historial desde la BD ──
+    async function cargarHistorial() {
+        const tabla = document.getElementById('tablaHistorial');
+        try {
+            const res = await fetch(API_URL);
+            const registros = await res.json();
+            tabla.innerHTML = "";
+            registros.forEach(p => {
+                const esAprobado = p.resultados?.resultado_final === "APROBADO";
+                const colorEstado = esAprobado ? "#28a745" : "#dc3545";
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${p.nro_protocolo}</td>
+                    <td>${new Date(p.fecha).toLocaleDateString()}</td>
+                    <td>${p.datos_elemento?.id_buzon || 'S/N'}</td>
+                    <td>${p.datos_elemento?.material_tuberia || 'S/N'}</td>
+                    <td>${p.resultados?.perdida_max_permitida_vp || 'S/N'}</td>
+                    <td style="color:white; background:${colorEstado}; font-weight:bold; text-align:center;">
+                        ${p.resultados?.resultado_final || '---'}
+                    </td>
+                    <td>
+                        <button onclick="verFotos('${p._id}')" style="padding:5px; background:#007bff; font-size:9px; color:white;">👁️ FOTOS</button>
+                    </td>
+                `;
+                tabla.appendChild(fila);
+            });
+        } catch (e) {
+            console.error("Error al cargar historial:", e);
+        }
+    }
+
+    // ── NUEVO: Ver fotos de un registro ──
+    async function verFotos(id) {
+        try {
+            const res = await fetch(`${API_URL}/${id}`);
+            const p = await res.json();
+            if (p && p.fotos) {
+                const enlaces = Object.entries(p.fotos)
+                    .filter(([, url]) => url)
+                    .map(([key, url]) => `<p><a href="${url}" target="_blank">${key}</a></p>`)
+                    .join("");
+                const ventana = window.open("", "_blank", "width=400,height=300");
+                ventana.document.write(`<h3>Fotos - ${p.nro_protocolo}</h3>${enlaces || "<p>Sin fotos registradas.</p>"}`);
+            } else {
+                alert("No hay fotos para este registro.");
+            }
+        } catch (e) {
+            alert("Error al recuperar detalles.");
+        }
+    }
+
+    // ── SIN CAMBIOS: calcularVp ──
     function calcularVp() {
         const d = parseFloat(document.getElementById('diam_d').value) || 0;
         const h = parseFloat(document.getElementById('alt_h').value) || 0;
         document.getElementById('vp_resultado').value = (0.001 * d * h * 1).toFixed(4);
     }
 
+    // ── SIN CAMBIOS: validarResultado ──
     function validarResultado() {
         const diff = Math.abs(document.getElementById('l_ini').value - document.getElementById('l_fin').value);
         const v = document.getElementById('veredicto');
@@ -113,16 +199,21 @@
         else { v.innerText = "RECHAZADO"; v.className = "res-rechazado"; }
     }
 
+    // ── SIN CAMBIOS: submit ──
     document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
         formData.append('veredicto', document.getElementById('veredicto').innerText);
-
         try {
             const response = await fetch(API_URL, { method: 'POST', body: formData });
             if (response.ok) {
                 alert("✅ Protocolo de Estanquidad guardado con éxito.");
-                window.location.href = 'index.html';
+                consultarCorrelativo();
+                cargarHistorial();
+                e.target.reset();
+                document.getElementById('fecha_obra').valueAsDate = new Date();
+                document.getElementById('veredicto').innerText = "---";
+                document.getElementById('veredicto').className = "";
             } else {
                 const errorData = await response.json();
                 alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
@@ -132,6 +223,7 @@
         }
     });
 
+    // ── SIN CAMBIOS: leerImagen ──
     function leerImagen(input) {
         return new Promise(res => {
             const file = input.files[0];
@@ -142,37 +234,31 @@
         });
     }
 
+    // ── SIN CAMBIOS: generarPDF ──
     async function generarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
-
         doc.setFontSize(8);
         doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
         doc.setFontSize(12); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE PRUEBA DE ESTANQUIDAD", 105, 20, {align:"center"});
-
         doc.setFontSize(9); doc.setTextColor(0);
         doc.text(`PROTOCOLO: ${document.getElementById('nro_prot').value}`, 15, 30);
         doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0]?.value || "S/N"}`, 15, 35);
-        
         const rows = [];
         document.querySelectorAll('.table-section tbody tr').forEach(tr => {
             const cells = tr.querySelectorAll('td');
             if (cells.length > 1) rows.push([cells[0].innerText, cells[1].innerText, tr.querySelector('select')?.value || "", tr.querySelector('input')?.value || ""]);
         });
-
         doc.autoTable({
             startY: 45,
             head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBS']],
             body: rows,
             theme: 'grid'
         });
-
         let finalY = doc.lastAutoTable.finalY + 10;
         doc.setFont("helvetica", "bold");
         doc.text(`VEREDICTO: ${document.getElementById('veredicto').innerText}`, 15, finalY);
-        
-        // --- BLOQUE DE LAS 3 FIRMAS CORREGIDO ---
         finalY += 25;
         if (finalY > 270) { doc.addPage(); finalY = 30; }
         const anchoF = 50; const esp = 12; const inicioX = 15;
@@ -183,11 +269,9 @@
         doc.text("ESP. CALIDAD", inicioX + (anchoF/2), finalY + 4, {align:"center"});
         doc.text("RESIDENTE DE OBRA", inicioX + anchoF + esp + (anchoF/2), finalY + 4, {align:"center"});
         doc.text("SUPERVISOR DE OBRA", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
-
         const img1 = await leerImagen(document.getElementById('f_antes'));
         const img2 = await leerImagen(document.getElementById('f_durante'));
         const img3 = await leerImagen(document.getElementById('f_despues'));
-
         if (img1 || img2 || img3) {
             doc.addPage();
             doc.setFontSize(12); doc.setTextColor(0, 74, 153);
@@ -197,9 +281,12 @@
             if (img2) { const y2 = img1 ? 110 : 25; doc.addImage(img2, 'JPEG', xC, y2, ancho, alto); doc.text("FOTO 2: DURANTE", xC, y2 + alto + 5); }
             if (img3) { let y3 = 195; if (!img1 && !img2) y3 = 25; else if (!img1 || !img2) y3 = 110; doc.addImage(img3, 'JPEG', xC, y3, ancho, alto); doc.text("FOTO 3: DESPUÉS", xC, y3 + alto + 5); }
         }
-
         doc.save(`Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`);
     }
+
+    // ── Inicializar al cargar la página ──
+    consultarCorrelativo();
+    cargarHistorial();
 </script>
 </body>
 </html>
