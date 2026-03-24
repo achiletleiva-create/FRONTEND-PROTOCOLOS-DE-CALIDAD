@@ -19,12 +19,26 @@
         .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
         button { flex: 1; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
         .btn-save { background: #28a745; }
-        .btn-pdf { background: #dc3545; }
         .btn-back { background: #6c757d; }
         input, select { width: 100%; padding: 5px; box-sizing: border-box; }
         .res-aprobado { color: green; font-weight: bold; }
         .res-rechazado { color: red; font-weight: bold; }
         .section-title { background: #004a99; color: white; padding: 8px; margin-top: 20px; font-weight: bold; border-radius: 4px; }
+        .btn-pdf-link {
+            display: inline-block;
+            padding: 5px 8px;
+            background: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 9px;
+            cursor: pointer;
+        }
+        .btn-pdf-link.disabled {
+            background: #aaa;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -55,7 +69,7 @@
         </div>
 
         <table class="table-section">
-            <thead><tr><th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th></tr></thead>
+            <thead>汽<th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th> </thead>
             <tbody>
                 <tr class="category-row"><td colspan="4">1.0 PREPARACIÓN</td></tr>
                 <tr><td>1.1</td><td>Limpieza interior</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
@@ -92,7 +106,6 @@
         <div class="btn-group">
             <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
             <button type="submit" class="btn-save">🚀 GUARDAR NUBE</button>
-            <button type="button" class="btn-pdf" onclick="generarPDF()">📄 GENERAR PDF</button>
         </div>
     </form>
 </div>
@@ -103,15 +116,7 @@
     <div style="overflow-x: auto;">
         <table class="table-section" style="font-size: 10px;">
             <thead>
-                <tr>
-                    <th>NRO PROTOCOLO</th>
-                    <th>FECHA</th>
-                    <th>ID BUZÓN</th>
-                    <th>MATERIAL</th>
-                    <th>Vp (L/h)</th>
-                    <th>VEREDICTO</th>
-                    <th>ACCIONES</th>
-                </tr>
+                汽<th>NRO PROTOCOLO</th><th>FECHA</th><th>ID BUZÓN</th><th>MATERIAL</th><th>Vp (L/h)</th><th>VEREDICTO</th><th>ACCIONES</th>
             </thead>
             <tbody id="tablaHistorial"></tbody>
         </table>
@@ -120,9 +125,10 @@
 
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/estanquidad';
+    let ultimoIdGuardado = null;
+
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
-    // ── NUEVO: Correlativo dinámico desde la BD ──
     async function consultarCorrelativo() {
         try {
             const res = await fetch(`${API_URL}/siguiente-correlativo`);
@@ -133,7 +139,6 @@
         }
     }
 
-    // ── NUEVO: Cargar historial desde la BD ──
     async function cargarHistorial() {
         const tabla = document.getElementById('tablaHistorial');
         try {
@@ -143,6 +148,9 @@
             registros.forEach(p => {
                 const esAprobado = p.resultados?.resultado_final === "APROBADO";
                 const colorEstado = esAprobado ? "#28a745" : "#dc3545";
+                const btnPdf = p.pdf_url
+                    ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>`
+                    : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td>${p.nro_protocolo}</td>
@@ -153,9 +161,7 @@
                     <td style="color:white; background:${colorEstado}; font-weight:bold; text-align:center;">
                         ${p.resultados?.resultado_final || '---'}
                     </td>
-                    <td>
-                        <button onclick="verFotos('${p._id}')" style="padding:5px; background:#007bff; font-size:9px; color:white;">👁️ FOTOS</button>
-                    </td>
+                    <td>${btnPdf}</td>
                 `;
                 tabla.appendChild(fila);
             });
@@ -164,66 +170,21 @@
         }
     }
 
-    // ── NUEVO: Ver fotos de un registro ──
-    async function verFotos(id) {
-        try {
-            const res = await fetch(`${API_URL}/${id}`);
-            const p = await res.json();
-            if (p && p.fotos) {
-                const enlaces = Object.entries(p.fotos)
-                    .filter(([, url]) => url)
-                    .map(([key, url]) => `<p><a href="${url}" target="_blank">${key}</a></p>`)
-                    .join("");
-                const ventana = window.open("", "_blank", "width=400,height=300");
-                ventana.document.write(`<h3>Fotos - ${p.nro_protocolo}</h3>${enlaces || "<p>Sin fotos registradas.</p>"}`);
-            } else {
-                alert("No hay fotos para este registro.");
-            }
-        } catch (e) {
-            alert("Error al recuperar detalles.");
-        }
-    }
-
-    // ── SIN CAMBIOS: calcularVp ──
     function calcularVp() {
         const d = parseFloat(document.getElementById('diam_d').value) || 0;
         const h = parseFloat(document.getElementById('alt_h').value) || 0;
         document.getElementById('vp_resultado').value = (0.001 * d * h * 1).toFixed(4);
     }
 
-    // ── SIN CAMBIOS: validarResultado ──
     function validarResultado() {
-        const diff = Math.abs(document.getElementById('l_ini').value - document.getElementById('l_fin').value);
+        const ini = parseFloat(document.getElementById('l_ini').value) || 0;
+        const fin = parseFloat(document.getElementById('l_fin').value) || 0;
+        const diff = Math.abs(ini - fin);
         const v = document.getElementById('veredicto');
         if (diff <= 5) { v.innerText = "APROBADO"; v.className = "res-aprobado"; }
         else { v.innerText = "RECHAZADO"; v.className = "res-rechazado"; }
     }
 
-    // ── SIN CAMBIOS: submit ──
-    document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        formData.append('veredicto', document.getElementById('veredicto').innerText);
-        try {
-            const response = await fetch(API_URL, { method: 'POST', body: formData });
-            if (response.ok) {
-                alert("✅ Protocolo de Estanquidad guardado con éxito.");
-                consultarCorrelativo();
-                cargarHistorial();
-                e.target.reset();
-                document.getElementById('fecha_obra').valueAsDate = new Date();
-                document.getElementById('veredicto').innerText = "---";
-                document.getElementById('veredicto').className = "";
-            } else {
-                const errorData = await response.json();
-                alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
-            }
-        } catch (error) {
-            alert("No se pudo conectar con el servidor.");
-        }
-    });
-
-    // ── SIN CAMBIOS: leerImagen ──
     function leerImagen(input) {
         return new Promise(res => {
             const file = input.files[0];
@@ -234,8 +195,7 @@
         });
     }
 
-    // ── SIN CAMBIOS: generarPDF ──
-    async function generarPDF() {
+    async function generarYSubirPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         doc.setFontSize(8);
@@ -281,12 +241,75 @@
             if (img2) { const y2 = img1 ? 110 : 25; doc.addImage(img2, 'JPEG', xC, y2, ancho, alto); doc.text("FOTO 2: DURANTE", xC, y2 + alto + 5); }
             if (img3) { let y3 = 195; if (!img1 && !img2) y3 = 25; else if (!img1 || !img2) y3 = 110; doc.addImage(img3, 'JPEG', xC, y3, ancho, alto); doc.text("FOTO 3: DESPUÉS", xC, y3 + alto + 5); }
         }
-        doc.save(`Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`);
+        const nombreArchivo = `Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`;
+        doc.save(nombreArchivo);
+
+        // Subir a Cloudinary si el backend soporta el endpoint y tenemos ID
+        if (ultimoIdGuardado) {
+            try {
+                const pdfBlob = doc.output('blob');
+                const pdfFormData = new FormData();
+                pdfFormData.append('pdf', pdfBlob, nombreArchivo);
+                const resPdf = await fetch(`${API_URL}/${ultimoIdGuardado}/pdf`, {
+                    method: 'PATCH',
+                    body: pdfFormData
+                });
+                if (resPdf.ok) {
+                    console.log("PDF subido a Cloudinary");
+                    cargarHistorial();
+                } else {
+                    const errorText = await resPdf.text();
+                    console.error("Error al subir PDF:", errorText);
+                }
+            } catch (err) {
+                console.error("Error al subir PDF:", err);
+            }
+        }
     }
 
-    // ── Inicializar al cargar la página ──
+    document.getElementById('estanquidadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('.btn-save');
+        const originalText = btn.innerText;
+        btn.innerText = "GUARDANDO...";
+        btn.disabled = true;
+
+        const formData = new FormData(e.target);
+        formData.append('veredicto', document.getElementById('veredicto').innerText);
+
+        try {
+            const response = await fetch(API_URL, { method: 'POST', body: formData });
+            if (response.ok) {
+                const resultado = await response.json();
+                ultimoIdGuardado = resultado.id;
+                alert("✅ Protocolo guardado. Generando PDF...");
+                await generarYSubirPDF();
+                alert("✅ PDF generado y guardado en la nube.");
+                consultarCorrelativo();
+                cargarHistorial();
+                e.target.reset();
+                document.getElementById('fecha_obra').valueAsDate = new Date();
+                document.getElementById('veredicto').innerText = "---";
+                document.getElementById('veredicto').className = "";
+                document.getElementById('diam_d').value = "1.20";
+                document.getElementById('alt_h').value = "";
+                calcularVp();
+            } else {
+                const errorData = await response.json();
+                alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
+            }
+        } catch (error) {
+            alert("No se pudo conectar con el servidor.");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+
+    // Inicialización
     consultarCorrelativo();
     cargarHistorial();
+    calcularVp();
 </script>
 </body>
 </html>
