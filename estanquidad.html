@@ -80,8 +80,8 @@
         </div>
 
         <table class="table-section">
-            <thead>汽<th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th> </thead>
-            <tbody>
+            <thead><tr><th>ITEM</th><th>VERIFICACIÓN</th><th>ESTADO</th><th>OBSERVACIONES</th></tr></thead>
+            <tbody id="tablaPuntosEstanquidad">
                 <tr class="category-row"><td colspan="4">1.0 PREPARACIÓN</td></tr>
                 <tr><td>1.1</td><td>Limpieza interior</td><td><select name="st_1.1"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.1"></td></tr>
                 <tr><td>1.2</td><td>Sellado tuberías</td><td><select name="st_1.2"><option>C</option><option>NC</option></select></td><td><input type="text" name="obs_1.2"></td></tr>
@@ -127,7 +127,7 @@
     <div style="overflow-x: auto;">
         <table class="table-section" style="font-size: 10px;">
             <thead>
-                汽<th>NRO PROTOCOLO</th><th>FECHA</th><th>ID BUZÓN</th><th>MATERIAL</th><th>Vp (L/h)</th><th>VEREDICTO</th><th>ACCIONES</th>
+                <tr><th>NRO PROTOCOLO</th><th>FECHA</th><th>ID BUZÓN</th><th>MATERIAL</th><th>Vp (L/h)</th><th>VEREDICTO</th><th>ACCIONES</th></tr>
             </thead>
             <tbody id="tablaHistorial"></tbody>
         </table>
@@ -229,7 +229,7 @@
         doc.text(`PROTOCOLO: ${document.getElementById('nro_prot').value}`, 15, 30);
         doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0]?.value || "S/N"}`, 15, 35);
         const rows = [];
-        document.querySelectorAll('.table-section tbody tr').forEach(tr => {
+        document.querySelectorAll('#tablaPuntosEstanquidad tr').forEach(tr => {
             const cells = tr.querySelectorAll('td');
             if (cells.length > 1) rows.push([cells[0].innerText, cells[1].innerText, tr.querySelector('select')?.value || "", tr.querySelector('input')?.value || ""]);
         });
