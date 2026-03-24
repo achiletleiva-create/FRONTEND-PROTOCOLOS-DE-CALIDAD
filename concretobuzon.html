@@ -128,11 +128,10 @@
 </div>
 
 <script>
-    // --- CONFIGURACIÓN INICIAL ---
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
-    // 1. ✅ CORREGIDO: URL separada para no chocar con /:id
+    // ✅ SIN CAMBIOS
     async function consultarCorrelativo() {
         try {
             const res = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/protocolos/siguiente-correlativo');
@@ -143,7 +142,84 @@
         }
     }
 
-    // 2. Función PDF — SIN CAMBIOS
+    // ✅ CAMBIO 1: guarda el _id devuelto por el servidor para luego subir el PDF
+    let ultimoIdGuardado = null;
+
+    document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('.btn-save');
+        const originalText = btn.innerText;
+        btn.innerText = "ENVIANDO DATOS...";
+        btn.disabled = true;
+        
+        const formData = new FormData(e.target);
+        const finalFormData = new FormData();
+        
+        finalFormData.append("nro_protocolo", document.getElementById('nro_prot').value);
+        finalFormData.append("fecha", formData.get('fecha'));
+        finalFormData.append("elemento", formData.get('elemento'));
+        finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
+        finalFormData.append("limpieza_niveles", formData.get('st_1.1'));
+        finalFormData.append("estanqueidad_encofrado", formData.get('st_1.2'));
+        finalFormData.append("aplicacion_desmoldante", formData.get('st_1.3'));
+        finalFormData.append("agregados_limpios", formData.get('st_1.4'));
+        finalFormData.append("cemento_vigente", formData.get('st_1.5'));
+        finalFormData.append("dosificacion_mezcla", formData.get('st_2.1'));
+        finalFormData.append("tiempo_mezclado", formData.get('st_2.2'));
+        finalFormData.append("relacion_agua_cemento", formData.get('st_2.3'));
+        finalFormData.append("ensayo_slump", formData.get('st_3.1'));
+        finalFormData.append("temperatura_concreto", formData.get('st_3.2'));
+        finalFormData.append("toma_testigos", formData.get('st_3.3'));
+        finalFormData.append("probetas_cantidad", 2);
+        finalFormData.append("altura_caida", formData.get('st_4.1'));
+        finalFormData.append("compactacion_vibrado", formData.get('st_4.2'));
+        finalFormData.append("acabado_superficial", formData.get('st_4.3'));
+        finalFormData.append("inicio_curado", formData.get('st_5.1'));
+        finalFormData.append("metodo_curado", formData.get('st_5.2'));
+        finalFormData.append("obs_limpieza", formData.get('obs_1.1'));
+        finalFormData.append("obs_estanqueidad", formData.get('obs_1.2'));
+        finalFormData.append("obs_desmoldante", formData.get('obs_1.3'));
+        finalFormData.append("obs_agregados", formData.get('obs_1.4'));
+        finalFormData.append("obs_cemento", formData.get('obs_1.5'));
+        finalFormData.append("obs_dosificacion", formData.get('obs_2.1'));
+        finalFormData.append("obs_tiempo_mezcla", formData.get('obs_2.2'));
+        finalFormData.append("obs_agua_cemento", formData.get('obs_2.3'));
+        finalFormData.append("obs_slump", formData.get('obs_3.1'));
+        finalFormData.append("obs_temperatura", formData.get('obs_3.2'));
+        finalFormData.append("obs_testigos", formData.get('obs_3.3'));
+        finalFormData.append("obs_caida", formData.get('obs_4.1'));
+        finalFormData.append("obs_vibrado", formData.get('obs_4.2'));
+        finalFormData.append("obs_acabado", formData.get('obs_4.3'));
+        finalFormData.append("obs_inicio_curado", formData.get('obs_5.1'));
+        finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
+
+        const fileInputs = e.target.querySelectorAll('input[type="file"]');
+        fileInputs.forEach(input => {
+            if (input.files[0]) finalFormData.append(input.name, input.files[0]);
+        });
+
+        try {
+            const response = await fetch(API_URL, { method: 'POST', body: finalFormData });
+            if (response.ok) {
+                const resultado = await response.json();
+                // ✅ CAMBIO 1: guardamos el _id para usarlo al exportar PDF
+                ultimoIdGuardado = resultado.id;
+                alert("✅ ¡Éxito! Registrado en MongoDB.\n📄 Ahora presiona EXPORTAR PDF para guardarlo en la nube.");
+                consultarCorrelativo();
+                cargarHistorial();
+            } else {
+                const err = await response.json();
+                alert("❌ Error: " + (err.error || err.message || "No se pudo guardar"));
+            }
+        } catch (error) {
+            alert("❌ Error de conexión con el servidor.");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+
+    // ✅ CAMBIO 2: generarPDFSimilar ahora también sube el PDF a Cloudinary
     async function generarPDFSimilar() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -229,90 +305,31 @@
                 doc.text(foto.label, 15 + (col * (maxW + gapX)) + 42, y + finalH + 5, {align: "center"});
             });
         }
-        doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
+
+        // Descarga local — SIN CAMBIOS
+        const nombreArchivo = `Protocolo_${document.getElementById('nro_prot').value}.pdf`;
+        doc.save(nombreArchivo);
+
+        // ✅ CAMBIO 2: sube PDF a Cloudinary si hay un ID guardado
+        if (ultimoIdGuardado) {
+            try {
+                const pdfBlob = doc.output('blob');
+                const pdfFormData = new FormData();
+                pdfFormData.append('pdf', pdfBlob, nombreArchivo);
+                const resPdf = await fetch(`${API_URL}/${ultimoIdGuardado}/pdf`, {
+                    method: 'PATCH',
+                    body: pdfFormData
+                });
+                if (resPdf.ok) {
+                    cargarHistorial();
+                }
+            } catch (err) {
+                console.error("Error al subir PDF:", err);
+            }
+        }
     }
 
-    // 3. Envío de datos — SIN CAMBIOS
-    document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('.btn-save');
-        const originalText = btn.innerText;
-        btn.innerText = "ENVIANDO DATOS...";
-        btn.disabled = true;
-        
-        const formData = new FormData(e.target);
-        const finalFormData = new FormData();
-        
-        finalFormData.append("nro_protocolo", document.getElementById('nro_prot').value);
-        finalFormData.append("fecha", formData.get('fecha'));
-        finalFormData.append("elemento", formData.get('elemento'));
-        finalFormData.append("resistencia_fc", formData.get('resistencia_fc'));
-        
-        finalFormData.append("limpieza_niveles", formData.get('st_1.1'));
-        finalFormData.append("estanqueidad_encofrado", formData.get('st_1.2'));
-        finalFormData.append("aplicacion_desmoldante", formData.get('st_1.3'));
-        finalFormData.append("agregados_limpios", formData.get('st_1.4'));
-        finalFormData.append("cemento_vigente", formData.get('st_1.5'));
-        finalFormData.append("dosificacion_mezcla", formData.get('st_2.1'));
-        finalFormData.append("tiempo_mezclado", formData.get('st_2.2'));
-        finalFormData.append("relacion_agua_cemento", formData.get('st_2.3'));
-        finalFormData.append("ensayo_slump", formData.get('st_3.1'));
-        finalFormData.append("temperatura_concreto", formData.get('st_3.2'));
-        finalFormData.append("toma_testigos", formData.get('st_3.3'));
-        finalFormData.append("probetas_cantidad", 2);
-        finalFormData.append("altura_caida", formData.get('st_4.1'));
-        finalFormData.append("compactacion_vibrado", formData.get('st_4.2'));
-        finalFormData.append("acabado_superficial", formData.get('st_4.3'));
-        finalFormData.append("inicio_curado", formData.get('st_5.1'));
-        finalFormData.append("metodo_curado", formData.get('st_5.2'));
-
-        finalFormData.append("obs_limpieza", formData.get('obs_1.1'));
-        finalFormData.append("obs_estanqueidad", formData.get('obs_1.2'));
-        finalFormData.append("obs_desmoldante", formData.get('obs_1.3'));
-        finalFormData.append("obs_agregados", formData.get('obs_1.4'));
-        finalFormData.append("obs_cemento", formData.get('obs_1.5'));
-        finalFormData.append("obs_dosificacion", formData.get('obs_2.1'));
-        finalFormData.append("obs_tiempo_mezcla", formData.get('obs_2.2'));
-        finalFormData.append("obs_agua_cemento", formData.get('obs_2.3'));
-        finalFormData.append("obs_slump", formData.get('obs_3.1'));
-        finalFormData.append("obs_temperatura", formData.get('obs_3.2'));
-        finalFormData.append("obs_testigos", formData.get('obs_3.3'));
-        finalFormData.append("obs_caida", formData.get('obs_4.1'));
-        finalFormData.append("obs_vibrado", formData.get('obs_4.2'));
-        finalFormData.append("obs_acabado", formData.get('obs_4.3'));
-        finalFormData.append("obs_inicio_curado", formData.get('obs_5.1'));
-        finalFormData.append("obs_metodo_curado", formData.get('obs_5.2'));
-
-        const fileInputs = e.target.querySelectorAll('input[type="file"]');
-        fileInputs.forEach(input => {
-            if (input.files[0]) {
-                finalFormData.append(input.name, input.files[0]);
-            }
-        });
-
-        try {
-            const response = await fetch(API_URL, { 
-                method: 'POST', 
-                body: finalFormData 
-            });
-            if (response.ok) {
-                alert("✅ ¡Éxito! Registrado en MongoDB.");
-                consultarCorrelativo();
-                cargarHistorial();
-            } else {
-                const err = await response.json();
-                // ✅ CORREGIDO: muestra el error real del servidor
-                alert("❌ Error: " + (err.error || err.message || "No se pudo guardar"));
-            }
-        } catch (error) { 
-            alert("❌ Error de conexión con el servidor."); 
-        } finally {
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
-    });
-
-    // 4. ✅ CORREGIDO: detección de NC compatible con estructura del modelo
+    // ✅ CAMBIO 3: cargarHistorial muestra botón PDF si existe url, sino botón deshabilitado
     async function cargarHistorial() {
         const tabla = document.getElementById('tablaHistorial');
         try {
@@ -320,7 +337,6 @@
             const protocolos = await res.json();
             tabla.innerHTML = "";
             protocolos.forEach(p => {
-                // ✅ CORREGIDO: filtra solo campos de estado (strings C/NC), ignora obs_ y números
                 const camposEstado = [
                     p.controles?.limpieza_niveles,
                     p.controles?.estanqueidad_encofrado,
@@ -341,6 +357,14 @@
                 ];
                 const tieneNC = camposEstado.includes("NC");
                 const colorEstado = tieneNC ? "#dc3545" : "#28a745";
+
+                // ✅ CAMBIO 3: botón PDF activo si hay pdf_url, sino gris
+                const btnPdf = p.pdf_url
+                    ? `<a href="${p.pdf_url}" target="_blank">
+                         <button style="padding:5px; background:#dc3545; font-size:9px; color:white; border:none; border-radius:3px; cursor:pointer;">📄 PDF</button>
+                       </a>`
+                    : `<button style="padding:5px; background:#aaa; font-size:9px; color:white; border:none; border-radius:3px; cursor:not-allowed;" disabled>📄 PDF</button>`;
+
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td>${p.nro_protocolo}</td>
@@ -351,34 +375,12 @@
                     <td style="color:white; background:${colorEstado}; font-weight:bold; text-align:center;">
                         ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
                     </td>
-                    <td>
-                        <button onclick="verDetalles('${p._id}')" style="padding:5px; background:#007bff; font-size:9px; color:white;">👁️ VER</button>
-                    </td>
+                    <td>${btnPdf}</td>
                 `;
                 tabla.appendChild(fila);
             });
         } catch (e) {
             console.error("Error al cargar historial:", e);
-        }
-    }
-
-    // 5. ✅ Ver detalles por ID — SIN CAMBIOS
-    async function verDetalles(id) {
-        try {
-            const res = await fetch(`${API_URL}/${id}`);
-            const p = await res.json();
-            if (p && p.fotos) {
-                const enlaces = Object.entries(p.fotos)
-                    .filter(([, url]) => url)
-                    .map(([key, url]) => `<p><a href="${url}" target="_blank">${key}</a></p>`)
-                    .join("");
-                const ventana = window.open("", "_blank", "width=400,height=400");
-                ventana.document.write(`<h3>Fotos del Protocolo ${p.nro_protocolo}</h3>${enlaces || "<p>Sin fotos registradas.</p>"}`);
-            } else {
-                alert("No hay fotos registradas para este protocolo.");
-            }
-        } catch (e) {
-            alert("Error al recuperar detalles.");
         }
     }
 
@@ -388,3 +390,20 @@
 </script>
 </body>
 </html>
+```
+
+---
+
+**Resumen de los 3 cambios:**
+
+| # | Qué cambió | Dónde |
+|---|---|---|
+| 1 | `ultimoIdGuardado` guarda el `_id` que devuelve el POST | Variable global + submit |
+| 2 | `generarPDFSimilar()` sube el PDF a Cloudinary via PATCH después de descargarlo | Final de la función PDF |
+| 3 | Botón `👁️ VER` reemplazado por `📄 PDF` que abre la URL de Cloudinary. Si no hay PDF aún aparece gris deshabilitado | `cargarHistorial()` |
+
+**El flujo completo queda así:**
+```
+GUARDAR → MongoDB guarda datos → devuelve _id
+EXPORTAR PDF → genera PDF → descarga local → sube a Cloudinary → actualiza MongoDB con pdf_url
+HISTORIAL → botón 📄 PDF → abre PDF directo desde Cloudinary
