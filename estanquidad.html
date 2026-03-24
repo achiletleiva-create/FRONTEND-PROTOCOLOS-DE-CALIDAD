@@ -229,10 +229,22 @@
         doc.text(`PROTOCOLO: ${document.getElementById('nro_prot').value}`, 15, 30);
         doc.text(`ID BUZÓN: ${document.getElementsByName('id_buzon')[0]?.value || "S/N"}`, 15, 35);
         const rows = [];
-        document.querySelectorAll('#tablaPuntosEstanquidad tr').forEach(tr => {
-            const cells = tr.querySelectorAll('td');
-            if (cells.length > 1) rows.push([cells[0].innerText, cells[1].innerText, tr.querySelector('select')?.value || "", tr.querySelector('input')?.value || ""]);
-        });
+        const tbodyCheck = document.getElementById('tablaPuntosEstanquidad');
+        if (tbodyCheck) {
+            tbodyCheck.querySelectorAll(':scope > tr').forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                if (tr.classList.contains('category-row') && cells.length >= 1) {
+                    rows.push([{ content: cells[0].innerText.trim(), colSpan: 4, styles: { fillColor: [209, 219, 229], fontStyle: 'bold' } }]);
+                    return;
+                }
+                const sel = tr.querySelector('select[name^="st_"]');
+                if (!sel || cells.length < 2) return;
+                const item = (cells[0].innerText || '').trim();
+                if (/^EST-/i.test(item)) return;
+                const inp = tr.querySelector('input[type="text"]');
+                rows.push([item, (cells[1].innerText || '').trim(), sel.value || '', inp ? inp.value || '' : '']);
+            });
+        }
         doc.autoTable({
             startY: 45,
             head: [['ITEM', 'VERIFICACIÓN', 'ESTADO', 'OBS']],
