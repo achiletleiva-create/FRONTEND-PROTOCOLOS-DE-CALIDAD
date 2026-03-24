@@ -19,7 +19,6 @@
         .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
         button { flex: 1; padding: 15px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
         .btn-save { background: #28a745; }
-        .btn-pdf { background: #dc3545; display: none; }  /* Oculto */
         .btn-history { background: #007bff; }
         input, select { width: 100%; padding: 5px; border-radius: 3px; border: 1px solid #bbb; box-sizing: border-box; }
         .btn-pdf-link {
@@ -36,6 +35,17 @@
             background: #aaa;
             cursor: not-allowed;
             pointer-events: none;
+        }
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
         }
     </style>
 </head>
@@ -119,30 +129,33 @@
     </form>
 </div>
 
-<!-- ===================== HISTORIAL ===================== -->
+<!-- HISTORIAL -->
 <div class="container" style="margin-top: 30px;">
     <div class="section-title">📂 HISTORIAL DE PROTOCOLOS REGISTRADOS</div>
     <div style="overflow-x: auto;">
         <table class="table-section" style="font-size: 10px;">
             <thead>
-                32<th>NRO PROTOCOLO</th>
-                    <th>FECHA</th>
-                    <th>ELEMENTO</th>
-                    <th>f'c</th>
-                    <th>SLUMP</th>
-                    <th>ESTADO GENERAL</th>
-                    <th>ACCIONES</th>
-                </tr>
+                <tr><th>NRO PROTOCOLO</th><th>FECHA</th><th>ELEMENTO</th><th>f'c</th><th>SLUMP</th><th>ESTADO GENERAL</th><th>ACCIONES</th></tr>
             </thead>
             <tbody id="tablaHistorial"></tbody>
         </table>
     </div>
 </div>
 
+<div id="toastMsg" class="toast-msg"></div>
+
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
     document.getElementById('fecha_obra').valueAsDate = new Date();
     let ultimoIdGuardado = null;
+
+    function showMessage(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
 
     async function consultarCorrelativo() {
         try {
@@ -151,10 +164,10 @@
             document.getElementById('nro_prot').value = data.correlativo;
         } catch (e) {
             console.error("Error al obtener correlativo:", e);
+            showMessage("⚠️ No se pudo actualizar el número de protocolo", true);
         }
     }
 
-    // Función que genera PDF, descarga local y sube a Cloudinary usando ultimoIdGuardado
     async function generarYSubirPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -241,11 +254,9 @@
             });
         }
 
-        // Descarga local
         const nombreArchivo = `Protocolo_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombreArchivo);
 
-        // Subir a Cloudinary si existe ID
         if (ultimoIdGuardado) {
             try {
                 const pdfBlob = doc.output('blob');
@@ -256,14 +267,21 @@
                     body: pdfFormData
                 });
                 if (resPdf.ok) {
-                    console.log("PDF subido a Cloudinary");
+                    const pdfData = await resPdf.json();
+                    console.log("PDF subido a Cloudinary:", pdfData.pdf_url);
+                    showMessage("✅ PDF guardado en la nube", false);
                     cargarHistorial();
                 } else {
-                    console.error("Error al subir PDF:", await resPdf.text());
+                    const errorData = await resPdf.json();
+                    console.error("Error al subir PDF:", errorData);
+                    showMessage("⚠️ El PDF se descargó localmente, pero no se pudo guardar en la nube: " + (errorData.error || "Error desconocido"), true);
                 }
             } catch (err) {
                 console.error("Error al subir PDF:", err);
+                showMessage("⚠️ Error de conexión al subir el PDF. Revisa tu red.", true);
             }
+        } else {
+            showMessage("⚠️ El PDF se descargó localmente, pero no se pudo asociar al protocolo. Intenta guardar de nuevo.", true);
         }
     }
 
@@ -325,17 +343,19 @@
             if (response.ok) {
                 const resultado = await response.json();
                 ultimoIdGuardado = resultado.id;
-                alert("✅ Protocolo guardado. Generando PDF...");
-                await generarYSubirPDF();  // genera y sube automáticamente
-                alert("✅ PDF generado y guardado en la nube.");
+                showMessage("✅ Protocolo guardado. Generando PDF...", false);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await generarYSubirPDF();
+                showMessage("✅ Proceso completado. PDF descargado y guardado en la nube.", false);
                 consultarCorrelativo();
                 cargarHistorial();
             } else {
                 const err = await response.json();
-                alert("❌ Error: " + (err.error || err.message || "No se pudo guardar"));
+                showMessage("❌ Error al guardar: " + (err.error || err.message || "No se pudo guardar"), true);
             }
         } catch (error) {
-            alert("❌ Error de conexión con el servidor.");
+            console.error(error);
+            showMessage("❌ Error de conexión con el servidor.", true);
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
