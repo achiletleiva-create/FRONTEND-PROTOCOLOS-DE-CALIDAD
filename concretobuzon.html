@@ -132,10 +132,10 @@
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
-    // 1. ✅ CORREGIDO: Consultar correlativo desde endpoint dedicado
+    // 1. ✅ CORREGIDO: URL separada para no chocar con /:id
     async function consultarCorrelativo() {
         try {
-            const res = await fetch(`${API_URL}/siguiente-correlativo`);
+            const res = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/protocolos/siguiente-correlativo');
             const data = await res.json();
             document.getElementById('nro_prot').value = data.correlativo;
         } catch (e) {
@@ -232,7 +232,7 @@
         doc.save(`Protocolo_${document.getElementById('nro_prot').value}.pdf`);
     }
 
-    // 3. Envío de datos a MongoDB — SIN CAMBIOS EN LÓGICA
+    // 3. Envío de datos — SIN CAMBIOS
     document.getElementById('protocoloForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
@@ -301,7 +301,8 @@
                 cargarHistorial();
             } else {
                 const err = await response.json();
-                alert("❌ Error: " + (err.message || "No se pudo guardar"));
+                // ✅ CORREGIDO: muestra el error real del servidor
+                alert("❌ Error: " + (err.error || err.message || "No se pudo guardar"));
             }
         } catch (error) { 
             alert("❌ Error de conexión con el servidor."); 
@@ -311,7 +312,7 @@
         }
     });
 
-    // 4. ✅ CORREGIDO: Cargar historial
+    // 4. ✅ CORREGIDO: detección de NC compatible con estructura del modelo
     async function cargarHistorial() {
         const tabla = document.getElementById('tablaHistorial');
         try {
@@ -319,7 +320,26 @@
             const protocolos = await res.json();
             tabla.innerHTML = "";
             protocolos.forEach(p => {
-                const tieneNC = Object.values(p.controles).includes("NC");
+                // ✅ CORREGIDO: filtra solo campos de estado (strings C/NC), ignora obs_ y números
+                const camposEstado = [
+                    p.controles?.limpieza_niveles,
+                    p.controles?.estanqueidad_encofrado,
+                    p.controles?.aplicacion_desmoldante,
+                    p.controles?.agregados_limpios,
+                    p.controles?.cemento_vigente,
+                    p.controles?.dosificacion_mezcla,
+                    p.controles?.tiempo_mezclado,
+                    p.controles?.relacion_agua_cemento,
+                    p.controles?.ensayo_slump,
+                    p.controles?.temperatura_concreto,
+                    p.controles?.toma_testigos,
+                    p.controles?.altura_caida,
+                    p.controles?.compactacion_vibrado,
+                    p.controles?.acabado_superficial,
+                    p.controles?.inicio_curado,
+                    p.controles?.metodo_curado
+                ];
+                const tieneNC = camposEstado.includes("NC");
                 const colorEstado = tieneNC ? "#dc3545" : "#28a745";
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
@@ -327,7 +347,7 @@
                     <td>${new Date(p.fecha).toLocaleDateString()}</td>
                     <td>${p.datos_tecnicos?.elemento || 'S/N'}</td>
                     <td>${p.datos_tecnicos?.resistencia_fc || 'S/N'}</td>
-                    <td>${p.controles?.ensayo_slump || 'N/A'}</td>
+                    <td>${p.controles?.obs_slump || 'N/A'}</td>
                     <td style="color:white; background:${colorEstado}; font-weight:bold; text-align:center;">
                         ${tieneNC ? "CON OBSERVACIONES" : "LIBERADO"}
                     </td>
@@ -342,7 +362,7 @@
         }
     }
 
-    // 5. ✅ CORREGIDO: Ver detalles usando endpoint /:id
+    // 5. ✅ Ver detalles por ID — SIN CAMBIOS
     async function verDetalles(id) {
         try {
             const res = await fetch(`${API_URL}/${id}`);
@@ -362,7 +382,7 @@
         }
     }
 
-    // --- INICIALIZAR AL CARGAR LA PÁGINA ---
+    // --- INICIALIZAR ---
     consultarCorrelativo();
     cargarHistorial();
 </script>
