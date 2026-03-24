@@ -165,6 +165,10 @@
         return u.length > 0 && /^https?:\/\//i.test(u);
     }
 
+    function safeFileName(name) {
+        return String(name || 'protocolo').replace(/[^a-z0-9-_]/gi, '_');
+    }
+
     async function consultarCorrelativo() {
         try {
             const res = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/protocolos/siguiente-correlativo');
@@ -418,7 +422,7 @@
                 const colorEstado = tieneNC ? "#dc3545" : "#28a745";
 
                 const btnPdf = isValidPdfUrl(p.pdf_url)
-                    ? `<a href="${p.pdf_url.trim()}" target="_blank" rel="noopener noreferrer" class="btn-pdf-link">📄 PDF</a>`
+                    ? `<a href="${p.pdf_url.trim()}" target="_blank" rel="noopener noreferrer" class="btn-pdf-link" download="${safeFileName(p.nro_protocolo || 'Protocolo')}.pdf">📄 PDF</a>`
                     : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
 
                 const fila = document.createElement('tr');
