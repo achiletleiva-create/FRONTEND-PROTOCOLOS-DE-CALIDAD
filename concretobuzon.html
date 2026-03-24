@@ -158,6 +158,13 @@
         setTimeout(() => { toast.style.display = 'none'; }, 4000);
     }
 
+    /** Solo URLs http(s) válidas activan el botón PDF en historial */
+    function isValidPdfUrl(url) {
+        if (url == null || typeof url !== 'string') return false;
+        const u = url.trim();
+        return u.length > 0 && /^https?:\/\//i.test(u);
+    }
+
     async function consultarCorrelativo() {
         try {
             const res = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/protocolos/siguiente-correlativo');
@@ -269,20 +276,37 @@
                 });
                 if (resPdf.ok) {
                     const pdfData = await resPdf.json();
-                    console.log("PDF subido a Cloudinary:", pdfData.pdf_url);
+                    const urlGuardada = pdfData.pdf_url;
+                    if (!isValidPdfUrl(urlGuardada)) {
+                        console.error("Respuesta OK pero pdf_url inválida:", pdfData);
+                        showMessage("⚠️ El servidor respondió sin una URL de PDF válida. Revisa el backend.", true);
+                        return false;
+                    }
+                    console.log("PDF subido a Cloudinary:", urlGuardada);
                     showMessage("✅ PDF guardado en la nube", false);
                     cargarHistorial();
+                    return true;
                 } else {
-                    const errorData = await resPdf.json();
-                    console.error("Error al subir PDF:", errorData);
-                    showMessage("⚠️ El PDF se descargó localmente, pero no se pudo guardar en la nube: " + (errorData.error || "Error desconocido"), true);
+                    let errMsg = "Error desconocido";
+                    try {
+                        const errorData = await resPdf.json();
+                        errMsg = errorData.error || errorData.message || errMsg;
+                        console.error("Error al subir PDF:", errorData);
+                    } catch (_) {
+                        errMsg = `HTTP ${resPdf.status}`;
+                        console.error("Error al subir PDF, sin JSON:", resPdf.status);
+                    }
+                    showMessage("⚠️ El PDF se descargó localmente, pero no se pudo guardar en la nube: " + errMsg, true);
+                    return false;
                 }
             } catch (err) {
                 console.error("Error al subir PDF:", err);
                 showMessage("⚠️ Error de conexión al subir el PDF. Revisa tu red.", true);
+                return false;
             }
         } else {
             showMessage("⚠️ El PDF se descargó localmente, pero no se pudo asociar al protocolo. Intenta guardar de nuevo.", true);
+            return false;
         }
     }
 
@@ -346,8 +370,10 @@
                 ultimoIdGuardado = resultado.id;
                 showMessage("✅ Protocolo guardado. Generando PDF...", false);
                 await new Promise(resolve => setTimeout(resolve, 500));
-                await generarYSubirPDF();
-                showMessage("✅ Proceso completado. PDF descargado y guardado en la nube.", false);
+                const pdfOk = await generarYSubirPDF();
+                if (pdfOk) {
+                    showMessage("✅ Proceso completado. PDF descargado y guardado en la nube.", false);
+                }
                 consultarCorrelativo();
                 cargarHistorial();
             } else {
@@ -391,8 +417,8 @@
                 const tieneNC = camposEstado.includes("NC");
                 const colorEstado = tieneNC ? "#dc3545" : "#28a745";
 
-                const btnPdf = p.pdf_url
-                    ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>`
+                const btnPdf = isValidPdfUrl(p.pdf_url)
+                    ? `<a href="${p.pdf_url.trim()}" target="_blank" rel="noopener noreferrer" class="btn-pdf-link">📄 PDF</a>`
                     : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
 
                 const fila = document.createElement('tr');
