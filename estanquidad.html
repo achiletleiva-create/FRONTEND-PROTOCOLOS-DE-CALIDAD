@@ -170,8 +170,9 @@
             registros.forEach(p => {
                 const esAprobado = p.resultados?.resultado_final === "APROBADO";
                 const colorEstado = esAprobado ? "#28a745" : "#dc3545";
+                const safeFileName = String(p.nro_protocolo || 'protocolo').replace(/[^a-z0-9-_]/gi, '_');
                 const btnPdf = p.pdf_url
-                    ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>`
+                    ? `<a href="${p.pdf_url}" target="_blank" rel="noopener noreferrer" class="btn-pdf-link" download="${safeFileName}.pdf">📄 PDF</a>`
                     : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
