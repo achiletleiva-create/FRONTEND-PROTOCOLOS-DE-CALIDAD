@@ -39,6 +39,17 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+        .toast-msg {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -123,11 +134,21 @@
     </div>
 </div>
 
+<div id="toastMsg" class="toast-msg"></div>
+
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/estanquidad';
     let ultimoIdGuardado = null;
 
     document.getElementById('fecha_obra').valueAsDate = new Date();
+
+    function showMessage(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.innerText = msg;
+        toast.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 4000);
+    }
 
     async function consultarCorrelativo() {
         try {
@@ -136,6 +157,7 @@
             document.getElementById('nro_prot').value = data.correlativo;
         } catch (e) {
             console.error("Error al obtener correlativo:", e);
+            showMessage("⚠️ No se pudo actualizar el número de protocolo", true);
         }
     }
 
@@ -244,7 +266,7 @@
         const nombreArchivo = `Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`;
         doc.save(nombreArchivo);
 
-        // Subir a Cloudinary si el backend soporta el endpoint y tenemos ID
+        // Subir a Cloudinary si tenemos ID
         if (ultimoIdGuardado) {
             try {
                 const pdfBlob = doc.output('blob');
@@ -255,15 +277,22 @@
                     body: pdfFormData
                 });
                 if (resPdf.ok) {
-                    console.log("PDF subido a Cloudinary");
+                    const pdfData = await resPdf.json();
+                    console.log("PDF subido a Cloudinary:", pdfData.pdf_url);
+                    showMessage("✅ PDF guardado en la nube", false);
                     cargarHistorial();
                 } else {
-                    const errorText = await resPdf.text();
-                    console.error("Error al subir PDF:", errorText);
+                    const errorData = await resPdf.json();
+                    console.error("Error al subir PDF:", errorData);
+                    showMessage("⚠️ El PDF se descargó localmente, pero no se pudo guardar en la nube: " + (errorData.error || "Error desconocido"), true);
                 }
             } catch (err) {
                 console.error("Error al subir PDF:", err);
+                showMessage("⚠️ Error de conexión al subir el PDF. Revisa tu red.", true);
             }
+        } else {
+            console.warn("No se tiene ID para subir el PDF");
+            showMessage("⚠️ El PDF se descargó localmente, pero no se pudo asociar al protocolo. Intenta guardar de nuevo.", true);
         }
     }
 
@@ -282,9 +311,11 @@
             if (response.ok) {
                 const resultado = await response.json();
                 ultimoIdGuardado = resultado.id;
-                alert("✅ Protocolo guardado. Generando PDF...");
+                showMessage("✅ Protocolo guardado. Generando PDF...", false);
+                // Pequeña pausa para asegurar persistencia
+                await new Promise(resolve => setTimeout(resolve, 500));
                 await generarYSubirPDF();
-                alert("✅ PDF generado y guardado en la nube.");
+                showMessage("✅ Proceso completado. PDF descargado y guardado en la nube.", false);
                 consultarCorrelativo();
                 cargarHistorial();
                 e.target.reset();
@@ -296,10 +327,11 @@
                 calcularVp();
             } else {
                 const errorData = await response.json();
-                alert("❌ Error: " + (errorData.error || "No se pudo guardar"));
+                showMessage("❌ Error al guardar: " + (errorData.error || "No se pudo guardar"), true);
             }
         } catch (error) {
-            alert("No se pudo conectar con el servidor.");
+            console.error(error);
+            showMessage("❌ Error de conexión con el servidor.", true);
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
