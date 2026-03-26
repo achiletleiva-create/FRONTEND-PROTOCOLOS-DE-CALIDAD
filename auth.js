@@ -3,12 +3,18 @@
     const token = sessionStorage.getItem('token');
     if (!token) { window.location.href = 'login.html'; return; }
 
-    // Agregar token a todas las peticiones fetch
     const originalFetch = window.fetch;
     window.fetch = function (url, options = {}) {
         if (typeof url === 'string' && url.includes('onrender.com')) {
-            options.headers = options.headers || {};
-            options.headers['Authorization'] = `Bearer ${token}`;
+            if (!options.headers) options.headers = {};
+            // Si headers es un objeto plano
+            if (typeof options.headers === 'object' && !(options.headers instanceof Headers)) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            } else {
+                const h = new Headers(options.headers);
+                h.set('Authorization', `Bearer ${token}`);
+                options.headers = h;
+            }
         }
         return originalFetch(url, options).then(async res => {
             if (res.status === 401) {
