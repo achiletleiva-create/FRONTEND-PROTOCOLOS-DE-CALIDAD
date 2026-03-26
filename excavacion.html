@@ -164,6 +164,20 @@
             doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
         });
 
+        const fotos = [];
+        for (const inp of form.querySelectorAll('input[type="file"]')) {
+            if (inp.files[0]) await new Promise(res => { const r = new FileReader(); r.onload = e => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '' }); res(); }; r.readAsDataURL(inp.files[0]); });
+        }
+        if (fotos.length > 0) {
+            doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+            doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
+            fotos.forEach((f, i) => {
+                const x = 15 + (i % 2) * 97, y = 25 + Math.floor(i / 2) * 85;
+                doc.addImage(f.src, 'JPEG', x, y, 85, 65, undefined, 'FAST');
+                doc.setFontSize(7); doc.text(f.label, x + 42, y + 70, { align: "center" });
+            });
+        }
+
         const nombre = `Excavacion_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombre);
         if (ultimoId) {
