@@ -5,34 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Control - Calidad</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f9; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        .header { background-color: #004a99; color: white; width: 100%; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 800px; margin-top: 50px; padding: 20px; }
-        .card { background: white; border-radius: 15px; padding: 30px; text-align: center; text-decoration: none; color: #333; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; border: 2px solid transparent; }
-        .card:hover { transform: translateY(-10px); border-color: #004a99; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .icon { font-size: 50px; margin-bottom: 15px; }
-        h2 { color: #004a99; margin: 10px 0; font-size: 20px; }
-        p { font-size: 14px; color: #666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .header { background: #004a99; color: white; width: 100%; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        .header h1 { font-size: 18px; letter-spacing: 1px; }
+        .header p { font-size: 12px; opacity: 0.85; margin-top: 5px; }
+        .subtitle { color: #004a99; font-size: 13px; font-weight: bold; margin: 30px 0 10px; text-transform: uppercase; letter-spacing: 1px; width: 100%; max-width: 880px; padding: 0 20px; }
+        .container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; max-width: 880px; width: 100%; padding: 0 20px 40px; }
+        .container.dos-col { grid-template-columns: 1fr 1fr; max-width: 600px; }
+        .card { background: white; border-radius: 12px; padding: 22px 18px; text-align: center; text-decoration: none; color: #333; box-shadow: 0 3px 12px rgba(0,0,0,0.06); transition: 0.25s; border: 2px solid transparent; }
+        .card:hover { transform: translateY(-6px); border-color: #004a99; box-shadow: 0 10px 25px rgba(0,74,153,0.15); }
+        .icon { font-size: 38px; margin-bottom: 10px; }
+        h2 { color: #004a99; margin: 6px 0; font-size: 14px; }
+        p { font-size: 11px; color: #777; line-height: 1.4; }
+        .badge { display: inline-block; font-size: 9px; background: #e8f0fe; color: #004a99; border-radius: 10px; padding: 2px 8px; margin-top: 6px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>SISTEMA DE CONTROL DE CALIDAD</h1>
-    <p>Proyecto: Mejoramiento Redes de Alcantarillado - Sector Liberación Social</p>
+    <h1>🏗️ SISTEMA DE CONTROL DE CALIDAD</h1>
+    <p>Mejoramiento Redes de Alcantarillado Sanitario — Sector Liberación Social, Víctor Larco Herrera</p>
 </div>
 
+<div class="subtitle">📋 Obras de Línea</div>
 <div class="container">
-    <a href="concretobuzon.html" class="card">
-        <div class="icon">🏗️</div>
-        <h2>Protocolo de Concreto</h2>
-        <p>Registro de vaciado, slump, temperatura y toma de muestras de concreto.</p>
+    <a href="excavacion.html" class="card">
+        <div class="icon">⛏️</div>
+        <h2>Excavación de Zanjas</h2>
+        <p>Control topográfico, seguridad y condiciones de excavación.</p>
+        <span class="badge">EXC-XXX-2026</span>
     </a>
+    <a href="tuberia.html" class="card">
+        <div class="icon">🔧</div>
+        <h2>Instalación de Tuberías</h2>
+        <p>Inspección de materiales, alineamiento y verificación en zanja.</p>
+        <span class="badge">TUB-XXX-2026</span>
+    </a>
+    <a href="relleno.html" class="card">
+        <div class="icon">🪨</div>
+        <h2>Relleno y Compactación</h2>
+        <p>Control de capas, ensayos de compactación y equipos utilizados.</p>
+        <span class="badge">REL-XXX-2026</span>
+    </a>
+    <a href="pruebaHidraulica.html" class="card">
+        <div class="icon">🌊</div>
+        <h2>Prueba Hidráulica</h2>
+        <p>Verificación de operatividad en zanja tapada y flujo en carga.</p>
+        <span class="badge">HID-XXX-2026</span>
+    </a>
+    <a href="conexion.html" class="card">
+        <div class="icon">🏠</div>
+        <h2>Conexiones Domiciliarias</h2>
+        <p>Control de instalación, materiales y prueba de balde.</p>
+        <span class="badge">CON-XXX-2026</span>
+    </a>
+    <a href="vereda.html" class="card">
+        <div class="icon">🧱</div>
+        <h2>Reposición de Veredas</h2>
+        <p>Control normativo y tabla de resanes por conexiones domiciliarias.</p>
+        <span class="badge">VER-XXX-2026</span>
+    </a>
+</div>
 
+<div class="subtitle">🏗️ Obras de Buzones</div>
+<div class="container dos-col">
+    <a href="buzon.html" class="card">
+        <div class="icon">🏗️</div>
+        <h2>Construcción de Buzones</h2>
+        <p>Control de excavación, concreto, acabados y accesorios.</p>
+        <span class="badge">BUZ-XXX-2026</span>
+    </a>
     <a href="estanquidad.html" class="card">
         <div class="icon">💧</div>
         <h2>Prueba de Estanquidad</h2>
-        <p>Control hidráulico de buzones y cálculo de pérdida máxima permitida.</p>
+        <p>Control hidráulico de buzones y cálculo de pérdida máxima.</p>
+        <span class="badge">EST-XXX-2026</span>
+    </a>
+</div>
+
+<div class="subtitle">🏗️ Vaciado de Concreto</div>
+<div class="container dos-col">
+    <a href="concretobuzon.html" class="card">
+        <div class="icon">🪣</div>
+        <h2>Protocolo de Concreto</h2>
+        <p>Slump, temperatura, testigos y curado de concreto en buzones.</p>
+        <span class="badge">CONC-XXX-2026</span>
     </a>
 </div>
 
