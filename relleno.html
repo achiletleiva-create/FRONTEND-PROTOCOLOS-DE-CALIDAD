@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocolo - Relleno y Compactación</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; padding: 10px; font-size: 14px; }
+        .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 13px; text-align: center; color: #004a99; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #eef2f7; padding: 15px; border-radius: 5px; margin-top: 15px; }
+        .section-title { background: #004a99; color: white; padding: 8px 12px; margin-top: 20px; font-weight: bold; border-radius: 4px; font-size: 12px; }
+        .table-section { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; }
+        .table-section th { background: #004a99; color: white; text-align: center; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-save { background: #28a745; } .btn-back { background: #6c757d; } .btn-add { background: #007bff; flex: 0.3; font-size: 12px; }
+        input, select, textarea { width: 100%; padding: 5px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 3px; }
+        .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
+        .btn-pdf-link { display: inline-block; padding: 4px 8px; background: #dc3545; color: white; text-decoration: none; border-radius: 3px; font-size: 9px; }
+        .btn-pdf-link.disabled { background: #aaa; pointer-events: none; }
+        label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 3px; }
+        .lab-box { background: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 15px; }
+        .checkbox-group { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
+        .checkbox-group label { display: flex; align-items: center; gap: 5px; font-weight: normal; cursor: pointer; }
+        .checkbox-group input[type=checkbox] { width: auto; }
+        .btn-del { background: #dc3545; border: none; color: white; padding: 2px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>PROTOCOLO DE CONTROL DE CALIDAD: RELLENO Y COMPACTACIÓN<br>
+    MEJORAMIENTO REDES DE ALCANTARILLADO - SECTOR LIBERACIÓN SOCIAL</h1>
+    <form id="mainForm">
+        <div class="header-grid">
+            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" readonly></div>
+            <div><label>FECHA:</label><input type="date" id="fecha" name="fecha"></div>
+            <div><label>SECTOR / CALLE: *</label><input type="text" name="sector_calle" required placeholder="Ej: Pasaje Los Pinos"></div>
+            <div><label>BUZÓN INICIO:</label><input type="text" name="tramo_bz_inicio" placeholder="BZ-12"></div>
+            <div><label>BUZÓN FIN:</label><input type="text" name="tramo_bz_fin" placeholder="BZ-13"></div>
+            <div><label>TIPO DE VÍA:</label>
+                <select name="tipo_via">
+                    <option>Pasaje / Calle Interna</option>
+                    <option>Avenida Principal</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">2.0 ESPECIFICACIONES TÉCNICAS Y NIVELES</div>
+        <table class="table-section">
+            <thead><tr><th>ÍTEM</th><th>DESCRIPCIÓN</th><th>ESP. PASAJES</th><th>ESP. AVENIDAS</th><th>ESTADO</th></tr></thead>
+            <tbody>
+                <tr><td>2.1</td><td>Cama de Apoyo</td><td>e = 0.10 m</td><td>e = 0.10 m</td><td><select name="esp_cama"><option>C</option><option>NC</option></select></td></tr>
+                <tr><td>2.2</td><td>Relleno de Protección</td><td>0.30 m sobre clave</td><td>0.30 m sobre clave</td><td><select name="esp_relleno"><option>C</option><option>NC</option></select></td></tr>
+                <tr><td>2.3</td><td>Espesor de Capas</td><td>0.20 m a 0.30 m</td><td>0.20 m a 0.30 m</td><td><select name="esp_espesor"><option>C</option><option>NC</option></select></td></tr>
+                <tr><td>2.4</td><td>Nivel de Cierre</td><td>-0.25 m de Rasante</td><td>-0.30 m de Rasante</td><td><select name="esp_nivel"><option>C</option><option>NC</option></select></td></tr>
+                <tr><td>2.5</td><td>Compactación (Zanja)</td><td>≥ 95% M.D.S.</td><td>≥ 95% M.D.S.</td><td><select name="esp_compactacion"><option>C</option><option>NC</option></select></td></tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">3.0 CONTROL DE COMPACTACIÓN (ENSAYOS DE CAMPO)
+            <button type="button" class="btn-add" onclick="agregarEnsayo()" style="margin-left:10px;">+ Añadir punto</button>
+        </div>
+        <table class="table-section" id="tablaEnsayos">
+            <thead><tr><th>#</th><th>Progresiva / Ubicación</th><th>Tramo</th><th>Profundidad</th><th>% Compactación</th><th>Resultado</th><th></th></tr></thead>
+            <tbody id="ensayosBody">
+                <tr id="ensayo-1">
+                    <td>01</td>
+                    <td><input type="text" placeholder="Progresiva"></td>
+                    <td><input type="text" placeholder="Tramo"></td>
+                    <td><input type="text" placeholder="Prof."></td>
+                    <td><input type="number" step="0.1" placeholder="%"></td>
+                    <td><select><option>Cumple</option><option>No Cumple</option></select></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="lab-box">
+            <strong>DATOS DE LABORATORIO (Proctor Modificado)</strong>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:10px;">
+                <div><label>M.D.S. (gr/cm³):</label><input type="number" step="0.001" name="lab_mds" placeholder="gr/cm³"></div>
+                <div><label>Óptimo Contenido Humedad (%):</label><input type="number" step="0.1" name="lab_humedad" placeholder="%"></div>
+            </div>
+        </div>
+
+        <div class="section-title">4.0 EQUIPOS UTILIZADOS</div>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="eq_plancha" value="true"> Plancha Compactadora Vibratoria</label>
+            <label><input type="checkbox" name="eq_vibro" value="true"> Vibroapisonador (Canguro)</label>
+            <label><input type="checkbox" name="eq_moto" value="true"> Motobomba / Cisterna</label>
+        </div>
+        <div style="margin-top:8px;"><label>Otros equipos:</label><input type="text" name="eq_otros"></div>
+
+        <div class="section-title">REGISTRO FOTOGRÁFICO</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+            <div><label>Foto 1: Relleno</label><input type="file" name="foto_relleno" accept="image/*"></div>
+            <div><label>Foto 2: Compactación</label><input type="file" name="foto_compactacion" accept="image/*"></div>
+            <div><label>Foto 3: Ensayo</label><input type="file" name="foto_ensayo" accept="image/*"></div>
+        </div>
+        <div style="margin-top:15px;"><label>OBSERVACIONES:</label><textarea name="observaciones" rows="3"></textarea></div>
+
+        <div class="btn-group">
+            <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
+            <button type="submit" class="btn-save">🚀 GUARDAR EN NUBE</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" style="margin-top:30px;">
+    <div class="section-title">📂 HISTORIAL DE RELLENOS</div>
+    <div style="overflow-x:auto;">
+        <table class="table-section" style="font-size:10px;">
+            <thead><tr><th>NRO</th><th>FECHA</th><th>SECTOR</th><th>TRAMO</th><th>TIPO VÍA</th><th>ESTADO</th><th>PDF</th></tr></thead>
+            <tbody id="tablaHistorial"></tbody>
+        </table>
+    </div>
+</div>
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/relleno';
+    let ultimoId = null;
+    let contadorEnsayo = 1;
+    document.getElementById('fecha').valueAsDate = new Date();
+
+    function showMessage(msg, isError = false) {
+        const t = document.getElementById('toastMsg');
+        t.innerText = msg; t.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+        t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 4000);
+    }
+
+    function agregarEnsayo() {
+        contadorEnsayo++;
+        const tbody = document.getElementById('ensayosBody');
+        const tr = document.createElement('tr');
+        tr.id = `ensayo-${contadorEnsayo}`;
+        tr.innerHTML = `<td>${String(contadorEnsayo).padStart(2, '0')}</td>
+            <td><input type="text" placeholder="Progresiva"></td>
+            <td><input type="text" placeholder="Tramo"></td>
+            <td><input type="text" placeholder="Prof."></td>
+            <td><input type="number" step="0.1" placeholder="%"></td>
+            <td><select><option>Cumple</option><option>No Cumple</option></select></td>
+            <td><button type="button" class="btn-del" onclick="this.closest('tr').remove()">✕</button></td>`;
+        tbody.appendChild(tr);
+    }
+
+    function recolectarEnsayos() {
+        const rows = document.querySelectorAll('#ensayosBody tr');
+        return Array.from(rows).map((tr, i) => {
+            const celdas = tr.querySelectorAll('td');
+            return {
+                punto: i + 1,
+                progresiva_ubicacion: celdas[1].querySelector('input')?.value || '',
+                tramo: celdas[2].querySelector('input')?.value || '',
+                profundidad: celdas[3].querySelector('input')?.value || '',
+                porcentaje_compactacion: parseFloat(celdas[4].querySelector('input')?.value) || 0,
+                resultado: celdas[5].querySelector('select')?.value || 'Cumple'
+            };
+        });
+    }
+
+    async function consultarCorrelativo() {
+        try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+    }
+
+    async function generarYSubirPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const form = document.getElementById('mainForm');
+
+        doc.setFontSize(8); doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+        doc.text("PROTOCOLO DE CONTROL: RELLENO Y COMPACTACIÓN", 105, 18, { align: "center" });
+        doc.setFontSize(9); doc.setTextColor(0);
+        doc.text(`NRO: ${document.getElementById('nro_prot').value}  |  SECTOR: ${form.querySelector('[name=sector_calle]').value}`, 15, 26);
+        doc.text(`VÍA: ${form.querySelector('[name=tipo_via]').value}`, 15, 32);
+
+        doc.autoTable({
+            startY: 38, theme: 'grid',
+            head: [['ESPECIFICACIÓN', 'ESP. PASAJES', 'ESP. AVENIDAS', 'ESTADO']],
+            body: [
+                ['Cama de Apoyo', 'e = 0.10 m', 'e = 0.10 m', form.querySelector('[name=esp_cama]').value],
+                ['Relleno de Protección', '0.30m sobre clave', '0.30m sobre clave', form.querySelector('[name=esp_relleno]').value],
+                ['Espesor de Capas', '0.20-0.30 m', '0.20-0.30 m', form.querySelector('[name=esp_espesor]').value],
+                ['Nivel de Cierre', '-0.25m Rasante', '-0.30m Rasante', form.querySelector('[name=esp_nivel]').value],
+                ['Compactación', '≥ 95% MDS', '≥ 95% MDS', form.querySelector('[name=esp_compactacion]').value]
+            ], styles: { fontSize: 8 }
+        });
+
+        const ensayos = recolectarEnsayos();
+        if (ensayos.length > 0) {
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 5, theme: 'grid',
+                head: [['#', 'Progresiva', 'Tramo', 'Prof.', '% Compact.', 'Resultado']],
+                body: ensayos.map(e => [e.punto, e.progresiva_ubicacion, e.tramo, e.profundidad, e.porcentaje_compactacion + '%', e.resultado]),
+                styles: { fontSize: 8 }
+            });
+        }
+
+        const mds = form.querySelector('[name=lab_mds]').value;
+        const hum = form.querySelector('[name=lab_humedad]').value;
+        if (mds || hum) {
+            let ly = doc.lastAutoTable.finalY + 5;
+            doc.setFontSize(8);
+            doc.text(`LABORATORIO - MDS: ${mds} gr/cm³  |  Óptimo Humedad: ${hum}%`, 15, ly);
+        }
+
+        let fy = doc.lastAutoTable.finalY + 30; if (fy > 260) { doc.addPage(); fy = 20; }
+        doc.setFontSize(7);
+        [['ESP. CALIDAD', 15], ['RESIDENTE DE OBRA', 77], ['SUPERVISOR', 139]].forEach(([label, x]) => {
+            doc.line(x, fy, x + 50, fy); doc.text(label, x + 25, fy + 4, { align: "center" });
+        });
+
+        const fotos = [];
+        for (const inp of form.querySelectorAll('input[type="file"]')) {
+            if (inp.files[0]) await new Promise(res => { const r = new FileReader(); r.onload = e => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '' }); res(); }; r.readAsDataURL(inp.files[0]); });
+        }
+        if (fotos.length > 0) {
+            doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+            doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
+            fotos.forEach((f, i) => {
+                const x = 15 + (i % 2) * 97, y = 25 + Math.floor(i / 2) * 85;
+                doc.addImage(f.src, 'JPEG', x, y, 85, 65, undefined, 'FAST');
+                doc.setFontSize(7); doc.text(f.label, x + 42, y + 70, { align: "center" });
+            });
+        }
+
+        const nombre = `Relleno_${document.getElementById('nro_prot').value}.pdf`;
+        doc.save(nombre);
+        if (ultimoId) {
+            try {
+                const fd = new FormData(); fd.append('pdf', doc.output('blob'), nombre);
+                const res = await fetch(`${API_URL}/${ultimoId}/pdf`, { method: 'PATCH', body: fd });
+                if (res.ok) { showMessage("✅ PDF guardado en la nube"); cargarHistorial(); }
+                else { const e = await res.json(); showMessage("⚠️ PDF local OK, nube falló: " + (e.error || ''), true); }
+            } catch (e) { showMessage("⚠️ Error al subir PDF", true); }
+        }
+    }
+
+    document.getElementById('mainForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('.btn-save');
+        btn.innerText = "GUARDANDO..."; btn.disabled = true;
+        try {
+            const fd = new FormData(e.target);
+            fd.append('ensayos', JSON.stringify(recolectarEnsayos()));
+            const res = await fetch(API_URL, { method: 'POST', body: fd });
+            if (res.ok) {
+                const d = await res.json(); ultimoId = d.id;
+                showMessage("✅ Guardado. Generando PDF...");
+                await new Promise(r => setTimeout(r, 500));
+                await generarYSubirPDF();
+                consultarCorrelativo(); cargarHistorial();
+            } else { const err = await res.json(); showMessage("❌ " + (err.error || 'Error'), true); }
+        } catch (e) { showMessage("❌ Error de conexión", true); }
+        finally { btn.innerText = "🚀 GUARDAR EN NUBE"; btn.disabled = false; }
+    });
+
+    async function cargarHistorial() {
+        try {
+            const res = await fetch(API_URL); const data = await res.json();
+            const tabla = document.getElementById('tablaHistorial'); tabla.innerHTML = '';
+            data.forEach(p => {
+                const tieneNC = Object.values(p.especificaciones || {}).includes('NC');
+                const color = tieneNC ? '#dc3545' : '#28a745';
+                const btn = p.pdf_url ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>` : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${p.nro_protocolo}</td><td>${new Date(p.fecha).toLocaleDateString()}</td><td>${p.datos_identificacion?.sector_calle || 'S/N'}</td><td>${p.datos_identificacion?.tramo_bz_inicio || ''} → ${p.datos_identificacion?.tramo_bz_fin || ''}</td><td>${p.datos_identificacion?.tipo_via || 'S/N'}</td><td style="color:white;background:${color};font-weight:bold;text-align:center">${tieneNC ? 'CON OBS.' : 'LIBERADO'}</td><td>${btn}</td>`;
+                tabla.appendChild(tr);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    consultarCorrelativo(); cargarHistorial();
+</script>
+</body>
+</html>

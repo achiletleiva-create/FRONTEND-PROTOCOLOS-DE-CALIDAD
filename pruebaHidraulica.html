@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocolo - Prueba Hidráulica Zanja Tapada</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; padding: 10px; font-size: 14px; }
+        .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 13px; text-align: center; color: #004a99; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #eef2f7; padding: 15px; border-radius: 5px; margin-top: 15px; }
+        .section-title { background: #004a99; color: white; padding: 8px 12px; margin-top: 20px; font-weight: bold; border-radius: 4px; font-size: 12px; }
+        .table-section { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; }
+        .table-section th { background: #004a99; color: white; text-align: center; }
+        .resultado-box { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 5px; padding: 15px; margin-top: 20px; }
+        .resultado-box.rechazado { background: #f8d7da; border-color: #f5c6cb; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-save { background: #28a745; } .btn-back { background: #6c757d; }
+        input, select, textarea { width: 100%; padding: 5px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 3px; }
+        .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
+        .btn-pdf-link { display: inline-block; padding: 4px 8px; background: #dc3545; color: white; text-decoration: none; border-radius: 3px; font-size: 9px; }
+        .btn-pdf-link.disabled { background: #aaa; pointer-events: none; }
+        label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 3px; }
+        #veredicto { font-size: 16px; font-weight: bold; padding: 8px 15px; border-radius: 4px; display: inline-block; }
+        .aprobado { color: #155724; background: #c3e6cb; }
+        .rechazado-text { color: #721c24; background: #f5c6cb; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>PROTOCOLO DE CONTROL DE CALIDAD: PRUEBA HIDRÁULICA A ZANJA TAPADA<br>
+    MEJORAMIENTO REDES DE ALCANTARILLADO - SECTOR LIBERACIÓN SOCIAL</h1>
+    <form id="mainForm">
+        <div class="header-grid">
+            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" readonly></div>
+            <div><label>FECHA:</label><input type="date" id="fecha" name="fecha"></div>
+            <div><label>BUZÓN INICIO: *</label><input type="text" name="bz_inicio" required placeholder="Ej: BZ-12"></div>
+            <div><label>BUZÓN FIN: *</label><input type="text" name="bz_fin" required placeholder="Ej: BZ-13"></div>
+            <div><label>MATERIAL / DIÁMETRO:</label><input type="text" name="material_diametro" placeholder="PVC-U ISO / DN 200mm"></div>
+            <div><label>LONGITUD DEL TRAMO (m):</label><input type="number" step="0.01" name="longitud_tramo"></div>
+            <div><label>HORA PUESTA EN SERVICIO:</label><input type="time" name="hora_puesta_servicio"></div>
+        </div>
+
+        <div class="section-title">3.0 CONTROL DE ALINEAMIENTO Y PENDIENTE (POST-INSTALACIÓN)</div>
+        <table class="table-section">
+            <thead><tr><th>PARÁMETRO</th><th>VALOR EJECUTADO</th><th>ESTADO</th></tr></thead>
+            <tbody>
+                <tr><td>Cota Invertida Salida (m.s.n.m)</td><td><input type="number" step="0.001" name="alin_cota_salida"></td><td rowspan="4" style="text-align:center;vertical-align:middle"><select name="alin_estado"><option>C</option><option>NC</option></select></td></tr>
+                <tr><td>Cota Invertida Llegada (m.s.n.m)</td><td><input type="number" step="0.001" name="alin_cota_llegada"></td></tr>
+                <tr><td>Pendiente Calculada S (% / °°)</td><td><input type="number" step="0.01" name="alin_pendiente"></td></tr>
+                <tr><td>Prueba de Espejo</td><td><select name="alin_espejo"><option>Completa</option><option>Parcial</option></select></td></tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">4.0 VERIFICACIÓN DE OPERATIVIDAD Y HERMETICIDAD</div>
+        <table class="table-section">
+            <thead><tr><th>ÍTEM</th><th>DESCRIPCIÓN</th><th>ESTADO</th></tr></thead>
+            <tbody>
+                <tr><td>4.1</td><td>Flujo libre de aguas residuales entre buzones</td><td><select name="op_flujo" onchange="evaluarResultado()"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>4.2</td><td>Uniones y empalmes con la red existente son estancos</td><td><select name="op_uniones" onchange="evaluarResultado()"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>4.3</td><td>Retirados todos los restos de materiales/escombros del ducto</td><td><select name="op_limpieza" onchange="evaluarResultado()"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>4.4</td><td>Profundidad de tubería cumple con el recubrimiento mínimo</td><td><select name="op_recubrimiento" onchange="evaluarResultado()"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>4.5</td><td>Tramo operativo y sin represamientos</td><td><select name="op_represamiento" onchange="evaluarResultado()"><option>SI</option><option>NO</option></select></td></tr>
+            </tbody>
+        </table>
+
+        <div class="resultado-box" id="resultadoBox">
+            <strong>RESULTADO FINAL:</strong>
+            <span id="veredicto" class="aprobado">APROBADO</span>
+            <input type="hidden" name="resultado_final" id="resultado_final" value="APROBADO">
+        </div>
+
+        <div class="section-title">REGISTRO FOTOGRÁFICO</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+            <div><label>Foto 1: Antes</label><input type="file" name="foto_antes" accept="image/*"></div>
+            <div><label>Foto 2: Durante</label><input type="file" name="foto_durante" accept="image/*"></div>
+            <div><label>Foto 3: Después</label><input type="file" name="foto_despues" accept="image/*"></div>
+        </div>
+        <div style="margin-top:15px;"><label>OBSERVACIONES:</label><textarea name="observaciones" rows="3"></textarea></div>
+
+        <div class="btn-group">
+            <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
+            <button type="submit" class="btn-save">🚀 GUARDAR EN NUBE</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" style="margin-top:30px;">
+    <div class="section-title">📂 HISTORIAL DE PRUEBAS HIDRÁULICAS</div>
+    <div style="overflow-x:auto;">
+        <table class="table-section" style="font-size:10px;">
+            <thead><tr><th>NRO</th><th>FECHA</th><th>TRAMO</th><th>MATERIAL / DN</th><th>LONGITUD</th><th>RESULTADO</th><th>PDF</th></tr></thead>
+            <tbody id="tablaHistorial"></tbody>
+        </table>
+    </div>
+</div>
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/prueba-hidraulica';
+    let ultimoId = null;
+    document.getElementById('fecha').valueAsDate = new Date();
+
+    function showMessage(msg, isError = false) {
+        const t = document.getElementById('toastMsg');
+        t.innerText = msg; t.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+        t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 4000);
+    }
+
+    function evaluarResultado() {
+        const selectores = ['op_flujo', 'op_uniones', 'op_limpieza', 'op_recubrimiento', 'op_represamiento'];
+        const tieneNO = selectores.some(n => document.querySelector(`[name=${n}]`).value === 'NO');
+        const v = document.getElementById('veredicto');
+        const box = document.getElementById('resultadoBox');
+        const hidden = document.getElementById('resultado_final');
+        if (tieneNO) {
+            v.innerText = 'RECHAZADO'; v.className = 'rechazado-text';
+            box.className = 'resultado-box rechazado'; hidden.value = 'RECHAZADO';
+        } else {
+            v.innerText = 'APROBADO'; v.className = 'aprobado';
+            box.className = 'resultado-box'; hidden.value = 'APROBADO';
+        }
+    }
+
+    async function consultarCorrelativo() {
+        try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+    }
+
+    async function generarYSubirPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const form = document.getElementById('mainForm');
+
+        doc.setFontSize(8); doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+        doc.text("PROTOCOLO: PRUEBA HIDRÁULICA A ZANJA TAPADA", 105, 18, { align: "center" });
+        doc.setFontSize(9); doc.setTextColor(0);
+        doc.text(`NRO: ${document.getElementById('nro_prot').value}  |  TRAMO: BZ-${form.querySelector('[name=bz_inicio]').value} a BZ-${form.querySelector('[name=bz_fin]').value}`, 15, 26);
+        doc.text(`MATERIAL: ${form.querySelector('[name=material_diametro]').value}  |  L= ${form.querySelector('[name=longitud_tramo]').value}m`, 15, 32);
+
+        doc.autoTable({
+            startY: 38, theme: 'grid',
+            head: [['ALINEAMIENTO Y PENDIENTE', 'VALOR']],
+            body: [
+                ['Cota Invertida Salida (m.s.n.m)', form.querySelector('[name=alin_cota_salida]').value],
+                ['Cota Invertida Llegada (m.s.n.m)', form.querySelector('[name=alin_cota_llegada]').value],
+                ['Pendiente S (%)', form.querySelector('[name=alin_pendiente]').value],
+                ['Prueba de Espejo', form.querySelector('[name=alin_espejo]').value],
+                ['Estado', form.querySelector('[name=alin_estado]').value]
+            ], styles: { fontSize: 8 }
+        });
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 5, theme: 'grid',
+            head: [['VERIFICACIÓN DE OPERATIVIDAD', 'ESTADO']],
+            body: [
+                ['Flujo libre de aguas residuales', form.querySelector('[name=op_flujo]').value],
+                ['Uniones y empalmes estancos', form.querySelector('[name=op_uniones]').value],
+                ['Ducto limpio sin escombros', form.querySelector('[name=op_limpieza]').value],
+                ['Recubrimiento mínimo cumple', form.querySelector('[name=op_recubrimiento]').value],
+                ['Sin represamientos', form.querySelector('[name=op_represamiento]').value]
+            ], styles: { fontSize: 8 }
+        });
+
+        const resultado = document.getElementById('resultado_final').value;
+        let ry = doc.lastAutoTable.finalY + 8;
+        doc.setFontSize(11); doc.setTextColor(resultado === 'APROBADO' ? 0 : 220, resultado === 'APROBADO' ? 128 : 53, resultado === 'APROBADO' ? 0 : 69);
+        doc.setFont("helvetica", "bold");
+        doc.text(`RESULTADO FINAL: ${resultado}`, 105, ry, { align: "center" });
+        doc.setTextColor(0); doc.setFont("helvetica", "normal");
+
+        const obs = form.querySelector('[name=observaciones]').value;
+        if (obs) { doc.setFontSize(8); doc.text("OBSERVACIONES: " + obs, 15, ry + 8, { maxWidth: 180 }); }
+
+        let fy = ry + 30; if (fy > 260) { doc.addPage(); fy = 20; }
+        doc.setFontSize(7);
+        [['ESP. CALIDAD', 15], ['RESIDENTE DE OBRA', 77], ['SUPERVISOR', 139]].forEach(([label, x]) => {
+            doc.line(x, fy, x + 50, fy); doc.text(label, x + 25, fy + 4, { align: "center" });
+        });
+
+        // Fotos
+        const fotos = [];
+        for (const inp of form.querySelectorAll('input[type="file"]')) {
+            if (inp.files[0]) await new Promise(res => { const r = new FileReader(); r.onload = e => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '' }); res(); }; r.readAsDataURL(inp.files[0]); });
+        }
+        if (fotos.length > 0) {
+            doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+            doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
+            fotos.forEach((f, i) => {
+                const x = 15 + (i % 2) * 97, y = 25 + Math.floor(i / 2) * 85;
+                doc.addImage(f.src, 'JPEG', x, y, 85, 65, undefined, 'FAST');
+                doc.setFontSize(7); doc.text(f.label, x + 42, y + 70, { align: "center" });
+            });
+        }
+
+        const nombre = `PruebaHidraulica_${document.getElementById('nro_prot').value}.pdf`;
+        doc.save(nombre);
+        if (ultimoId) {
+            try {
+                const fd = new FormData(); fd.append('pdf', doc.output('blob'), nombre);
+                const res = await fetch(`${API_URL}/${ultimoId}/pdf`, { method: 'PATCH', body: fd });
+                if (res.ok) { showMessage("✅ PDF guardado en la nube"); cargarHistorial(); }
+                else { const e = await res.json(); showMessage("⚠️ PDF local OK, nube falló: " + (e.error || ''), true); }
+            } catch (e) { showMessage("⚠️ Error al subir PDF", true); }
+        }
+    }
+
+    document.getElementById('mainForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('.btn-save');
+        btn.innerText = "GUARDANDO..."; btn.disabled = true;
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: new FormData(e.target) });
+            if (res.ok) {
+                const d = await res.json(); ultimoId = d.id;
+                showMessage("✅ Guardado. Generando PDF...");
+                await new Promise(r => setTimeout(r, 500));
+                await generarYSubirPDF();
+                consultarCorrelativo(); cargarHistorial();
+            } else { const err = await res.json(); showMessage("❌ " + (err.error || 'Error'), true); }
+        } catch (e) { showMessage("❌ Error de conexión", true); }
+        finally { btn.innerText = "🚀 GUARDAR EN NUBE"; btn.disabled = false; }
+    });
+
+    async function cargarHistorial() {
+        try {
+            const res = await fetch(API_URL); const data = await res.json();
+            const tabla = document.getElementById('tablaHistorial'); tabla.innerHTML = '';
+            data.forEach(p => {
+                const aprobado = p.resultado_final === 'APROBADO';
+                const color = aprobado ? '#28a745' : '#dc3545';
+                const btn = p.pdf_url ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>` : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${p.nro_protocolo}</td><td>${new Date(p.fecha).toLocaleDateString()}</td><td>BZ-${p.datos_tramo?.bz_inicio} → BZ-${p.datos_tramo?.bz_fin}</td><td>${p.datos_tramo?.material_diametro || 'S/N'}</td><td>${p.datos_tramo?.longitud_tramo || 'S/N'} m</td><td style="color:white;background:${color};font-weight:bold;text-align:center">${p.resultado_final || '---'}</td><td>${btn}</td>`;
+                tabla.appendChild(tr);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    consultarCorrelativo(); cargarHistorial();
+</script>
+</body>
+</html>
