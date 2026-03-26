@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocolo - Excavación de Zanjas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; padding: 10px; font-size: 14px; }
+        .container { max-width: 900px; background: white; padding: 25px; border-radius: 10px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 13px; text-align: center; color: #004a99; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #eef2f7; padding: 15px; border-radius: 5px; margin-top: 15px; }
+        .section-title { background: #004a99; color: white; padding: 8px 12px; margin-top: 20px; font-weight: bold; border-radius: 4px; font-size: 12px; }
+        .table-section { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        .table-section th, .table-section td { border: 1px solid #ccc; padding: 6px; }
+        .table-section th { background: #004a99; color: white; text-align: center; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-save { background: #28a745; } .btn-back { background: #6c757d; }
+        input, select, textarea { width: 100%; padding: 5px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 3px; }
+        .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
+        .btn-pdf-link { display: inline-block; padding: 4px 8px; background: #dc3545; color: white; text-decoration: none; border-radius: 3px; font-size: 9px; }
+        .btn-pdf-link.disabled { background: #aaa; pointer-events: none; }
+        label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 3px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>PROTOCOLO DE CONTROL DE CALIDAD: EXCAVACIÓN DE ZANJAS<br>
+    MEJORAMIENTO REDES DE ALCANTARILLADO - SECTOR LIBERACIÓN SOCIAL</h1>
+
+    <form id="mainForm">
+        <div class="header-grid">
+            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" readonly></div>
+            <div><label>FECHA:</label><input type="date" id="fecha" name="fecha"></div>
+            <div><label>BUZÓN INICIO: *</label><input type="text" name="tramo_bz_inicio" placeholder="Ej: BZ-12" required></div>
+            <div><label>BUZÓN FIN: *</label><input type="text" name="tramo_bz_fin" placeholder="Ej: BZ-13" required></div>
+            <div><label>CALLE / PASAJE:</label><input type="text" name="calle_pasaje"></div>
+            <div><label>MÉTODO DE EXCAVACIÓN:</label>
+                <select name="metodo_excavacion">
+                    <option>Manual</option>
+                    <option>Mecánica (Retroexcavadora)</option>
+                </select>
+            </div>
+            <div><label>TIPO DE TERRENO:</label>
+                <select name="tipo_terreno">
+                    <option>Terreno Normal</option>
+                    <option>Terreno Semirocoso</option>
+                    <option>Terreno Rocoso</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="section-title">3.0 CONTROL TOPOGRÁFICO</div>
+        <table class="table-section">
+            <thead><tr><th>PUNTO DE CONTROL</th><th>UNIDAD</th><th>VALOR PROYECTO</th><th>VALOR REALIZADO</th></tr></thead>
+            <tbody>
+                <tr><td>Ancho de Zanja (B)</td><td>m</td><td><input type="number" step="0.01" name="ancho_proyecto"></td><td><input type="number" step="0.01" name="ancho_realizado"></td></tr>
+                <tr><td>Profundidad Inicio (BZ-A)</td><td>m</td><td><input type="number" step="0.01" name="prof_ini_proyecto"></td><td><input type="number" step="0.01" name="prof_ini_realizado"></td></tr>
+                <tr><td>Profundidad Final (BZ-B)</td><td>m</td><td><input type="number" step="0.01" name="prof_fin_proyecto"></td><td><input type="number" step="0.01" name="prof_fin_realizado"></td></tr>
+                <tr><td>Cota de Fondo de Zanja</td><td>m.s.n.m</td><td><input type="number" step="0.001" name="cota_proyecto"></td><td><input type="number" step="0.001" name="cota_realizado"></td></tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">4.0 CONDICIONES DE SEGURIDAD Y CALIDAD</div>
+        <table class="table-section">
+            <thead><tr><th>ÍTEM</th><th>DESCRIPCIÓN</th><th>ESTADO</th></tr></thead>
+            <tbody>
+                <tr><td>4.1</td><td>Señalización y cerco perimétrico de seguridad</td><td><select name="seg_senalizacion"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>4.2</td><td>Fondo de zanja nivelado y libre de piedras</td><td><select name="seg_fondo"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>4.3</td><td>Entibado requerido (paramento vertical inestable)</td><td><select name="seg_entibado"><option>N/A</option><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>4.4</td><td>Excavación seca (libre de agua freática)</td><td><select name="seg_seca"><option>SI</option><option>NO</option><option>N/A</option></select></td></tr>
+                <tr><td>4.5</td><td>Material excedente apilado a > 0.60 m del borde</td><td><select name="seg_excedente"><option>SI</option><option>NO</option></select></td></tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">REGISTRO FOTOGRÁFICO</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+            <div><label>Foto 1: Inicio de zanja</label><input type="file" name="foto_inicio" accept="image/*"></div>
+            <div><label>Foto 2: Fondo de zanja</label><input type="file" name="foto_fondo" accept="image/*"></div>
+            <div><label>Foto 3: Seguridad</label><input type="file" name="foto_seguridad" accept="image/*"></div>
+        </div>
+
+        <div style="margin-top:15px;"><label>OBSERVACIONES:</label><textarea name="observaciones" rows="3"></textarea></div>
+
+        <div class="btn-group">
+            <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
+            <button type="submit" class="btn-save">🚀 GUARDAR EN NUBE</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" style="margin-top:30px;">
+    <div class="section-title">📂 HISTORIAL DE EXCAVACIONES</div>
+    <div style="overflow-x:auto;">
+        <table class="table-section" style="font-size:10px;">
+            <thead><tr><th>NRO PROTOCOLO</th><th>FECHA</th><th>TRAMO</th><th>MÉTODO</th><th>TERRENO</th><th>ESTADO</th><th>PDF</th></tr></thead>
+            <tbody id="tablaHistorial"></tbody>
+        </table>
+    </div>
+</div>
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/excavacion';
+    let ultimoId = null;
+    document.getElementById('fecha').valueAsDate = new Date();
+
+    function showMessage(msg, isError = false) {
+        const t = document.getElementById('toastMsg');
+        t.innerText = msg; t.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+        t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 4000);
+    }
+
+    async function consultarCorrelativo() {
+        try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+    }
+
+    async function generarYSubirPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const form = document.getElementById('mainForm');
+        const bz_ini = form.querySelector('[name=tramo_bz_inicio]').value;
+        const bz_fin = form.querySelector('[name=tramo_bz_fin]').value;
+
+        doc.setFontSize(8); doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+        doc.text("PROTOCOLO DE CONTROL: EXCAVACIÓN DE ZANJAS", 105, 18, { align: "center" });
+        doc.setFontSize(9); doc.setTextColor(0);
+        doc.text(`NRO: ${document.getElementById('nro_prot').value}  |  TRAMO: BZ-${bz_ini} a BZ-${bz_fin}`, 15, 26);
+        doc.text(`MÉTODO: ${form.querySelector('[name=metodo_excavacion]').value}  |  TERRENO: ${form.querySelector('[name=tipo_terreno]').value}`, 15, 32);
+
+        doc.autoTable({
+            startY: 38, theme: 'grid',
+            head: [['CONTROL TOPOGRÁFICO', 'PROYECTO', 'REALIZADO']],
+            body: [
+                ['Ancho de Zanja (m)', form.querySelector('[name=ancho_proyecto]').value, form.querySelector('[name=ancho_realizado]').value],
+                ['Prof. Inicio (m)', form.querySelector('[name=prof_ini_proyecto]').value, form.querySelector('[name=prof_ini_realizado]').value],
+                ['Prof. Final (m)', form.querySelector('[name=prof_fin_proyecto]').value, form.querySelector('[name=prof_fin_realizado]').value],
+                ['Cota Fondo (m.s.n.m)', form.querySelector('[name=cota_proyecto]').value, form.querySelector('[name=cota_realizado]').value]
+            ], styles: { fontSize: 8 }
+        });
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 5, theme: 'grid',
+            head: [['CONDICIÓN DE SEGURIDAD', 'ESTADO']],
+            body: [
+                ['Señalización y cerco perimétrico', form.querySelector('[name=seg_senalizacion]').value],
+                ['Fondo nivelado y libre de piedras', form.querySelector('[name=seg_fondo]').value],
+                ['Entibado', form.querySelector('[name=seg_entibado]').value],
+                ['Zanja seca', form.querySelector('[name=seg_seca]').value],
+                ['Material excedente > 0.60m', form.querySelector('[name=seg_excedente]').value]
+            ], styles: { fontSize: 8 }
+        });
+
+        const obs = form.querySelector('[name=observaciones]').value;
+        if (obs) { let y = doc.lastAutoTable.finalY + 8; doc.setFontSize(8); doc.text("OBSERVACIONES: " + obs, 15, y, { maxWidth: 180 }); }
+
+        let fy = doc.lastAutoTable.finalY + 25;
+        if (fy > 260) { doc.addPage(); fy = 20; }
+        const anchoF = 50, esp = 12, ix = 15;
+        doc.setFontSize(7);
+        [['ESP. CALIDAD', ix], ['RESIDENTE DE OBRA', ix + anchoF + esp], ['SUPERVISOR', ix + 2 * anchoF + 2 * esp]].forEach(([label, x]) => {
+            doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
+        });
+
+        const nombre = `Excavacion_${document.getElementById('nro_prot').value}.pdf`;
+        doc.save(nombre);
+        if (ultimoId) {
+            try {
+                const fd = new FormData(); fd.append('pdf', doc.output('blob'), nombre);
+                const res = await fetch(`${API_URL}/${ultimoId}/pdf`, { method: 'PATCH', body: fd });
+                if (res.ok) { showMessage("✅ PDF guardado en la nube"); cargarHistorial(); }
+                else { const e = await res.json(); showMessage("⚠️ PDF local OK, nube falló: " + (e.error || ''), true); }
+            } catch (e) { showMessage("⚠️ Error al subir PDF", true); }
+        }
+    }
+
+    document.getElementById('mainForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('.btn-save');
+        btn.innerText = "GUARDANDO..."; btn.disabled = true;
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: new FormData(e.target) });
+            if (res.ok) {
+                const d = await res.json(); ultimoId = d.id;
+                showMessage("✅ Guardado. Generando PDF...");
+                await new Promise(r => setTimeout(r, 500));
+                await generarYSubirPDF();
+                consultarCorrelativo(); cargarHistorial();
+            } else { const err = await res.json(); showMessage("❌ " + (err.error || 'Error'), true); }
+        } catch (e) { showMessage("❌ Error de conexión", true); }
+        finally { btn.innerText = "🚀 GUARDAR EN NUBE"; btn.disabled = false; }
+    });
+
+    async function cargarHistorial() {
+        try {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            const tabla = document.getElementById('tablaHistorial');
+            tabla.innerHTML = '';
+            data.forEach(p => {
+                const tieneNO = Object.values(p.condiciones_seguridad || {}).includes('NO');
+                const color = tieneNO ? '#dc3545' : '#28a745';
+                const btn = p.pdf_url ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>` : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${p.nro_protocolo}</td><td>${new Date(p.fecha).toLocaleDateString()}</td><td>BZ-${p.datos_identificacion?.tramo_bz_inicio} → BZ-${p.datos_identificacion?.tramo_bz_fin}</td><td>${p.datos_identificacion?.metodo_excavacion || 'S/N'}</td><td>${p.datos_identificacion?.tipo_terreno || 'S/N'}</td><td style="color:white;background:${color};font-weight:bold;text-align:center">${tieneNO ? 'CON OBS.' : 'LIBERADO'}</td><td>${btn}</td>`;
+                tabla.appendChild(tr);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    consultarCorrelativo(); cargarHistorial();
+</script>
+</body>
+</html>
