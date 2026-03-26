@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso — Sistema de Control de Calidad</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@300;400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --azul: #004a99; --azul-claro: #0062cc; --azul-brillante: #1e90ff;
+            --dorado: #f0a500; --blanco: #ffffff;
+        }
+        html, body { width: 100%; height: 100%; background: #000d1a; font-family: 'Raleway', sans-serif; }
+
+        .bg {
+            position: fixed; inset: 0; z-index: 0;
+            background: linear-gradient(135deg, #000d1a 0%, #001f45 40%, #003080 70%, #000d1a 100%);
+        }
+        .grid-overlay {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(0,98,204,0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,98,204,0.08) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove { 0% { transform: translateY(0); } 100% { transform: translateY(60px); } }
+
+        .page {
+            position: relative; z-index: 10;
+            width: 100%; min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px;
+        }
+
+        .login-box {
+            width: 100%; max-width: 420px;
+            background: rgba(0, 20, 50, 0.85);
+            border: 1px solid rgba(0, 98, 204, 0.3);
+            border-radius: 4px;
+            padding: 40px 36px;
+            backdrop-filter: blur(10px);
+            animation: fadeUp 0.7s ease forwards;
+            position: relative;
+        }
+        .login-box::before, .login-box::after {
+            content: ''; position: absolute; width: 14px; height: 14px;
+            border-color: var(--dorado); border-style: solid;
+        }
+        .login-box::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .login-box::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+        .login-icon { font-size: 48px; text-align: center; margin-bottom: 10px; }
+        .login-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px; letter-spacing: 3px;
+            color: var(--blanco); text-align: center; margin-bottom: 4px;
+        }
+        .login-sub {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 10px; letter-spacing: 3px;
+            color: var(--dorado); text-align: center;
+            text-transform: uppercase; margin-bottom: 30px;
+        }
+
+        .field { margin-bottom: 18px; }
+        .field label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px; letter-spacing: 2px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase; display: block; margin-bottom: 6px;
+        }
+        .field input {
+            width: 100%; padding: 12px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,98,204,0.4);
+            border-radius: 2px; color: white;
+            font-family: 'Raleway', sans-serif; font-size: 14px;
+            outline: none; transition: border-color 0.2s;
+        }
+        .field input:focus { border-color: var(--dorado); }
+
+        .btn-login {
+            width: 100%; padding: 14px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px; letter-spacing: 4px;
+            color: #000d1a; background: var(--dorado);
+            border: none; border-radius: 2px;
+            cursor: pointer; margin-top: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(240,165,0,0.3);
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(240,165,0,0.5); }
+        .btn-login:disabled { background: #555; color: #999; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .error-msg {
+            margin-top: 14px; padding: 10px 14px;
+            background: rgba(220,53,69,0.15);
+            border: 1px solid rgba(220,53,69,0.4);
+            border-radius: 2px; color: #ff6b7a;
+            font-size: 12px; text-align: center;
+            display: none;
+        }
+
+        .footer {
+            margin-top: 24px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 10px; letter-spacing: 2px;
+            color: rgba(255,255,255,0.2); text-align: center;
+        }
+
+        @keyframes fadeUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="bg"><div class="grid-overlay"></div></div>
+
+<div class="page">
+    <div class="login-box">
+        <div class="login-icon">🔐</div>
+        <div class="login-title">ACCESO AL SISTEMA</div>
+        <div class="login-sub">Control de Calidad — Liberación Social</div>
+
+        <form id="loginForm">
+            <div class="field">
+                <label>Usuario</label>
+                <input type="text" id="username" placeholder="Ingresa tu usuario" autocomplete="username" required>
+            </div>
+            <div class="field">
+                <label>Contraseña</label>
+                <input type="password" id="password" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn-login" id="btnLogin">▶ &nbsp; INGRESAR</button>
+            <div class="error-msg" id="errorMsg"></div>
+        </form>
+    </div>
+    <div class="footer">SISTEMA DE GESTIÓN DE CALIDAD — LIBERACIÓN SOCIAL © 2026</div>
+</div>
+
+<script>
+    const API = 'https://backend-protocolos-de-calidad.onrender.com/api/auth';
+
+    // Si ya tiene token válido, redirigir directo al menú
+    if (sessionStorage.getItem('token')) window.location.href = 'menu.html';
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnLogin');
+        const errorMsg = document.getElementById('errorMsg');
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        btn.disabled = true; btn.innerText = 'VERIFICANDO...';
+        errorMsg.style.display = 'none';
+
+        try {
+            const res = await fetch(`${API}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                sessionStorage.setItem('token', data.token);
+                sessionStorage.setItem('username', data.username);
+                window.location.href = 'menu.html';
+            } else {
+                errorMsg.innerText = data.error || 'Credenciales incorrectas.';
+                errorMsg.style.display = 'block';
+            }
+        } catch {
+            errorMsg.innerText = '❌ Error de conexión con el servidor.';
+            errorMsg.style.display = 'block';
+        } finally {
+            btn.disabled = false; btn.innerText = '▶ \u00a0 INGRESAR';
+        }
+    });
+</script>
+</body>
+</html>

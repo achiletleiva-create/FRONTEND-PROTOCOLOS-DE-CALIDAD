@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Setup Usuario</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #000d1a; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { background: #001f45; border: 1px solid #0062cc; border-radius: 8px; padding: 40px; width: 360px; }
+        h2 { color: #f0a500; text-align: center; margin-bottom: 24px; }
+        label { color: rgba(255,255,255,0.6); font-size: 12px; display: block; margin-bottom: 4px; }
+        input { width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid #0062cc; border-radius: 4px; color: white; font-size: 14px; margin-bottom: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #f0a500; border: none; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer; }
+        #msg { margin-top: 16px; padding: 10px; border-radius: 4px; text-align: center; font-size: 13px; display: none; }
+        .ok { background: rgba(40,167,69,0.2); color: #28a745; border: 1px solid #28a745; }
+        .err { background: rgba(220,53,69,0.2); color: #dc3545; border: 1px solid #dc3545; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>🔐 Crear Usuario</h2>
+    <label>Usuario</label>
+    <input type="text" id="username" placeholder="Ej: anthony">
+    <label>Contraseña</label>
+    <input type="password" id="password" placeholder="Contraseña segura">
+    <button onclick="crear()">CREAR USUARIO</button>
+    <div id="msg"></div>
+</div>
+<script>
+    async function crear() {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('msg');
+        if (!username || !password) { msg.className = 'err'; msg.innerText = 'Completa todos los campos.'; msg.style.display = 'block'; return; }
+        try {
+            const res = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/auth/setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            msg.className = res.ok ? 'ok' : 'err';
+            msg.innerText = res.ok ? '✅ Usuario creado. Ya puedes eliminar esta página.' : data.error;
+            msg.style.display = 'block';
+        } catch { msg.className = 'err'; msg.innerText = '❌ Error de conexión.'; msg.style.display = 'block'; }
+    }
+</script>
+</body>
+</html>
