@@ -265,31 +265,25 @@
         doc.text("ESP. CALIDAD", inicioX + (anchoF/2), finalY + 4, {align:"center"});
         doc.text("RESIDENTE DE OBRA", inicioX + anchoF + esp + (anchoF/2), finalY + 4, {align:"center"});
         doc.text("SUPERVISOR DE OBRA", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
-        const img1 = await leerImagen(document.getElementById('f_antes'));
-        const img2 = await leerImagen(document.getElementById('f_durante'));
-        const img3 = await leerImagen(document.getElementById('f_despues'));
+        const img1 = document.getElementById('f_antes').files[0] ? await leerFotoCorregida(document.getElementById('f_antes').files[0], 'FOTO 1: ANTES') : null;
+        const img2 = document.getElementById('f_durante').files[0] ? await leerFotoCorregida(document.getElementById('f_durante').files[0], 'FOTO 2: DURANTE') : null;
+        const img3 = document.getElementById('f_despues').files[0] ? await leerFotoCorregida(document.getElementById('f_despues').files[0], 'FOTO 3: DESPUÉS') : null;
         if (img1 || img2 || img3) {
             doc.addPage();
             doc.setFontSize(12); doc.setTextColor(0, 74, 153);
             doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
-            const maxW = 150; const maxH = 75; const xC = (210 - maxW) / 2;
-            const imgs = [img1 && { src: img1, label: 'FOTO 1: ANTES' }, img2 && { src: img2, label: 'FOTO 2: DURANTE' }, img3 && { src: img3, label: 'FOTO 3: DESPUÉS' }].filter(Boolean);
+            const maxW = 180, maxH = 120, xC = 15;
+            const imgs = [img1, img2, img3].filter(Boolean);
             let yPos = 25;
             for (const f of imgs) {
-                await new Promise(res => {
-                    const im = new Image();
-                    im.onload = () => {
-                        const ratio = Math.min(maxW / im.naturalWidth, maxH / im.naturalHeight);
-                        const fw = im.naturalWidth * ratio, fh = im.naturalHeight * ratio;
-                        const xOff = xC + (maxW - fw) / 2;
-                        doc.addImage(f.src, 'JPEG', xOff, yPos, fw, fh, undefined, 'FAST');
-                        doc.setFontSize(10); doc.setTextColor(0);
-                        doc.text(f.label, xC, yPos + fh + 5);
-                        yPos += maxH + 20;
-                        res();
-                    };
-                    im.src = f.src;
-                });
+                const ratio = Math.min(maxW / f.w, maxH / f.h);
+                const fw = f.w * ratio, fh = f.h * ratio;
+                const xOff = xC + (maxW - fw) / 2;
+                if (yPos + fh > 275) { doc.addPage(); yPos = 25; }
+                doc.addImage(f.src, 'JPEG', xOff, yPos, fw, fh, undefined, 'FAST');
+                doc.setFontSize(10); doc.setTextColor(0);
+                doc.text(f.label, 105, yPos + fh + 5, {align: 'center'});
+                yPos += fh + 20;
             }
         }
         const nombreArchivo = `Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`;

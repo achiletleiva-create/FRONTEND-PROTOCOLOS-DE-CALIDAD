@@ -180,15 +180,7 @@
 
         const fotos = [];
         for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) await new Promise(res => {
-                const r = new FileReader();
-                r.onload = e => {
-                    const img = new Image();
-                    img.onload = () => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '', w: img.naturalWidth, h: img.naturalHeight }); res(); };
-                    img.src = e.target.result;
-                };
-                r.readAsDataURL(inp.files[0]);
-            });
+            if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || ''));
         }
         if (fotos.length > 0) {
             doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
