@@ -185,15 +185,27 @@
         // Fotos
         const fotos = [];
         for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) await new Promise(res => { const r = new FileReader(); r.onload = e => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '' }); res(); }; r.readAsDataURL(inp.files[0]); });
+            if (inp.files[0]) await new Promise(res => {
+                const r = new FileReader();
+                r.onload = e => {
+                    const img = new Image();
+                    img.onload = () => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '', w: img.naturalWidth, h: img.naturalHeight }); res(); };
+                    img.src = e.target.result;
+                };
+                r.readAsDataURL(inp.files[0]);
+            });
         }
         if (fotos.length > 0) {
             doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
             doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
             fotos.forEach((f, i) => {
-                const x = 15 + (i % 2) * 97, y = 25 + Math.floor(i / 2) * 85;
-                doc.addImage(f.src, 'JPEG', x, y, 85, 65, undefined, 'FAST');
-                doc.setFontSize(7); doc.text(f.label, x + 42, y + 70, { align: "center" });
+                const maxW = 180, maxH = 120;
+                const ratio = Math.min(maxW / f.w, maxH / f.h);
+                const fw = f.w * ratio, fh = f.h * ratio;
+                const x = 15 + (maxW - fw) / 2, y = 25 + i * 135;
+                if (i > 0 && y + fh > 280) doc.addPage();
+                doc.addImage(f.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
+                doc.setFontSize(7); doc.text(f.label, 105, y + fh + 5, { align: "center" });
             });
         }
 

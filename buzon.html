@@ -139,11 +139,28 @@
         doc.setFontSize(11); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE CONTROL: CONSTRUCCIÓN DE BUZONES", 105, 18, { align: "center" });
         doc.setFontSize(9); doc.setTextColor(0);
-        doc.text(`NRO: ${document.getElementById('nro_prot').value}`, 15, 26);
-        doc.text(`BUZÓN: ${form.querySelector('[name=codigo_buzon]').value}  |  CALLE: ${form.querySelector('[name=calle_pasaje]').value}`, 15, 32);
+        doc.autoTable({
+            startY: 26, theme: 'plain', styles: { fontSize: 8, cellPadding: 1 },
+            body: [
+                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', new Date(form.querySelector('[name=fecha]').value).toLocaleDateString()],
+                ['CÓDIGO BUZÓN:', form.querySelector('[name=codigo_buzon]').value, 'TIPO BUZÓN:', form.querySelector('[name=tipo_buzon]').value],
+                ['CALLE / PASAJE:', form.querySelector('[name=calle_pasaje]').value, 'FECHA VACIADO:', form.querySelector('[name=fecha_vaciado]').value]
+            ],
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 38 }, 2: { fontStyle: 'bold', cellWidth: 38 } }
+        });
 
         doc.autoTable({
-            startY: 38,
+            startY: doc.lastAutoTable.finalY + 3, theme: 'grid',
+            head: [['CONTROL EXCAVACIÓN Y SOLADO', 'ESTADO']],
+            body: [
+                ['3.1 Fondo de excavación nivelado y compactado', form.querySelector('[name=exc_fondo]').value],
+                ['3.2 Vaciado de solado de limpieza (e = 0.10m)', form.querySelector('[name=exc_solado]').value],
+                ['3.3 Verificación de cotas de llegada y salida', form.querySelector('[name=exc_cotas]').value]
+            ], styles: { fontSize: 8 }
+        });
+
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 3,
             theme: 'grid',
             head: [['PARÁMETRO', 'ESPECIFICACIÓN', 'VALOR REAL', 'ESTADO']],
             body: [
@@ -188,7 +205,12 @@
         for (const inp of inputs) {
             if (inp.files[0]) {
                 await new Promise(res => {
-                    const r = new FileReader(); r.onload = e => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '' }); res(); };
+                    const r = new FileReader();
+                    r.onload = e => {
+                        const img = new Image();
+                        img.onload = () => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '', w: img.naturalWidth, h: img.naturalHeight }); res(); };
+                        img.src = e.target.result;
+                    };
                     r.readAsDataURL(inp.files[0]);
                 });
             }
@@ -197,10 +219,13 @@
             doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
             doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
             fotos.forEach((f, i) => {
-                const col = i % 2, row = Math.floor(i / 2);
-                const x = 15 + col * 97, y = 25 + row * 85;
-                doc.addImage(f.src, 'JPEG', x, y, 85, 65, undefined, 'FAST');
-                doc.setFontSize(7); doc.text(f.label, x + 42, y + 70, { align: "center" });
+                const maxW = 180, maxH = 120;
+                const ratio = Math.min(maxW / f.w, maxH / f.h);
+                const fw = f.w * ratio, fh = f.h * ratio;
+                const x = 15 + (maxW - fw) / 2, y = 25 + i * 135;
+                if (i > 0 && y + fh > 280) doc.addPage();
+                doc.addImage(f.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
+                doc.setFontSize(7); doc.text(f.label, 105, y + fh + 5, { align: "center" });
             });
         }
 

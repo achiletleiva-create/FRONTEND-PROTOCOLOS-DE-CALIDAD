@@ -127,16 +127,35 @@
         doc.setFontSize(11); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE CONTROL: INSTALACIÓN DE TUBERÍA", 105, 18, { align: "center" });
         doc.setFontSize(9); doc.setTextColor(0);
-        doc.text(`NRO: ${document.getElementById('nro_prot').value}  |  TRAMO: BZ-${form.querySelector('[name=tramo_bz_inicio]').value} a BZ-${form.querySelector('[name=tramo_bz_fin]').value}`, 15, 26);
-        doc.text(`TUBERÍA: ${form.querySelector('[name=tipo_tuberia]').value} DN ${form.querySelector('[name=diametro_dn]').value}mm  |  L= ${form.querySelector('[name=longitud_tramo]').value}m`, 15, 32);
+        doc.autoTable({
+            startY: 26, theme: 'plain', styles: { fontSize: 8, cellPadding: 1 },
+            body: [
+                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', new Date(form.querySelector('[name=fecha]').value).toLocaleDateString()],
+                ['BUZÓN INICIO:', form.querySelector('[name=tramo_bz_inicio]').value, 'BUZÓN FIN:', form.querySelector('[name=tramo_bz_fin]').value],
+                ['CALLE / PASAJE:', form.querySelector('[name=calle_pasaje]').value, 'TIPO TUBERÍA:', form.querySelector('[name=tipo_tuberia]').value],
+                ['DIÁMETRO DN (mm):', form.querySelector('[name=diametro_dn]').value, 'SDR / SERIE:', form.querySelector('[name=sdr_serie]').value],
+                ['LONGITUD TRAMO (m):', form.querySelector('[name=longitud_tramo]').value, '', '']
+            ],
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 38 }, 2: { fontStyle: 'bold', cellWidth: 38 } }
+        });
 
         doc.autoTable({
-            startY: 38, theme: 'grid',
+            startY: doc.lastAutoTable.finalY + 3, theme: 'grid',
             head: [['INSPECCIÓN PRE-INSTALACIÓN', 'ESTADO']],
             body: ['pre_certificado', 'pre_integridad', 'pre_limpieza', 'pre_lubricante', 'pre_anillo'].map((n, i) => {
                 const labels = ['Certificado de calidad', 'Integridad física', 'Limpieza espiga/campana', 'Lubricante fabricante', 'Anillo elastomérico'];
                 return [labels[i], form.querySelector(`[name=${n}]`).value];
             }), styles: { fontSize: 8 }
+        });
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 5, theme: 'grid',
+            head: [['CONTROL TOPOGRÁFICO Y ALINEAMIENTO', 'VALOR PROYECTO', 'VALOR EJECUTADO']],
+            body: [
+                ['Cota de Tapa BZ Llegada (m.s.n.m)', 'Según plano', form.querySelector('[name=top_cota_tapa]').value],
+                ['Cota de Invertida Salida (m.s.n.m)', 'Según plano', form.querySelector('[name=top_cota_invertida]').value],
+                ['Pendiente S (%)', 'Según plano', form.querySelector('[name=top_pendiente]').value],
+                ['Cama de Apoyo (m)', '0.10 m', form.querySelector('[name=top_cama_apoyo]').value]
+            ], styles: { fontSize: 8 }
         });
         doc.autoTable({
             startY: doc.lastAutoTable.finalY + 5, theme: 'grid',
@@ -147,28 +166,15 @@
             }), styles: { fontSize: 8 }
         });
 
-        let fy = doc.lastAutoTable.finalY + 25;
-        if (fy > 260) { doc.addPage(); fy = 20; }
-        doc.setFontSize(7);
-        [['ESP. CALIDAD', 15], ['RESIDENTE DE OBRA', 77], ['SUPERVISOR', 139]].forEach(([label, x]) => {
-            doc.line(x, fy, x + 50, fy); doc.text(label, x + 25, fy + 4, { align: "center" });
+        const obsT = form.querySelector('[name=observaciones]').value;
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 5, theme: 'grid',
+            head: [['OBSERVACIONES']],
+            body: [[obsT || '(Sin observaciones)']],
+            styles: { fontSize: 8 }
         });
 
-        const fotos = [];
-        for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) await new Promise(res => { const r = new FileReader(); r.onload = e => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '' }); res(); }; r.readAsDataURL(inp.files[0]); });
-        }
-        if (fotos.length > 0) {
-            doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
-            doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
-            fotos.forEach((f, i) => {
-                const x = 15 + (i % 2) * 97, y = 25 + Math.floor(i / 2) * 85;
-                doc.addImage(f.src, 'JPEG', x, y, 85, 65, undefined, 'FAST');
-                doc.setFontSize(7); doc.text(f.label, x + 42, y + 70, { align: "center" });
-            });
-        }
-
-        const nombre = `Tuberia_${document.getElementById('nro_prot').value}.pdf`;
+        let fy = doc.lastAutoTable.finalY + 25;
         doc.save(nombre);
         if (ultimoId) {
             try {

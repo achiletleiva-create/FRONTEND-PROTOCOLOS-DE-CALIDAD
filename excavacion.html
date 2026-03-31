@@ -129,8 +129,16 @@
         doc.setFontSize(11); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE CONTROL: EXCAVACIÓN DE ZANJAS", 105, 18, { align: "center" });
         doc.setFontSize(9); doc.setTextColor(0);
-        doc.text(`NRO: ${document.getElementById('nro_prot').value}  |  TRAMO: BZ-${bz_ini} a BZ-${bz_fin}`, 15, 26);
-        doc.text(`MÉTODO: ${form.querySelector('[name=metodo_excavacion]').value}  |  TERRENO: ${form.querySelector('[name=tipo_terreno]').value}`, 15, 32);
+        doc.autoTable({
+            startY: 26, theme: 'plain', styles: { fontSize: 8, cellPadding: 1 },
+            body: [
+                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', new Date(form.querySelector('[name=fecha]').value).toLocaleDateString()],
+                ['BUZÓN INICIO:', bz_ini, 'BUZÓN FIN:', bz_fin],
+                ['CALLE / PASAJE:', form.querySelector('[name=calle_pasaje]').value, 'MÉTODO:', form.querySelector('[name=metodo_excavacion]').value],
+                ['TIPO DE TERRENO:', form.querySelector('[name=tipo_terreno]').value, '', '']
+            ],
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 38 }, 2: { fontStyle: 'bold', cellWidth: 38 } }
+        });
 
         doc.autoTable({
             startY: 38, theme: 'grid',
@@ -155,7 +163,12 @@
         });
 
         const obs = form.querySelector('[name=observaciones]').value;
-        if (obs) { let y = doc.lastAutoTable.finalY + 8; doc.setFontSize(8); doc.text("OBSERVACIONES: " + obs, 15, y, { maxWidth: 180 }); }
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 5, theme: 'grid',
+            head: [['OBSERVACIONES']],
+            body: [[obs || '(Sin observaciones)']],
+            styles: { fontSize: 8 }
+        });
 
         let fy = doc.lastAutoTable.finalY + 25;
         if (fy > 260) { doc.addPage(); fy = 20; }
@@ -167,15 +180,27 @@
 
         const fotos = [];
         for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) await new Promise(res => { const r = new FileReader(); r.onload = e => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '' }); res(); }; r.readAsDataURL(inp.files[0]); });
+            if (inp.files[0]) await new Promise(res => {
+                const r = new FileReader();
+                r.onload = e => {
+                    const img = new Image();
+                    img.onload = () => { fotos.push({ src: e.target.result, label: inp.previousElementSibling?.innerText || '', w: img.naturalWidth, h: img.naturalHeight }); res(); };
+                    img.src = e.target.result;
+                };
+                r.readAsDataURL(inp.files[0]);
+            });
         }
         if (fotos.length > 0) {
             doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
             doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
             fotos.forEach((f, i) => {
-                const x = 15 + (i % 2) * 97, y = 25 + Math.floor(i / 2) * 85;
-                doc.addImage(f.src, 'JPEG', x, y, 85, 65, undefined, 'FAST');
-                doc.setFontSize(7); doc.text(f.label, x + 42, y + 70, { align: "center" });
+                const maxW = 180, maxH = 120;
+                const ratio = Math.min(maxW / f.w, maxH / f.h);
+                const fw = f.w * ratio, fh = f.h * ratio;
+                const x = 15 + (maxW - fw) / 2, y = 25 + i * 135;
+                if (i > 0 && y + fh > 280) doc.addPage();
+                doc.addImage(f.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
+                doc.setFontSize(7); doc.text(f.label, 105, y + fh + 5, { align: "center" });
             });
         }
 

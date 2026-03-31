@@ -272,10 +272,25 @@
             doc.addPage();
             doc.setFontSize(12); doc.setTextColor(0, 74, 153);
             doc.text("PANEL FOTOGRÁFICO", 105, 15, {align:"center"});
-            const ancho = 150; const alto = 75; const xC = (210 - ancho) / 2;
-            if (img1) { doc.addImage(img1, 'JPEG', xC, 25, ancho, alto); doc.setFontSize(10); doc.setTextColor(0); doc.text("FOTO 1: ANTES", xC, 25 + alto + 5); }
-            if (img2) { const y2 = img1 ? 110 : 25; doc.addImage(img2, 'JPEG', xC, y2, ancho, alto); doc.text("FOTO 2: DURANTE", xC, y2 + alto + 5); }
-            if (img3) { let y3 = 195; if (!img1 && !img2) y3 = 25; else if (!img1 || !img2) y3 = 110; doc.addImage(img3, 'JPEG', xC, y3, ancho, alto); doc.text("FOTO 3: DESPUÉS", xC, y3 + alto + 5); }
+            const maxW = 150; const maxH = 75; const xC = (210 - maxW) / 2;
+            const imgs = [img1 && { src: img1, label: 'FOTO 1: ANTES' }, img2 && { src: img2, label: 'FOTO 2: DURANTE' }, img3 && { src: img3, label: 'FOTO 3: DESPUÉS' }].filter(Boolean);
+            let yPos = 25;
+            for (const f of imgs) {
+                await new Promise(res => {
+                    const im = new Image();
+                    im.onload = () => {
+                        const ratio = Math.min(maxW / im.naturalWidth, maxH / im.naturalHeight);
+                        const fw = im.naturalWidth * ratio, fh = im.naturalHeight * ratio;
+                        const xOff = xC + (maxW - fw) / 2;
+                        doc.addImage(f.src, 'JPEG', xOff, yPos, fw, fh, undefined, 'FAST');
+                        doc.setFontSize(10); doc.setTextColor(0);
+                        doc.text(f.label, xC, yPos + fh + 5);
+                        yPos += maxH + 20;
+                        res();
+                    };
+                    im.src = f.src;
+                });
+            }
         }
         const nombreArchivo = `Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`;
         doc.save(nombreArchivo);
