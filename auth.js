@@ -137,27 +137,20 @@ function mostrarPreview(inp) {
                 btn.title = 'Girar imagen';
                 btn.innerHTML = '🔄';
                 btn.addEventListener('click', () => {
-                    const current = parseInt(wrap.dataset.rotation) || 0;
-                    const next = (current + 90) % 360;
-                    wrap.dataset.rotation = next;
-
-                    // Aplicar rotación real al canvas y actualizar _correctedSrc
                     const sw = inp._correctedW, sh = inp._correctedH;
                     const cRot = document.createElement('canvas');
                     const ctxRot = cRot.getContext('2d');
-                    if (next === 90 || next === 270) { cRot.width = sh; cRot.height = sw; }
-                    else { cRot.width = sw; cRot.height = sh; }
-                    ctxRot.translate(cRot.width / 2, cRot.height / 2);
+                    cRot.width = sh;
+                    cRot.height = sw;
+                    ctxRot.translate(sh / 2, sw / 2);
                     ctxRot.rotate(90 * Math.PI / 180);
                     const imgRot = new Image();
                     imgRot.onload = function() {
                         ctxRot.drawImage(imgRot, -sw / 2, -sh / 2);
-                        const newSrc = cRot.toDataURL('image/jpeg', 0.92);
-                        inp._correctedSrc = newSrc;
+                        inp._correctedSrc = cRot.toDataURL('image/jpeg', 0.92);
                         inp._correctedW = cRot.width;
                         inp._correctedH = cRot.height;
-                        previewImg.src = newSrc;
-                        previewImg.style.transform = 'rotate(0deg)';
+                        previewImg.src = inp._correctedSrc;
                     };
                     imgRot.src = inp._correctedSrc;
                 });
@@ -256,7 +249,54 @@ window.leerFotoCorregida = function(file, label, inputElement) {
     });
 };
 
-function dibujar(img, orientation, manualDeg, originalSrc, resolve, label) {
+window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
+    if (!fotos || fotos.length === 0) return;
+    doc.addPage();
+    doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+    doc.text("REGISTRO FOTOGRÁFICO", 105, tituloY || 15, { align: "center" });
+    doc.setTextColor(0);
+
+    const CELL_W = 88, CELL_H = 72, GAP_X = 8, GAP_Y = 18;
+    const START_X = 10, START_Y = (tituloY || 15) + 8;
+    const COLS = 2;
+
+    fotos.forEach((f, i) => {
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+        const cellX = START_X + col * (CELL_W + GAP_X);
+        const cellY = START_Y + row * (CELL_H + GAP_Y);
+
+        // Nueva página si no cabe
+        if (row > 0 && col === 0) {
+            const neededY = cellY + CELL_H + GAP_Y;
+            if (neededY > 285) {
+                doc.addPage();
+                doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+                doc.text("REGISTRO FOTOGRÁFICO (continuación)", 105, 12, { align: "center" });
+                doc.setTextColor(0);
+                // Recalcular posición en nueva página
+                const newRow = 0;
+                const newCellY = 20;
+                const ratio = Math.min(CELL_W / f.w, CELL_H / f.h);
+                const fw = f.w * ratio, fh = f.h * ratio;
+                const imgX = cellX + (CELL_W - fw) / 2;
+                const imgY = newCellY + (CELL_H - fh) / 2;
+                doc.rect(cellX, newCellY, CELL_W, CELL_H);
+                doc.addImage(f.src, 'JPEG', imgX, imgY, fw, fh, undefined, 'FAST');
+                doc.setFontSize(7); doc.text(f.label, cellX + CELL_W / 2, newCellY + CELL_H + 5, { align: "center", maxWidth: CELL_W });
+                return;
+            }
+        }
+
+        const ratio = Math.min(CELL_W / f.w, CELL_H / f.h);
+        const fw = f.w * ratio, fh = f.h * ratio;
+        const imgX = cellX + (CELL_W - fw) / 2;
+        const imgY = cellY + (CELL_H - fh) / 2;
+        doc.rect(cellX, cellY, CELL_W, CELL_H);
+        doc.addImage(f.src, 'JPEG', imgX, imgY, fw, fh, undefined, 'FAST');
+        doc.setFontSize(7); doc.text(f.label, cellX + CELL_W / 2, cellY + CELL_H + 5, { align: "center", maxWidth: CELL_W });
+    });
+};
     // Paso 1: corregir EXIF
     const c1 = document.createElement('canvas');
     const ctx1 = c1.getContext('2d');

@@ -249,22 +249,7 @@
                 fotosCargadas.push(f);
             }
         }
-
-        if (fotosCargadas.length > 0) {
-            doc.addPage();
-            doc.setFontSize(11); doc.setTextColor(0, 74, 153);
-            doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
-            doc.setTextColor(0);
-            fotosCargadas.forEach((foto, i) => {
-                const maxW = 180, maxH = 120;
-                const ratio = Math.min(maxW / foto.w, maxH / foto.h);
-                const fw = foto.w * ratio, fh = foto.h * ratio;
-                const x = 15 + (maxW - fw) / 2, y = 25 + i * 135;
-                if (i > 0 && y + fh > 280) doc.addPage();
-                doc.addImage(foto.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
-                doc.setFontSize(8); doc.text(foto.label, 105, y + fh + 5, {align: "center"});
-            });
-        }
+        insertarFotosEnPDF(doc, fotosCargadas);
 
         const nombreArchivo = `Protocolo_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombreArchivo);

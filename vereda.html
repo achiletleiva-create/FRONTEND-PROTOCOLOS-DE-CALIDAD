@@ -206,19 +206,7 @@
         for (const inp of form.querySelectorAll('input[type="file"]')) {
             if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp));
         }
-        if (fotos.length > 0) {
-            doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
-            doc.text("REGISTRO FOTOGRÁFICO", 105, 15, { align: "center" }); doc.setTextColor(0);
-            fotos.forEach((f, i) => {
-                const maxW = 180, maxH = 120;
-                const ratio = Math.min(maxW / f.w, maxH / f.h);
-                const fw = f.w * ratio, fh = f.h * ratio;
-                const x = 15 + (maxW - fw) / 2, y = 25 + i * 135;
-                if (i > 0 && y + fh > 280) doc.addPage();
-                doc.addImage(f.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
-                doc.setFontSize(7); doc.text(f.label, 105, y + fh + 5, { align: "center" });
-            });
-        }
+        insertarFotosEnPDF(doc, fotos);
 
         const nombre = `Vereda_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombre);
