@@ -53,7 +53,7 @@
 
 
 <div class="container">
-    <h1>MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VICTOR LARCO HERRERA - TRUJILLO</h1>
+    <h1>MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD | CUI N° 2288049</h1>
     
     <form id="protocoloForm">
         <div class="header-grid">
@@ -185,8 +185,8 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         
-        doc.setFontSize(8);
-        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(7); doc.setTextColor(0);
+        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD  |  CUI N° 2288049", 105, 8, { align: "center", maxWidth: 190 });
         doc.setFontSize(10);
         doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
         doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});

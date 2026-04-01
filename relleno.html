@@ -34,7 +34,7 @@
 
 <div class="container">
     <h1>PROTOCOLO DE CONTROL DE CALIDAD: RELLENO Y COMPACTACIÓN<br>
-    MEJORAMIENTO REDES DE ALCANTARILLADO - SECTOR LIBERACIÓN SOCIAL</h1>
+    MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD | CUI N° 2288049</h1>
     <form id="mainForm">
         <div class="header-grid">
             <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" readonly></div>
@@ -173,7 +173,7 @@
         const doc = new jsPDF('p', 'mm', 'a4');
         const form = document.getElementById('mainForm');
 
-        doc.setFontSize(8); doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO - VICTOR LARCO", 10, 10);
+        doc.setFontSize(7); doc.setTextColor(0); doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD  |  CUI N° 2288049", 105, 8, { align: "center", maxWidth: 190 });
         doc.setFontSize(11); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE CONTROL: RELLENO Y COMPACTACIÓN", 105, 18, { align: "center" });
         doc.setFontSize(9); doc.setTextColor(0);
