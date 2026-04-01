@@ -115,6 +115,7 @@
     let ultimoId = null;
 
     document.getElementById('fecha').valueAsDate = new Date();
+    document.getElementById('nro_prot').value = 'Cargando...';
 
     function showMessage(msg, isError = false) {
         const t = document.getElementById('toastMsg');
@@ -126,8 +127,12 @@
         try {
             const r = await fetch(`${API_URL}/siguiente-correlativo`);
             const d = await r.json();
-            document.getElementById('nro_prot').value = d.correlativo;
-        } catch (e) { console.error(e); }
+            if (d.correlativo) document.getElementById('nro_prot').value = d.correlativo;
+        } catch (e) {
+            console.error(e);
+            // Reintentar en 4 segundos si falla (servidor dormido)
+            setTimeout(consultarCorrelativo, 4000);
+        }
     }
 
     async function generarYSubirPDF() {
@@ -234,6 +239,11 @@
 
     document.getElementById('mainForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const nro = document.getElementById('nro_prot').value;
+        if (!nro || nro === 'Cargando...') {
+            showMessage('⚠️ Espera a que cargue el número de protocolo antes de guardar.', true);
+            return;
+        }
         const btn = e.target.querySelector('.btn-save');
         btn.innerText = "GUARDANDO..."; btn.disabled = true;
         try {
