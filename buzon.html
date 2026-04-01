@@ -193,9 +193,9 @@
         // Firmas
         let fy = doc.lastAutoTable.finalY + 25;
         if (fy > 260) { doc.addPage(); fy = 20; }
-        const anchoF = 50, esp = 12, ix = 15;
+        const anchoF = 40, esp = 8, ix = 15;
         doc.setFontSize(7);
-        [['ESP. CALIDAD', ix], ['RESIDENTE DE OBRA', ix + anchoF + esp], ['SUPERVISOR', ix + 2 * anchoF + 2 * esp]].forEach(([label, x]) => {
+        [['ESP. CALIDAD\nCONTRATISTA', ix], ['RESIDENTE DE OBRA', ix + anchoF + esp], ['ESP. CALIDAD\nSUPERVISIÓN', ix + 2*(anchoF+esp)], ['SUPERVISOR\nDE OBRA', ix + 3*(anchoF+esp)]].forEach(([label, x]) => {
             doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
         });
 

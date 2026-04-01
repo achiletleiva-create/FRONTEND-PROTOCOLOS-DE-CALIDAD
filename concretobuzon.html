@@ -219,14 +219,16 @@
             didDrawPage: function (data) {
                 let finalY = data.cursor.y + 15;
                 if (finalY > 260) { doc.addPage(); finalY = 20; }
-                const anchoFirma = 50; const esp = 12; const inicioX = 15;
-                doc.setFontSize(8);
+                const anchoFirma = 38; const esp = 7; const inicioX = 15;
+                doc.setFontSize(7);
                 doc.line(inicioX, finalY + 15, inicioX + anchoFirma, finalY + 15);
-                doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2 * anchoFirma + esp, finalY + 15);
-                doc.line(inicioX + 2 * anchoFirma + 2 * esp, finalY + 15, inicioX + 3 * anchoFirma + 2 * esp, finalY + 15);
-                doc.text("RESPONSABLE CALIDAD", inicioX + (anchoFirma / 2), finalY + 20, { align: "center" });
-                doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma / 2), finalY + 20, { align: "center" });
-                doc.text("SUPERVISIÓN DE OBRA", inicioX + 2 * anchoFirma + 2 * esp + (anchoFirma / 2), finalY + 20, { align: "center" });
+                doc.line(inicioX + anchoFirma + esp, finalY + 15, inicioX + 2*anchoFirma + esp, finalY + 15);
+                doc.line(inicioX + 2*anchoFirma + 2*esp, finalY + 15, inicioX + 3*anchoFirma + 2*esp, finalY + 15);
+                doc.line(inicioX + 3*anchoFirma + 3*esp, finalY + 15, inicioX + 4*anchoFirma + 3*esp, finalY + 15);
+                doc.text("ESP. CALIDAD\nCONTRATISTA", inicioX + (anchoFirma/2), finalY + 20, { align: "center" });
+                doc.text("RESIDENTE DE OBRA", inicioX + anchoFirma + esp + (anchoFirma/2), finalY + 20, { align: "center" });
+                doc.text("ESP. CALIDAD\nSUPERVISIÓN", inicioX + 2*anchoFirma + 2*esp + (anchoFirma/2), finalY + 20, { align: "center" });
+                doc.text("SUPERVISOR\nDE OBRA", inicioX + 3*anchoFirma + 3*esp + (anchoFirma/2), finalY + 20, { align: "center" });
             }
         });
 

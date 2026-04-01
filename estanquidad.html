@@ -263,9 +263,11 @@
         doc.line(inicioX, finalY, inicioX + anchoF, finalY);
         doc.line(inicioX + anchoF + esp, finalY, inicioX + 2*anchoF + esp, finalY);
         doc.line(inicioX + 2*anchoF + 2*esp, finalY, inicioX + 3*anchoF + 2*esp, finalY);
-        doc.text("ESP. CALIDAD", inicioX + (anchoF/2), finalY + 4, {align:"center"});
+        doc.line(inicioX + 3*anchoF + 3*esp, finalY, inicioX + 4*anchoF + 3*esp, finalY);
+        doc.text("ESP. CALIDAD\nCONTRATISTA", inicioX + (anchoF/2), finalY + 4, {align:"center"});
         doc.text("RESIDENTE DE OBRA", inicioX + anchoF + esp + (anchoF/2), finalY + 4, {align:"center"});
-        doc.text("SUPERVISOR DE OBRA", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
+        doc.text("ESP. CALIDAD\nSUPERVISIÓN", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
+        doc.text("SUPERVISOR\nDE OBRA", inicioX + 3*anchoF + 3*esp + (anchoF/2), finalY + 4, {align:"center"});
         const img1 = document.getElementById('f_antes').files[0] ? await leerFotoCorregida(document.getElementById('f_antes').files[0], 'FOTO 1: ANTES', document.getElementById('f_antes')) : null;
         const img2 = document.getElementById('f_durante').files[0] ? await leerFotoCorregida(document.getElementById('f_durante').files[0], 'FOTO 2: DURANTE', document.getElementById('f_durante')) : null;
         const img3 = document.getElementById('f_despues').files[0] ? await leerFotoCorregida(document.getElementById('f_despues').files[0], 'FOTO 3: DESPUÉS', document.getElementById('f_despues')) : null;

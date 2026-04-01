@@ -239,9 +239,10 @@
         });
 
         let fy = doc.lastAutoTable.finalY + 30; if (fy > 260) { doc.addPage(); fy = 20; }
+        const anchoF = 40, esp = 8, ix = 15;
         doc.setFontSize(7);
-        [['ESP. CALIDAD', 15], ['RESIDENTE DE OBRA', 77], ['SUPERVISOR', 139]].forEach(([label, x]) => {
-            doc.line(x, fy, x + 50, fy); doc.text(label, x + 25, fy + 4, { align: "center" });
+        [['ESP. CALIDAD\nCONTRATISTA', ix], ['RESIDENTE DE OBRA', ix + anchoF + esp], ['ESP. CALIDAD\nSUPERVISIÓN', ix + 2*(anchoF+esp)], ['SUPERVISOR\nDE OBRA', ix + 3*(anchoF+esp)]].forEach(([label, x]) => {
+            doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
         });
 
         const fotos = [];
