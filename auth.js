@@ -53,47 +53,112 @@
 })();
 
 function mostrarPreview(inp) {
-    // Eliminar preview anterior si existe
     const prevWrap = inp.parentElement.querySelector('.foto-preview-wrap');
     if (prevWrap) prevWrap.remove();
     if (!inp.files[0]) return;
 
+    // Leer EXIF y corregir orientación, luego mostrar preview
+    const file = inp.files[0];
     const reader = new FileReader();
     reader.onload = function(e) {
-        const wrap = document.createElement('div');
-        wrap.className = 'foto-preview-wrap';
-        wrap.dataset.rotation = '0';
+        const img = new Image();
+        img.onload = function() {
+            const fr2 = new FileReader();
+            fr2.onload = function(e2) {
+                let orientation = 1;
+                try {
+                    const dv = new DataView(e2.target.result);
+                    let off = 0, littleEndian = false;
+                    if (dv.getUint16(0) === 0xFFD8) {
+                        off = 2;
+                        while (off < dv.byteLength) {
+                            const marker = dv.getUint16(off); off += 2;
+                            if (marker === 0xFFE1) {
+                                off += 2;
+                                if (dv.getUint32(off) !== 0x45786966) break;
+                                off += 6;
+                                littleEndian = dv.getUint16(off) === 0x4949;
+                                const ifdOff = off + dv.getUint32(off + 4, littleEndian);
+                                const entries = dv.getUint16(ifdOff, littleEndian);
+                                for (let i = 0; i < entries; i++) {
+                                    if (dv.getUint16(ifdOff + 2 + i * 12, littleEndian) === 0x0112) {
+                                        orientation = dv.getUint16(ifdOff + 2 + i * 12 + 8, littleEndian);
+                                        break;
+                                    }
+                                }
+                                break;
+                            } else if ((marker & 0xFF00) !== 0xFF00) break;
+                            else off += dv.getUint16(off);
+                        }
+                    }
+                } catch(_) {}
 
-        const img = document.createElement('img');
+                // Generar canvas con EXIF corregido
+                const c = document.createElement('canvas');
+                const ctx = c.getContext('2d');
+                const w = img.naturalWidth, h = img.naturalHeight;
+                const swap = orientation >= 5;
+                c.width = swap ? h : w;
+                c.height = swap ? w : h;
+                ctx.save();
+                switch (orientation) {
+                    case 2: ctx.transform(-1,0,0,1,w,0); break;
+                    case 3: ctx.transform(-1,0,0,-1,w,h); break;
+                    case 4: ctx.transform(1,0,0,-1,0,h); break;
+                    case 5: ctx.transform(0,1,1,0,0,0); break;
+                    case 6: ctx.transform(0,1,-1,0,h,0); break;
+                    case 7: ctx.transform(0,-1,-1,0,h,w); break;
+                    case 8: ctx.transform(0,-1,1,0,0,w); break;
+                    default: break;
+                }
+                ctx.drawImage(img, 0, 0);
+                ctx.restore();
+
+                const correctedSrc = c.toDataURL('image/jpeg', 0.92);
+
+                // Guardar el src corregido en el input para que leerFotoCorregida lo use directamente
+                inp._correctedSrc = correctedSrc;
+                inp._correctedW = c.width;
+                inp._correctedH = c.height;
+
+                // Mostrar preview con la imagen ya corregida
+                const wrap = document.createElement('div');
+                wrap.className = 'foto-preview-wrap';
+                wrap.dataset.rotation = '0';
+
+                const previewImg = document.createElement('img');
+                previewImg.src = correctedSrc;
+                previewImg.style.transform = 'rotate(0deg)';
+                previewImg.style.transition = 'transform 0.3s';
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-rotar';
+                btn.title = 'Girar imagen';
+                btn.innerHTML = '🔄';
+                btn.addEventListener('click', () => {
+                    const current = parseInt(wrap.dataset.rotation) || 0;
+                    const next = (current + 90) % 360;
+                    wrap.dataset.rotation = next;
+                    previewImg.style.transform = `rotate(${next}deg)`;
+                    if (next === 90 || next === 270) {
+                        previewImg.style.maxWidth = '140px';
+                        previewImg.style.maxHeight = '100%';
+                    } else {
+                        previewImg.style.maxWidth = '100%';
+                        previewImg.style.maxHeight = '140px';
+                    }
+                });
+
+                wrap.appendChild(previewImg);
+                wrap.appendChild(btn);
+                inp.parentElement.appendChild(wrap);
+            };
+            fr2.readAsArrayBuffer(file);
+        };
         img.src = e.target.result;
-        img.style.transform = 'rotate(0deg)';
-        img.style.transition = 'transform 0.3s';
-
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-rotar';
-        btn.title = 'Girar imagen';
-        btn.innerHTML = '🔄';
-        btn.addEventListener('click', () => {
-            const current = parseInt(wrap.dataset.rotation) || 0;
-            const next = (current + 90) % 360;
-            wrap.dataset.rotation = next;
-            img.style.transform = `rotate(${next}deg)`;
-            // Ajustar tamaño del contenedor según orientación
-            if (next === 90 || next === 270) {
-                img.style.maxWidth = '140px';
-                img.style.maxHeight = '100%';
-            } else {
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '140px';
-            }
-        });
-
-        wrap.appendChild(img);
-        wrap.appendChild(btn);
-        inp.parentElement.appendChild(wrap);
     };
-    reader.readAsDataURL(inp.files[0]);
+    reader.readAsDataURL(file);
 }
 
 function cerrarSesion() {
@@ -107,6 +172,33 @@ function cerrarSesion() {
  */
 window.leerFotoCorregida = function(file, label, inputElement) {
     return new Promise(resolve => {
+        // Si ya tenemos el canvas corregido desde la preview, usarlo directamente
+        if (inputElement && inputElement._correctedSrc) {
+            const wrap = inputElement.parentElement.querySelector('.foto-preview-wrap');
+            const manualDeg = wrap ? (parseInt(wrap.dataset.rotation) || 0) : 0;
+            if (manualDeg === 0) {
+                resolve({ src: inputElement._correctedSrc, w: inputElement._correctedW, h: inputElement._correctedH, label });
+                return;
+            }
+            // Aplicar rotación manual sobre el canvas ya corregido
+            const img2 = new Image();
+            img2.onload = function() {
+                const sw = inputElement._correctedW, sh = inputElement._correctedH;
+                const c2 = document.createElement('canvas');
+                const ctx2 = c2.getContext('2d');
+                const rad = manualDeg * Math.PI / 180;
+                if (manualDeg === 90 || manualDeg === 270) { c2.width = sh; c2.height = sw; }
+                else { c2.width = sw; c2.height = sh; }
+                ctx2.translate(c2.width / 2, c2.height / 2);
+                ctx2.rotate(rad);
+                ctx2.drawImage(img2, -sw / 2, -sh / 2);
+                resolve({ src: c2.toDataURL('image/jpeg', 0.92), w: c2.width, h: c2.height, label });
+            };
+            img2.src = inputElement._correctedSrc;
+            return;
+        }
+
+        // Fallback: leer archivo y corregir EXIF (cuando no hay preview)
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
@@ -140,11 +232,8 @@ window.leerFotoCorregida = function(file, label, inputElement) {
                             }
                         }
                     } catch(_) {}
-
-                    // Rotación manual del usuario (0, 90, 180, 270)
                     const wrap = inputElement && inputElement.parentElement.querySelector('.foto-preview-wrap');
                     const manualDeg = wrap ? (parseInt(wrap.dataset.rotation) || 0) : 0;
-
                     dibujar(img, orientation, manualDeg, e.target.result, resolve, label);
                 };
                 fr2.readAsArrayBuffer(file);
