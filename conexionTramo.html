@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocolo - Conexiones Domiciliarias por Tramo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; padding: 10px; font-size: 14px; }
+        .container { max-width: 960px; background: white; padding: 25px; border-radius: 10px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 12px; text-align: center; color: #004a99; text-transform: uppercase; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #eef2f7; padding: 15px; border-radius: 5px; margin-top: 15px; }
+        .section-title { background: #004a99; color: white; padding: 8px 12px; margin-top: 20px; font-weight: bold; border-radius: 4px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .table-section { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        .table-section th, .table-section td { border: 1px solid #ccc; padding: 5px; }
+        .table-section th { background: #004a99; color: white; text-align: center; }
+        .btn-group { display: flex; gap: 10px; margin-top: 25px; position: sticky; bottom: 10px; background: white; padding: 10px; border-top: 1px solid #ddd; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-save { background: #28a745; } .btn-back { background: #6c757d; }
+        .btn-add { background: #007bff; flex: 0; padding: 6px 14px; font-size: 11px; border-radius: 4px; }
+        .btn-del { background: #dc3545; border: none; color: white; padding: 2px 7px; border-radius: 3px; cursor: pointer; font-size: 11px; }
+        input, select, textarea { width: 100%; padding: 4px; box-sizing: border-box; border: 1px solid #bbb; border-radius: 3px; font-size: 11px; }
+        .toast-msg { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
+        .btn-pdf-link { display: inline-block; padding: 4px 8px; background: #dc3545; color: white; text-decoration: none; border-radius: 3px; font-size: 9px; }
+        .btn-pdf-link.disabled { background: #aaa; pointer-events: none; }
+        label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 3px; }
+        .resultado-tramo { border-radius: 5px; padding: 10px 15px; margin-top: 15px; font-weight: bold; font-size: 14px; text-align: center; }
+        .aprobado-box { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .rechazado-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .table-section td input, .table-section td select { min-width: 60px; }
+    </style>
+<script src='auth.js'></script></head>
+<body>
+
+<div class="container">
+    <h1>PROTOCOLO DE CONTROL DE CALIDAD: INSTALACIÓN DE CONEXIONES DOMICILIARIAS POR TRAMO<br>
+    MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD | CUI N° 2288049</h1>
+
+    <form id="mainForm">
+        <div class="header-grid">
+            <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" readonly></div>
+            <div><label>FECHA:</label><input type="date" id="fecha" name="fecha"></div>
+            <div><label>CALLE / PASAJE: *</label><input type="text" name="calle_pasaje" required placeholder="Ej: Pasaje Los Pinos"></div>
+            <div><label>TRAMO RED MATRIZ:</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+                    <input type="text" name="bz_inicio" placeholder="BZ-inicio">
+                    <input type="text" name="bz_fin" placeholder="BZ-fin">
+                </div>
+            </div>
+            <div><label>TIPO DE COLECTOR:</label><input type="text" name="tipo_colector" placeholder="PVC-U ISO 4435 SDR 34"></div>
+            <div><label>DIÁMETRO DN (mm):</label><input type="number" name="diametro_dn" placeholder="160"></div>
+            <div><label>LONGITUD TOTAL TRAMO (m):</label><input type="number" step="0.01" name="longitud_tramo"></div>
+        </div>
+
+        <div class="section-title">2.0 VERIFICACIÓN DE MATERIALES Y COMPONENTES (RNE OS.070)</div>
+        <table class="table-section">
+            <thead><tr><th>COMPONENTE</th><th>ESPECIFICACIÓN TÉCNICA</th><th>NORMA</th><th>ESTADO</th></tr></thead>
+            <tbody>
+                <tr><td>Elemento de Unión</td><td>Silla Cachimba / Tee Sanitaria PVC</td><td>NTP ISO 4435</td><td><select name="mat_union"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>Tubería de Descarga</td><td>PVC-U ISO 4435 (SDR 34 / Serie 20) DN 160mm</td><td>NTP ISO 4435</td><td><select name="mat_tuberia"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>Codos</td><td>Codo PVC-U 160mm x 45°</td><td>NTP ISO 4435</td><td><select name="mat_codos"><option>SI</option><option>NO</option></select></td></tr>
+                <tr><td>Caja de Registro</td><td>Concreto Pre-fabricado / Termoplástica</td><td>RNE OS.070</td><td><select name="mat_caja"><option>SI</option><option>NO</option></select></td></tr>
+            </tbody>
+        </table>
+
+        <div class="section-title">
+            <span>3.0 REGISTRO DE CONEXIONES DOMICILIARIAS POR TRAMO (RNE OS.070)</span>
+            <button type="button" class="btn-add" onclick="agregarConexion()">+ Agregar conexión</button>
+        </div>
+        <div style="overflow-x:auto;">
+        <table class="table-section" id="tablaConexiones">
+            <thead>
+                <tr>
+                    <th rowspan="2">#</th>
+                    <th rowspan="2">MZ / LOTE</th>
+                    <th rowspan="2">N° CASA</th>
+                    <th colspan="2">PROF. COLECTOR (m)</th>
+                    <th colspan="2">PROF. CAJA REG. (m)</th>
+                    <th colspan="2">PENDIENTE (%)</th>
+                    <th rowspan="2">ÁNGULO<br>45°</th>
+                    <th colspan="2">PRUEBA DE BALDE</th>
+                    <th rowspan="2">RESULTADO</th>
+                    <th rowspan="2"></th>
+                </tr>
+                <tr>
+                    <th>Proy.</th><th>Ejec.</th>
+                    <th>Mín.0.60</th><th>Ejec.</th>
+                    <th>Mín.1.5%</th><th>Ejec.</th>
+                    <th>Flujo</th><th>Cachimba</th>
+                </tr>
+            </thead>
+            <tbody id="conexionesBody">
+            </tbody>
+        </table>
+        </div>
+
+        <div id="resultadoTramo" class="resultado-tramo aprobado-box">✅ RESULTADO DEL TRAMO: <span id="veredictoTramo">APROBADO</span></div>
+
+        <div class="section-title">REGISTRO FOTOGRÁFICO</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+            <div><label>Foto 1: Materiales</label><input type="file" name="foto_materiales" accept="image/*"></div>
+            <div><label>Foto 2: Instalación</label><input type="file" name="foto_instalacion" accept="image/*"></div>
+            <div><label>Foto 3: Prueba de balde</label><input type="file" name="foto_prueba" accept="image/*"></div>
+        </div>
+        <div style="margin-top:15px;"><label>OBSERVACIONES:</label><textarea name="observaciones" rows="3"></textarea></div>
+
+        <div class="btn-group">
+            <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
+            <button type="submit" class="btn-save">🚀 GUARDAR EN NUBE</button>
+        </div>
+    </form>
+</div>
+
+<div class="container" style="margin-top:30px;">
+    <div class="section-title">📂 HISTORIAL DE PROTOCOLOS POR TRAMO</div>
+    <div style="overflow-x:auto;">
+        <table class="table-section" style="font-size:10px;">
+            <thead><tr><th>NRO</th><th>FECHA</th><th>CALLE / PASAJE</th><th>TRAMO</th><th>N° CONEXIONES</th><th>RESULTADO</th><th>PDF</th></tr></thead>
+            <tbody id="tablaHistorial"></tbody>
+        </table>
+    </div>
+</div>
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/conexion-tramo';
+    let ultimoId = null;
+    let contadorConexion = 0;
+    document.getElementById('fecha').valueAsDate = new Date();
+
+    function showMessage(msg, isError = false) {
+        const t = document.getElementById('toastMsg');
+        t.innerText = msg; t.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+        t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 4000);
+    }
+
+    function evaluarResultadoFila(select) {
+        const tr = select.closest('tr');
+        const flujo = tr.querySelector('[data-campo="flujo"]').value;
+        const cachimba = tr.querySelector('[data-campo="cachimba"]').value;
+        const resSelect = tr.querySelector('[data-campo="resultado"]');
+        const aprobado = flujo === 'Flujo Inmediato' && cachimba === 'Sin Filtraciones';
+        resSelect.value = aprobado ? 'APROBADO' : 'RECHAZADO';
+        resSelect.style.background = aprobado ? '#d4edda' : '#f8d7da';
+        evaluarResultadoTramo();
+    }
+
+    function evaluarResultadoTramo() {
+        const resultados = document.querySelectorAll('[data-campo="resultado"]');
+        const tieneRechazado = Array.from(resultados).some(s => s.value === 'RECHAZADO');
+        const box = document.getElementById('resultadoTramo');
+        const ver = document.getElementById('veredictoTramo');
+        if (tieneRechazado) {
+            box.className = 'resultado-tramo rechazado-box';
+            ver.innerText = 'RECHAZADO';
+        } else {
+            box.className = 'resultado-tramo aprobado-box';
+            ver.innerText = 'APROBADO';
+        }
+    }
+
+    function agregarConexion() {
+        contadorConexion++;
+        const tbody = document.getElementById('conexionesBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="text-align:center">${String(contadorConexion).padStart(2,'0')}</td>
+            <td><input type="text" placeholder="Mz. A Lt. 1"></td>
+            <td><input type="text" placeholder="N° casa"></td>
+            <td><input type="number" step="0.01" placeholder="Según plano"></td>
+            <td><input type="number" step="0.01" placeholder="m"></td>
+            <td style="text-align:center;color:#666;font-size:10px;">≥ 0.60</td>
+            <td><input type="number" step="0.01" placeholder="m"></td>
+            <td style="text-align:center;color:#666;font-size:10px;">≥ 1.5%</td>
+            <td><input type="number" step="0.01" placeholder="%"></td>
+            <td><select><option>SI</option><option>NO</option></select></td>
+            <td><select data-campo="flujo" onchange="evaluarResultadoFila(this)">
+                <option>Flujo Inmediato</option><option>Flujo Lento</option><option>Obstruido</option>
+            </select></td>
+            <td><select data-campo="cachimba" onchange="evaluarResultadoFila(this)">
+                <option>Sin Filtraciones</option><option>Con Filtración</option>
+            </select></td>
+            <td><select data-campo="resultado" style="background:#d4edda">
+                <option>APROBADO</option><option>RECHAZADO</option>
+            </select></td>
+            <td><button type="button" class="btn-del" onclick="this.closest('tr').remove();evaluarResultadoTramo()">✕</button></td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function recolectarConexiones() {
+        return Array.from(document.querySelectorAll('#conexionesBody tr')).map((tr, i) => {
+            const inputs = tr.querySelectorAll('input');
+            const selects = tr.querySelectorAll('select');
+            return {
+                item:             i + 1,
+                mz_lote:          inputs[0]?.value || '',
+                nro_casa:         inputs[1]?.value || '',
+                prof_colector:    parseFloat(inputs[2]?.value) || 0,
+                prof_caja:        parseFloat(inputs[3]?.value) || 0,
+                pendiente:        parseFloat(inputs[4]?.value) || 0,
+                angulo_45:        selects[0]?.value || 'SI',
+                prueba_resultado: selects[1]?.value || 'Flujo Inmediato',
+                estado_cachimba:  selects[2]?.value || 'Sin Filtraciones',
+                resultado:        selects[3]?.value || 'APROBADO'
+            };
+        });
+    }
+
+    async function consultarCorrelativo() {
+        try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+    }
+
+    async function generarYSubirPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4'); // landscape para la tabla ancha
+        const form = document.getElementById('mainForm');
+
+        doc.setFontSize(7); doc.setTextColor(0);
+        doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD  |  CUI N° 2288049", 148, 8, { align: "center", maxWidth: 280 });
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+        doc.text("PROTOCOLO DE CONTROL: CONEXIONES DOMICILIARIAS POR TRAMO", 148, 18, { align: "center" });
+        doc.setFontSize(8); doc.setTextColor(0);
+
+        doc.autoTable({
+            startY: 24, theme: 'plain', styles: { fontSize: 8, cellPadding: 1 },
+            body: [
+                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', new Date(form.querySelector('[name=fecha]').value).toLocaleDateString(), 'CALLE / PASAJE:', form.querySelector('[name=calle_pasaje]').value],
+                ['TRAMO:', `BZ-${form.querySelector('[name=bz_inicio]').value} → BZ-${form.querySelector('[name=bz_fin]').value}`, 'COLECTOR:', form.querySelector('[name=tipo_colector]').value, 'DN (mm):', form.querySelector('[name=diametro_dn]').value],
+                ['LONGITUD TRAMO (m):', form.querySelector('[name=longitud_tramo]').value, '', '', '', '']
+            ],
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 35 }, 2: { fontStyle: 'bold', cellWidth: 25 }, 4: { fontStyle: 'bold', cellWidth: 30 } }
+        });
+
+        // Tabla de materiales
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 3, theme: 'grid',
+            head: [['COMPONENTE', 'ESPECIFICACIÓN', 'NORMA', 'ESTADO']],
+            body: [
+                ['Elemento de Unión', 'Silla Cachimba / Tee Sanitaria PVC', 'NTP ISO 4435', form.querySelector('[name=mat_union]').value],
+                ['Tubería de Descarga', 'PVC-U ISO 4435 SDR 34 DN 160mm', 'NTP ISO 4435', form.querySelector('[name=mat_tuberia]').value],
+                ['Codos', 'Codo PVC-U 160mm x 45°', 'NTP ISO 4435', form.querySelector('[name=mat_codos]').value],
+                ['Caja de Registro', 'Concreto Pre-fabricado / Termoplástica', 'RNE OS.070', form.querySelector('[name=mat_caja]').value]
+            ], styles: { fontSize: 7 }
+        });
+
+        // Tabla de conexiones
+        const conexiones = recolectarConexiones();
+        if (conexiones.length > 0) {
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 3, theme: 'grid',
+                head: [
+                    [
+                        { content: '#', rowSpan: 2 },
+                        { content: 'MZ / LOTE', rowSpan: 2 },
+                        { content: 'N° CASA', rowSpan: 2 },
+                        { content: 'PROF. COLECTOR (m)', colSpan: 2 },
+                        { content: 'PROF. CAJA REG. (m)', colSpan: 2 },
+                        { content: 'PENDIENTE (%)', colSpan: 2 },
+                        { content: 'ÁNGULO 45°', rowSpan: 2 },
+                        { content: 'PRUEBA DE BALDE', colSpan: 2 },
+                        { content: 'RESULTADO', rowSpan: 2 }
+                    ],
+                    ['Proy.', 'Ejec.', '≥0.60', 'Ejec.', '≥1.5%', 'Ejec.', 'Flujo', 'Cachimba']
+                ],
+                body: conexiones.map(c => [
+                    c.item, c.mz_lote, c.nro_casa,
+                    'Según plano', c.prof_colector,
+                    '≥ 0.60', c.prof_caja,
+                    '≥ 1.5%', c.pendiente,
+                    c.angulo_45, c.prueba_resultado, c.estado_cachimba, c.resultado
+                ]),
+                styles: { fontSize: 7 },
+                didParseCell: (data) => {
+                    if (data.section === 'body' && data.column.index === 12) {
+                        data.cell.styles.fillColor = data.cell.raw === 'APROBADO' ? [212, 237, 218] : [248, 215, 218];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+            });
+        }
+
+        // Resultado del tramo
+        const resTramo = document.getElementById('veredictoTramo').innerText;
+        let ry = doc.lastAutoTable.finalY + 6;
+        doc.setFontSize(11); doc.setFont("helvetica", "bold");
+        doc.setTextColor(resTramo === 'APROBADO' ? 21 : 220, resTramo === 'APROBADO' ? 87 : 53, resTramo === 'APROBADO' ? 36 : 69);
+        doc.text(`RESULTADO DEL TRAMO: ${resTramo}`, 148, ry, { align: "center" });
+        doc.setTextColor(0); doc.setFont("helvetica", "normal");
+
+        // Observaciones
+        const obs = form.querySelector('[name=observaciones]').value;
+        if (obs) {
+            doc.setFontSize(8);
+            doc.text("OBSERVACIONES: " + obs, 15, ry + 7, { maxWidth: 267 });
+            ry += 10;
+        }
+
+        // Firmas
+        let fy = ry + 18; if (fy > 185) { doc.addPage(); fy = 20; }
+        const anchoF = 55, esp = 10, ix = 15;
+        doc.setFontSize(7);
+        [['ESP. CALIDAD\nCONTRATISTA', ix], ['RESIDENTE DE OBRA', ix+anchoF+esp], ['ESP. CALIDAD\nSUPERVISIÓN', ix+2*(anchoF+esp)], ['SUPERVISOR\nDE OBRA', ix+3*(anchoF+esp)]].forEach(([label, x]) => {
+            doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
+        });
+
+        // Fotos
+        const fotos = [];
+        for (const inp of form.querySelectorAll('input[type="file"]')) {
+            if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp));
+        }
+        if (fotos.length > 0) {
+            doc.addPage();
+            doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+            doc.text("REGISTRO FOTOGRÁFICO", 148, 15, { align: "center" }); doc.setTextColor(0);
+            fotos.forEach((f, i) => {
+                const maxW = 250, maxH = 150;
+                const ratio = Math.min(maxW / f.w, maxH / f.h);
+                const fw = f.w * ratio, fh = f.h * ratio;
+                const x = (297 - fw) / 2, y = 25 + i * 165;
+                if (i > 0 && y + fh > 195) doc.addPage();
+                doc.addImage(f.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
+                doc.setFontSize(8); doc.text(f.label, 148, y + fh + 5, { align: "center" });
+            });
+        }
+
+        const nombre = `ConexionTramo_${document.getElementById('nro_prot').value}.pdf`;
+        doc.save(nombre);
+        if (ultimoId) {
+            try {
+                const fd = new FormData(); fd.append('pdf', doc.output('blob'), nombre);
+                const res = await fetch(`${API_URL}/${ultimoId}/pdf`, { method: 'PATCH', body: fd });
+                if (res.ok) { showMessage("✅ PDF guardado en la nube"); cargarHistorial(); }
+                else { const e = await res.json(); showMessage("⚠️ PDF local OK, nube falló: " + (e.error || ''), true); }
+            } catch (e) { showMessage("⚠️ Error al subir PDF", true); }
+        }
+    }
+
+    document.getElementById('mainForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const conexiones = recolectarConexiones();
+        if (conexiones.length === 0) { showMessage("❌ Agrega al menos una conexión domiciliaria", true); return; }
+        const btn = e.target.querySelector('.btn-save');
+        btn.innerText = "GUARDANDO..."; btn.disabled = true;
+        try {
+            const fd = new FormData(e.target);
+            fd.append('conexiones', JSON.stringify(conexiones));
+            const res = await fetch(API_URL, { method: 'POST', body: fd });
+            if (res.ok) {
+                const d = await res.json(); ultimoId = d.id;
+                showMessage("✅ Guardado. Generando PDF...");
+                await new Promise(r => setTimeout(r, 500));
+                await generarYSubirPDF();
+                consultarCorrelativo(); cargarHistorial();
+            } else { const err = await res.json(); showMessage("❌ " + (err.error || 'Error'), true); }
+        } catch (e) { showMessage("❌ Error de conexión", true); }
+        finally { btn.innerText = "🚀 GUARDAR EN NUBE"; btn.disabled = false; }
+    });
+
+    async function cargarHistorial() {
+        try {
+            const res = await fetch(API_URL); const data = await res.json();
+            const tabla = document.getElementById('tablaHistorial'); tabla.innerHTML = '';
+            data.forEach(p => {
+                const aprobado = p.resultado_tramo === 'APROBADO';
+                const color = aprobado ? '#28a745' : '#dc3545';
+                const btn = p.pdf_url ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>` : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${p.nro_protocolo}</td><td>${new Date(p.fecha).toLocaleDateString()}</td><td>${p.datos_tramo?.calle_pasaje || 'S/N'}</td><td>BZ-${p.datos_tramo?.bz_inicio || '?'} → BZ-${p.datos_tramo?.bz_fin || '?'}</td><td style="text-align:center">${p.conexiones?.length || 0}</td><td style="color:white;background:${color};font-weight:bold;text-align:center">${p.resultado_tramo || '---'}</td><td>${btn}</td>`;
+                tabla.appendChild(tr);
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    // Agregar una fila inicial al cargar
+    agregarConexion();
+    consultarCorrelativo();
+    cargarHistorial();
+</script>
+</body>
+</html>
