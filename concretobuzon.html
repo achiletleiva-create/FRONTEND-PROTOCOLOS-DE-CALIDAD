@@ -174,10 +174,9 @@
         try {
             const res = await fetch('https://backend-protocolos-de-calidad.onrender.com/api/protocolos/siguiente-correlativo');
             const data = await res.json();
-            document.getElementById('nro_prot').value = data.correlativo;
+            if (data.correlativo) document.getElementById('nro_prot').value = data.correlativo;
         } catch (e) {
             console.error("Error al obtener correlativo:", e);
-            showMessage("⚠️ No se pudo actualizar el número de protocolo", true);
         }
     }
 

@@ -128,7 +128,7 @@
     }
 
     async function consultarCorrelativo() {
-        try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+        try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); if (d.correlativo) document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
     }
 
     async function generarYSubirPDF() {

@@ -93,28 +93,37 @@ function mostrarPreview(inp) {
                     }
                 } catch(_) {}
 
-                // Generar canvas con EXIF corregido
+                // Generar canvas con EXIF corregido — redimensionar si es muy grande
+                const MAX_DIM = 1600;
+                let cw = swap ? h : w;
+                let ch = swap ? w : h;
+                if (cw > MAX_DIM || ch > MAX_DIM) {
+                    const scale = MAX_DIM / Math.max(cw, ch);
+                    cw = Math.round(cw * scale);
+                    ch = Math.round(ch * scale);
+                }
                 const c = document.createElement('canvas');
                 const ctx = c.getContext('2d');
-                const w = img.naturalWidth, h = img.naturalHeight;
-                const swap = orientation >= 5;
-                c.width = swap ? h : w;
-                c.height = swap ? w : h;
+                c.width = cw;
+                c.height = ch;
                 ctx.save();
+                const scaleX = cw / (swap ? h : w);
+                const scaleY = ch / (swap ? w : h);
+                const sc = Math.min(scaleX, scaleY);
                 switch (orientation) {
-                    case 2: ctx.transform(-1,0,0,1,w,0); break;
-                    case 3: ctx.transform(-1,0,0,-1,w,h); break;
-                    case 4: ctx.transform(1,0,0,-1,0,h); break;
-                    case 5: ctx.transform(0,1,1,0,0,0); break;
-                    case 6: ctx.transform(0,1,-1,0,h,0); break;
-                    case 7: ctx.transform(0,-1,-1,0,h,w); break;
-                    case 8: ctx.transform(0,-1,1,0,0,w); break;
-                    default: break;
+                    case 2: ctx.transform(-sc,0,0,sc,cw,0); break;
+                    case 3: ctx.transform(-sc,0,0,-sc,cw,ch); break;
+                    case 4: ctx.transform(sc,0,0,-sc,0,ch); break;
+                    case 5: ctx.transform(0,sc,sc,0,0,0); break;
+                    case 6: ctx.transform(0,sc,-sc,0,ch,0); break;
+                    case 7: ctx.transform(0,-sc,-sc,0,ch,cw); break;
+                    case 8: ctx.transform(0,-sc,sc,0,0,cw); break;
+                    default: ctx.scale(sc, sc); break;
                 }
                 ctx.drawImage(img, 0, 0);
                 ctx.restore();
 
-                const correctedSrc = c.toDataURL('image/jpeg', 0.92);
+                const correctedSrc = c.toDataURL('image/jpeg', 0.80);
 
                 // Guardar el src corregido en el input para que leerFotoCorregida lo use directamente
                 inp._correctedSrc = correctedSrc;
@@ -147,7 +156,7 @@ function mostrarPreview(inp) {
                     const imgRot = new Image();
                     imgRot.onload = function() {
                         ctxRot.drawImage(imgRot, -sw / 2, -sh / 2);
-                        inp._correctedSrc = cRot.toDataURL('image/jpeg', 0.92);
+                        inp._correctedSrc = cRot.toDataURL('image/jpeg', 0.80);
                         inp._correctedW = cRot.width;
                         inp._correctedH = cRot.height;
                         previewImg.src = inp._correctedSrc;
@@ -197,7 +206,7 @@ window.leerFotoCorregida = function(file, label, inputElement) {
                 ctx2.translate(c2.width / 2, c2.height / 2);
                 ctx2.rotate(rad);
                 ctx2.drawImage(img2, -sw / 2, -sh / 2);
-                resolve({ src: c2.toDataURL('image/jpeg', 0.92), w: c2.width, h: c2.height, label });
+                resolve({ src: c2.toDataURL('image/jpeg', 0.80), w: c2.width, h: c2.height, label });
             };
             img2.src = inputElement._correctedSrc;
             return;
@@ -297,8 +306,8 @@ window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
         doc.setFontSize(7); doc.text(f.label, cellX + CELL_W / 2, cellY + CELL_H + 5, { align: "center", maxWidth: CELL_W });
     });
 };
-    // Paso 1: corregir EXIF
-    const c1 = document.createElement('canvas');
+
+function dibujar(img, orientation, manualDeg, originalSrc, resolve, label) {
     const ctx1 = c1.getContext('2d');
     const w = img.naturalWidth, h = img.naturalHeight;
     const swap = orientation >= 5;
