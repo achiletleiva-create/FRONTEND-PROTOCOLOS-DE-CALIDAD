@@ -140,14 +140,26 @@ function mostrarPreview(inp) {
                     const current = parseInt(wrap.dataset.rotation) || 0;
                     const next = (current + 90) % 360;
                     wrap.dataset.rotation = next;
-                    previewImg.style.transform = `rotate(${next}deg)`;
-                    if (next === 90 || next === 270) {
-                        previewImg.style.maxWidth = '140px';
-                        previewImg.style.maxHeight = '100%';
-                    } else {
-                        previewImg.style.maxWidth = '100%';
-                        previewImg.style.maxHeight = '140px';
-                    }
+
+                    // Aplicar rotación real al canvas y actualizar _correctedSrc
+                    const sw = inp._correctedW, sh = inp._correctedH;
+                    const cRot = document.createElement('canvas');
+                    const ctxRot = cRot.getContext('2d');
+                    if (next === 90 || next === 270) { cRot.width = sh; cRot.height = sw; }
+                    else { cRot.width = sw; cRot.height = sh; }
+                    ctxRot.translate(cRot.width / 2, cRot.height / 2);
+                    ctxRot.rotate(90 * Math.PI / 180);
+                    const imgRot = new Image();
+                    imgRot.onload = function() {
+                        ctxRot.drawImage(imgRot, -sw / 2, -sh / 2);
+                        const newSrc = cRot.toDataURL('image/jpeg', 0.92);
+                        inp._correctedSrc = newSrc;
+                        inp._correctedW = cRot.width;
+                        inp._correctedH = cRot.height;
+                        previewImg.src = newSrc;
+                        previewImg.style.transform = 'rotate(0deg)';
+                    };
+                    imgRot.src = inp._correctedSrc;
                 });
 
                 wrap.appendChild(previewImg);

@@ -187,9 +187,18 @@
         
         doc.setFontSize(7); doc.setTextColor(0);
         doc.text("PROYECTO: MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD  |  CUI N° 2288049", 105, 8, { align: "center", maxWidth: 190 });
-        doc.setFontSize(10);
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
-        doc.text(`NRO: ${document.getElementById('nro_prot').value} | ELEMENTO: ${document.getElementById('elemento').value}`, 105, 24, {align: "center"});
+        doc.setFontSize(9); doc.setTextColor(0);
+
+        doc.autoTable({
+            startY: 24, theme: 'plain', styles: { fontSize: 8, cellPadding: 1 },
+            body: [
+                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', new Date(document.getElementById('fecha_obra').value).toLocaleDateString()],
+                ['ELEMENTO:', document.getElementById('elemento').value, 'RESISTENCIA f\'c:', document.getElementById('resistencia').value + ' kg/cm²']
+            ],
+            columnStyles: { 0: { fontStyle: 'bold', cellWidth: 38 }, 2: { fontStyle: 'bold', cellWidth: 38 } }
+        });
 
         const rows = [];
         document.querySelectorAll('#puntosControl tr').forEach(tr => {
@@ -204,7 +213,7 @@
         });
 
         doc.autoTable({
-            startY: 30,
+            startY: doc.lastAutoTable.finalY + 3,
             theme: 'grid',
             head: [['ITEM', 'ACTIVIDAD', 'CRITERIO / NORMA', 'ESTADO', 'OBSERVACIONES']],
             body: rows,
@@ -236,36 +245,24 @@
         let fotosCargadas = [];
         for (let input of fotosInputs) {
             if (input.files && input.files[0]) {
-                const data = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => resolve({ 
-                            src: e.target.result, 
-                            w: img.width, 
-                            h: img.height, 
-                            label: input.parentElement.querySelector('label').innerText 
-                        });
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(input.files[0]);
-                });
-                fotosCargadas.push(data);
+                const f = await leerFotoCorregida(input.files[0], input.parentElement.querySelector('label').innerText, input);
+                fotosCargadas.push(f);
             }
         }
 
         if (fotosCargadas.length > 0) {
             doc.addPage();
+            doc.setFontSize(11); doc.setTextColor(0, 74, 153);
             doc.text("6.0 REGISTRO FOTOGRÁFICO OBLIGATORIO", 105, 15, {align: "center"});
-            const maxW = 85; const maxH = 60; const gapX = 10; const gapY = 25;
+            doc.setTextColor(0);
             fotosCargadas.forEach((foto, i) => {
-                const col = i % 2; const row = Math.floor(i / 2);
-                let finalW = maxW; let finalH = (foto.h * maxW) / foto.w;
-                if (finalH > maxH) { finalH = maxH; finalW = (foto.w * maxH) / foto.h; }
-                const x = 15 + (col * (maxW + gapX)) + (maxW - finalW) / 2;
-                const y = 25 + (row * (maxH + gapY)) + (maxH - finalH) / 2;
-                doc.addImage(foto.src, 'JPEG', x, y, finalW, finalH, undefined, 'FAST');
-                doc.text(foto.label, 15 + (col * (maxW + gapX)) + 42, y + finalH + 5, {align: "center"});
+                const maxW = 180, maxH = 120;
+                const ratio = Math.min(maxW / foto.w, maxH / foto.h);
+                const fw = foto.w * ratio, fh = foto.h * ratio;
+                const x = 15 + (maxW - fw) / 2, y = 25 + i * 135;
+                if (i > 0 && y + fh > 280) doc.addPage();
+                doc.addImage(foto.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
+                doc.setFontSize(8); doc.text(foto.label, 105, y + fh + 5, {align: "center"});
             });
         }
 
