@@ -185,7 +185,7 @@
         // Fotos
         const fotos = [];
         for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || ''));
+            if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp));
         }
         if (fotos.length > 0) {
             doc.addPage(); doc.setFontSize(11); doc.setTextColor(0, 74, 153);
