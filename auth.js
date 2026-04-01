@@ -95,6 +95,8 @@ function mostrarPreview(inp) {
 
                 // Generar canvas con EXIF corregido — redimensionar si es muy grande
                 const MAX_DIM = 1600;
+                const w = img.naturalWidth, h = img.naturalHeight;
+                const swap = orientation >= 5;
                 let cw = swap ? h : w;
                 let ch = swap ? w : h;
                 if (cw > MAX_DIM || ch > MAX_DIM) {
@@ -107,9 +109,7 @@ function mostrarPreview(inp) {
                 c.width = cw;
                 c.height = ch;
                 ctx.save();
-                const scaleX = cw / (swap ? h : w);
-                const scaleY = ch / (swap ? w : h);
-                const sc = Math.min(scaleX, scaleY);
+                const sc = Math.min(cw / (swap ? h : w), ch / (swap ? w : h));
                 switch (orientation) {
                     case 2: ctx.transform(-sc,0,0,sc,cw,0); break;
                     case 3: ctx.transform(-sc,0,0,-sc,cw,ch); break;
@@ -308,6 +308,8 @@ window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
 };
 
 function dibujar(img, orientation, manualDeg, originalSrc, resolve, label) {
+    // Paso 1: corregir EXIF
+    const c1 = document.createElement('canvas');
     const ctx1 = c1.getContext('2d');
     const w = img.naturalWidth, h = img.naturalHeight;
     const swap = orientation >= 5;
