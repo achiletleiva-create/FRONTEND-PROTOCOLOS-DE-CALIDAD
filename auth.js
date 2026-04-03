@@ -57,7 +57,6 @@ function mostrarPreview(inp) {
     if (prevWrap) prevWrap.remove();
     if (!inp.files[0]) return;
 
-    // Leer EXIF y corregir orientación, luego mostrar preview
     const file = inp.files[0];
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -124,21 +123,17 @@ function mostrarPreview(inp) {
                 ctx.restore();
 
                 const correctedSrc = c.toDataURL('image/jpeg', 0.80);
-
-                // Guardar el src corregido en el input para que leerFotoCorregida lo use directamente
                 inp._correctedSrc = correctedSrc;
                 inp._correctedW = c.width;
                 inp._correctedH = c.height;
 
-                // Mostrar preview con la imagen ya corregida
+                // Mostrar preview con botón de rotación
                 const wrap = document.createElement('div');
                 wrap.className = 'foto-preview-wrap';
                 wrap.dataset.rotation = '0';
 
                 const previewImg = document.createElement('img');
                 previewImg.src = correctedSrc;
-                previewImg.style.transform = 'rotate(0deg)';
-                previewImg.style.transition = 'transform 0.3s';
 
                 const btn = document.createElement('button');
                 btn.type = 'button';
@@ -181,38 +176,22 @@ function cerrarSesion() {
 }
 
 /**
- * Lee un archivo de imagen, corrige EXIF y aplica rotación manual del usuario.
- * Devuelve { src, w, h, label } listo para insertar en jsPDF.
+ * Lee una imagen y devuelve { src, w, h, label } para insertar en jsPDF.
+ * Usa el canvas ya corregido del preview si existe, si no corrige EXIF desde el archivo.
  */
 window.leerFotoCorregida = function(file, label, inputElement) {
     return new Promise(resolve => {
-        // Si ya tenemos el canvas corregido desde la preview, usarlo directamente
+        // Usar canvas ya corregido del preview directamente
         if (inputElement && inputElement._correctedSrc) {
-            const wrap = inputElement.parentElement.querySelector('.foto-preview-wrap');
-            const manualDeg = wrap ? (parseInt(wrap.dataset.rotation) || 0) : 0;
-            if (manualDeg === 0) {
-                resolve({ src: inputElement._correctedSrc, w: inputElement._correctedW, h: inputElement._correctedH, label });
-                return;
-            }
-            // Aplicar rotación manual sobre el canvas ya corregido
-            const img2 = new Image();
-            img2.onload = function() {
-                const sw = inputElement._correctedW, sh = inputElement._correctedH;
-                const c2 = document.createElement('canvas');
-                const ctx2 = c2.getContext('2d');
-                const rad = manualDeg * Math.PI / 180;
-                if (manualDeg === 90 || manualDeg === 270) { c2.width = sh; c2.height = sw; }
-                else { c2.width = sw; c2.height = sh; }
-                ctx2.translate(c2.width / 2, c2.height / 2);
-                ctx2.rotate(rad);
-                ctx2.drawImage(img2, -sw / 2, -sh / 2);
-                resolve({ src: c2.toDataURL('image/jpeg', 0.80), w: c2.width, h: c2.height, label });
-            };
-            img2.src = inputElement._correctedSrc;
+            resolve({
+                src: inputElement._correctedSrc,
+                w: inputElement._correctedW,
+                h: inputElement._correctedH,
+                label
+            });
             return;
         }
-
-        // Fallback: leer archivo y corregir EXIF (cuando no hay preview)
+        // Fallback: corregir EXIF desde el archivo (sin preview)
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
@@ -246,9 +225,7 @@ window.leerFotoCorregida = function(file, label, inputElement) {
                             }
                         }
                     } catch(_) {}
-                    const wrap = inputElement && inputElement.parentElement.querySelector('.foto-preview-wrap');
-                    const manualDeg = wrap ? (parseInt(wrap.dataset.rotation) || 0) : 0;
-                    dibujar(img, orientation, manualDeg, e.target.result, resolve, label);
+                    dibujar(img, orientation, resolve, label);
                 };
                 fr2.readAsArrayBuffer(file);
             };
@@ -258,57 +235,63 @@ window.leerFotoCorregida = function(file, label, inputElement) {
     });
 };
 
+/**
+ * Inserta fotos en el PDF con layout inteligente según cantidad:
+ * 1 foto → 1 col, 2 fotos → 2 col, 3 fotos → 3 col,
+ * 4 fotos → 2x2, 5-6 fotos → 3x2 (usa 2ª página si hay más de 6)
+ */
 window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
     if (!fotos || fotos.length === 0) return;
-    doc.addPage();
-    doc.setFontSize(11); doc.setTextColor(0, 74, 153);
-    doc.text("REGISTRO FOTOGRÁFICO", 105, tituloY || 15, { align: "center" });
-    doc.setTextColor(0);
 
-    const CELL_W = 88, CELL_H = 72, GAP_X = 8, GAP_Y = 18;
-    const START_X = 10, START_Y = (tituloY || 15) + 8;
-    const COLS = 2;
+    const n = fotos.length;
+    const MARGIN = 10, GAP = 6, LABEL_H = 8;
+    const PAGE_W = 190, PAGE_H = 277;
+    const titleY = tituloY || 15;
+    const startY = titleY + 8;
+
+    // Layout según cantidad de fotos
+    let cols, rows;
+    if      (n === 1) { cols = 1; rows = 1; }
+    else if (n === 2) { cols = 2; rows = 1; }
+    else if (n === 3) { cols = 3; rows = 1; }
+    else if (n === 4) { cols = 2; rows = 2; }
+    else              { cols = 3; rows = 2; } // 5, 6 o más
+
+    const fotasPorPagina = cols * rows;
+    const cellW = (PAGE_W - (cols - 1) * GAP) / cols;
+    const cellH = (PAGE_H - startY - (rows - 1) * GAP - rows * LABEL_H) / rows;
+
+    let pagina = -1;
 
     fotos.forEach((f, i) => {
-        const col = i % COLS;
-        const row = Math.floor(i / COLS);
-        const cellX = START_X + col * (CELL_W + GAP_X);
-        const cellY = START_Y + row * (CELL_H + GAP_Y);
+        const posEnPagina = i % fotasPorPagina;
+        const col = posEnPagina % cols;
+        const row = Math.floor(posEnPagina / cols);
 
-        // Nueva página si no cabe
-        if (row > 0 && col === 0) {
-            const neededY = cellY + CELL_H + GAP_Y;
-            if (neededY > 285) {
-                doc.addPage();
-                doc.setFontSize(11); doc.setTextColor(0, 74, 153);
-                doc.text("REGISTRO FOTOGRÁFICO (continuación)", 105, 12, { align: "center" });
-                doc.setTextColor(0);
-                // Recalcular posición en nueva página
-                const newRow = 0;
-                const newCellY = 20;
-                const ratio = Math.min(CELL_W / f.w, CELL_H / f.h);
-                const fw = f.w * ratio, fh = f.h * ratio;
-                const imgX = cellX + (CELL_W - fw) / 2;
-                const imgY = newCellY + (CELL_H - fh) / 2;
-                doc.rect(cellX, newCellY, CELL_W, CELL_H);
-                doc.addImage(f.src, 'JPEG', imgX, imgY, fw, fh, undefined, 'FAST');
-                doc.setFontSize(7); doc.text(f.label, cellX + CELL_W / 2, newCellY + CELL_H + 5, { align: "center", maxWidth: CELL_W });
-                return;
-            }
+        if (posEnPagina === 0) {
+            pagina++;
+            doc.addPage();
+            doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+            doc.text(
+                pagina === 0 ? 'REGISTRO FOTOGRÁFICO' : 'REGISTRO FOTOGRÁFICO (continuación)',
+                105, titleY, { align: 'center' }
+            );
+            doc.setTextColor(0);
         }
 
-        const ratio = Math.min(CELL_W / f.w, CELL_H / f.h);
+        const cellX = MARGIN + col * (cellW + GAP);
+        const cellY = startY + row * (cellH + GAP + LABEL_H);
+        const ratio = Math.min(cellW / f.w, cellH / f.h);
         const fw = f.w * ratio, fh = f.h * ratio;
-        const imgX = cellX + (CELL_W - fw) / 2;
-        const imgY = cellY + (CELL_H - fh) / 2;
-        doc.rect(cellX, cellY, CELL_W, CELL_H);
-        doc.addImage(f.src, 'JPEG', imgX, imgY, fw, fh, undefined, 'FAST');
-        doc.setFontSize(7); doc.text(f.label, cellX + CELL_W / 2, cellY + CELL_H + 5, { align: "center", maxWidth: CELL_W });
+
+        doc.rect(cellX, cellY, cellW, cellH);
+        doc.addImage(f.src, 'JPEG', cellX + (cellW - fw) / 2, cellY + (cellH - fh) / 2, fw, fh, undefined, 'FAST');
+        doc.setFontSize(7);
+        doc.text(f.label, cellX + cellW / 2, cellY + cellH + 5, { align: 'center', maxWidth: cellW });
     });
 };
 
-function dibujar(img, orientation, manualDeg, originalSrc, resolve, label) {
-    // Paso 1: corregir EXIF
+function dibujar(img, orientation, resolve, label) {
     const c1 = document.createElement('canvas');
     const ctx1 = c1.getContext('2d');
     const w = img.naturalWidth, h = img.naturalHeight;
@@ -328,24 +311,5 @@ function dibujar(img, orientation, manualDeg, originalSrc, resolve, label) {
     }
     ctx1.drawImage(img, 0, 0);
     ctx1.restore();
-
-    if (manualDeg === 0) {
-        resolve({ src: c1.toDataURL('image/jpeg', 0.92), w: c1.width, h: c1.height, label });
-        return;
-    }
-
-    // Paso 2: aplicar rotación manual
-    const c2 = document.createElement('canvas');
-    const ctx2 = c2.getContext('2d');
-    const sw = c1.width, sh = c1.height;
-    const rad = manualDeg * Math.PI / 180;
-    if (manualDeg === 90 || manualDeg === 270) {
-        c2.width = sh; c2.height = sw;
-    } else {
-        c2.width = sw; c2.height = sh;
-    }
-    ctx2.translate(c2.width / 2, c2.height / 2);
-    ctx2.rotate(rad);
-    ctx2.drawImage(c1, -sw / 2, -sh / 2);
-    resolve({ src: c2.toDataURL('image/jpeg', 0.92), w: c2.width, h: c2.height, label });
+    resolve({ src: c1.toDataURL('image/jpeg', 0.80), w: c1.width, h: c1.height, label });
 }
