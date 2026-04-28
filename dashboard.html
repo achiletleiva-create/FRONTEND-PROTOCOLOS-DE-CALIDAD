@@ -712,7 +712,7 @@
     <div class="filters-bar">
         <div class="search-box">
             <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Buscar por N° de Protocolo..." oninput="debounceSearch()">
+            <input type="text" id="searchInput" placeholder="Buscar por N° Protocolo, dirección/calle..." oninput="debounceSearch()">
         </div>
         <span class="total-badge" id="totalBadge">0 registros</span>
         <button class="btn-clear" onclick="clearFilters()">✕ Limpiar filtros</button>
@@ -726,6 +726,7 @@
                     <tr>
                         <th>Tipo</th>
                         <th>N° Protocolo</th>
+                        <th>Dirección / Calle</th>
                         <th>Fecha</th>
                         <th>Responsable Calidad</th>
                         <th>PDF</th>
@@ -734,7 +735,7 @@
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="6">
+                        <td colspan="7">
                             <div class="loading-state">
                                 <div class="spinner"></div>
                                 <p>Cargando registros...</p>
@@ -852,7 +853,7 @@ async function loadTipos() {
 async function loadData() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = `
-        <tr><td colspan="6">
+        <tr><td colspan="7">
             <div class="loading-state">
                 <div class="spinner"></div>
                 <p>Cargando registros...</p>
@@ -882,7 +883,7 @@ async function loadData() {
     } catch (err) {
         console.error('Error cargando datos:', err);
         tbody.innerHTML = `
-            <tr><td colspan="6">
+            <tr><td colspan="7">
                 <div class="empty-state">
                     <div class="empty-icon">⚠️</div>
                     <p>Error al cargar los datos. Verifica tu conexión.</p>
@@ -929,7 +930,7 @@ function renderTable(registros) {
 
     if (!registros || registros.length === 0) {
         tbody.innerHTML = `
-            <tr><td colspan="6">
+            <tr><td colspan="7">
                 <div class="empty-state">
                     <div class="empty-icon">📭</div>
                     <p>No se encontraron registros${state.tipo ? ' para este tipo de protocolo' : ''}.</p>
@@ -962,6 +963,7 @@ function renderTable(registros) {
                     </span>
                 </td>
                 <td><span class="nro-protocolo">${r.nro_protocolo || '-'}</span></td>
+                <td><span class="resp-cell">${r.direccion || '-'}</span></td>
                 <td><span class="fecha-cell">${fecha}</span></td>
                 <td><span class="resp-cell">${r.responsable_calidad || '-'}</span></td>
                 <td>${pdfHtml}</td>

@@ -86,7 +86,7 @@
         <div style="margin-top:15px;"><label>OBSERVACIONES:</label><textarea name="observaciones" rows="3"></textarea></div>
 
         <div class="btn-group">
-            <button type="button" class="btn-back" onclick="history.back()">⬅ VOLVER</button>
+            <button type="button" class="btn-back" onclick="window.location.href='dashboard.html'">⬅ VOLVER</button>
             <button type="submit" class="btn-save">🚀 GUARDAR EN NUBE</button>
         </div>
     </form>
@@ -139,10 +139,15 @@
         doc.setFontSize(11); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE CONTROL: INSTALACIÓN DE TUBERÍA", 105, 18, { align: "center" });
         doc.setFontSize(9); doc.setTextColor(0);
+        function parsearFechaLocal(fechaStr) {
+            if (!fechaStr) return '';
+            const [y, m, d] = fechaStr.split('-');
+            return new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).toLocaleDateString();
+        }
         doc.autoTable({
             startY: 26, theme: 'plain', styles: { fontSize: 8, cellPadding: 1 },
             body: [
-                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', new Date(form.querySelector('[name=fecha]').value).toLocaleDateString()],
+                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', parsearFechaLocal(form.querySelector('[name=fecha]').value)],
                 ['BUZÓN INICIO:', form.querySelector('[name=tramo_bz_inicio]').value, 'BUZÓN FIN:', form.querySelector('[name=tramo_bz_fin]').value],
                 ['CALLE / PASAJE:', form.querySelector('[name=calle_pasaje]').value, 'TIPO TUBERÍA:', form.querySelector('[name=tipo_tuberia]').value],
                 ['DIÁMETRO DN (mm):', form.querySelector('[name=diametro_dn]').value, 'SDR / SERIE:', form.querySelector('[name=sdr_serie]').value],

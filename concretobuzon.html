@@ -202,11 +202,15 @@
         doc.setFontSize(11); doc.setTextColor(0, 74, 153);
         doc.text("PROTOCOLO DE LIBERACIÓN DE VACIADO DE CONCRETO", 105, 18, {align: "center"});
         doc.setFontSize(9); doc.setTextColor(0);
-
+        function parsearFechaLocal(fechaStr) {
+            if (!fechaStr) return '';
+            const [y, m, d] = fechaStr.split('-');
+            return new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).toLocaleDateString();
+        }
         doc.autoTable({
             startY: 24, theme: 'plain', styles: { fontSize: 8, cellPadding: 1 },
             body: [
-                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', new Date(document.getElementById('fecha_obra').value).toLocaleDateString()],
+                ['NRO PROTOCOLO:', document.getElementById('nro_prot').value, 'FECHA:', parsearFechaLocal(document.getElementById('fecha_obra').value)],
                 ['ELEMENTO:', document.getElementById('elemento').value, 'RESISTENCIA f\'c:', document.getElementById('resistencia').value + ' kg/cm²']
             ],
             columnStyles: { 0: { fontStyle: 'bold', cellWidth: 38 }, 2: { fontStyle: 'bold', cellWidth: 38 } }
