@@ -556,14 +556,43 @@
             display: block;
             cursor: pointer;
         }
-        .modal-fotos .foto-item .foto-nombre {
+        .modal-fotos .foto-item .foto-info {
             padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .modal-fotos .foto-item .foto-nombre {
             font-size: 11px;
             color: #475569;
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+        .modal-fotos .foto-item .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            color: #475569;
+            text-decoration: none;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .modal-fotos .foto-item .download-btn:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
         }
         .modal-fotos .fotos-empty {
             text-align: center;
@@ -657,6 +686,30 @@
         }
         .lightbox-overlay .lightbox-next {
             right: 20px;
+        }
+        .lightbox-overlay .lightbox-download {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px);
+        }
+        .lightbox-overlay .lightbox-download:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.4);
         }
 
 
@@ -790,6 +843,7 @@
     <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">‹</button>
     <img id="lightboxImg" src="" alt="Foto ampliada">
     <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">›</button>
+    <a class="lightbox-download" id="lightboxDownload" href="" download="" title="Descargar imagen original">⬇ Descargar imagen</a>
     <div class="lightbox-counter" id="lightboxCounter"></div>
 </div>
 
@@ -1197,8 +1251,13 @@ function renderFotosGrid() {
                     <img src="${foto.url}" alt="${foto.nombre || 'Foto'}" 
                          onclick="openLightbox(${index})" 
                          loading="lazy">
-                    <div class="foto-nombre" title="${foto.nombre || ''}">
-                        ${foto.nombre || 'Foto ' + (index + 1)}
+                    <div class="foto-info">
+                        <span class="foto-nombre" title="${foto.nombre || ''}">
+                            ${foto.nombre || 'Foto ' + (index + 1)}
+                        </span>
+                        <a href="${foto.url}" download="${foto.nombre || 'foto-' + (index + 1)}" class="download-btn" title="Descargar imagen" onclick="event.stopPropagation()">
+                            ⬇
+                        </a>
                     </div>
                 </div>
             `).join('')}
@@ -1236,6 +1295,10 @@ function updateLightboxImage() {
     document.getElementById('lightboxImg').src = foto.url;
     document.getElementById('lightboxImg').alt = foto.nombre || 'Foto';
     document.getElementById('lightboxCounter').textContent = `${fotosIndexActual + 1} / ${fotosActuales.length}`;
+    // Actualizar enlace de descarga
+    const downloadLink = document.getElementById('lightboxDownload');
+    downloadLink.href = foto.url;
+    downloadLink.download = foto.nombre || 'foto-' + (fotosIndexActual + 1);
 }
 
 function handleLightboxKey(e) {
