@@ -208,11 +208,7 @@
             doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
         });
 
-        const fotos = [];
-        for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp));
-        }
-        insertarFotosEnPDF(doc, fotos);
+        insertarFotosEnPDF(doc, fotosParaPDF);
 
         const nombre = `Conexion_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombre);
@@ -226,11 +222,33 @@
         }
     }
 
+    // Variable para guardar las fotos leídas antes de enviar el formulario
+    let fotosParaPDF = [];
+
+    async function leerFotosInputs() {
+        const fotos = [];
+        const form = document.getElementById('mainForm');
+        for (const inp of form.querySelectorAll('input[type="file"]')) {
+            if (inp.files && inp.files[0]) {
+                try {
+                    const foto = await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp);
+                    fotos.push(foto);
+                } catch (e) {
+                    console.error('Error al leer foto:', e);
+                }
+            }
+        }
+        return fotos;
+    }
+
     document.getElementById('mainForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
         btn.innerText = "GUARDANDO..."; btn.disabled = true;
         try {
+            // Leer fotos ANTES de enviar el formulario
+            fotosParaPDF = await leerFotosInputs();
+            
             const res = await fetch(API_URL, { method: 'POST', body: new FormData(e.target) });
             if (res.ok) {
                 const d = await res.json(); ultimoId = d.id;

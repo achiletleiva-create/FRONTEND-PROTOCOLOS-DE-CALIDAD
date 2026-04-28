@@ -301,6 +301,54 @@
             cursor: default;
         }
 
+        /* ===== ACTION BUTTONS ===== */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .action-btn.edit {
+            background: #eff6ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+        .action-btn.edit:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+        }
+        .action-btn.delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+        .action-btn.delete:hover {
+            background: #fee2e2;
+            transform: translateY(-1px);
+        }
+        .action-btn.photos {
+            background: #f0fdf4;
+            color: #16a34a;
+            border-color: #bbf7d0;
+        }
+        .action-btn.photos:hover {
+            background: #dcfce7;
+            transform: translateY(-1px);
+        }
+        .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+
         /* ===== PAGINATION ===== */
         .pagination {
             display: flex;
@@ -366,6 +414,252 @@
             font-size: 14px;
         }
 
+        /* ===== MODAL (genérico) ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-box .modal-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .modal-box h3 {
+            font-size: 18px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+        .modal-box p {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .modal-box .modal-protocolo {
+            font-weight: 700;
+            color: #dc2626;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-actions button {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .modal-actions .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #e2e8f0;
+        }
+        .modal-actions .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+        .modal-actions .btn-confirm-delete {
+            background: #dc2626;
+            color: white;
+        }
+        .modal-actions .btn-confirm-delete:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+        .modal-actions .btn-confirm-delete:disabled {
+            background: #fca5a5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== MODAL GALERÍA DE FOTOS ===== */
+        .modal-fotos {
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            padding: 20px 24px;
+            text-align: left;
+            overflow-y: auto;
+        }
+        .modal-fotos .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .modal-fotos .modal-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #0f172a;
+        }
+        .modal-fotos .modal-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .modal-fotos .modal-header .close-btn:hover {
+            background: #f1f5f9;
+            color: #1a1a2e;
+        }
+        .modal-fotos .fotos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .modal-fotos .foto-item {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            transition: 0.2s;
+        }
+        .modal-fotos .foto-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .modal-fotos .foto-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+            cursor: pointer;
+        }
+        .modal-fotos .foto-item .foto-nombre {
+            padding: 8px 10px;
+            font-size: 11px;
+            color: #475569;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .modal-fotos .fotos-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+        .modal-fotos .fotos-empty .empty-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .modal-fotos .fotos-empty p {
+            font-size: 14px;
+        }
+
+        /* ===== LIGHTBOX PARA VER FOTO AMPLIADA ===== */
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            cursor: zoom-out;
+        }
+        .lightbox-overlay.active {
+            display: flex;
+        }
+        .lightbox-overlay img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .lightbox-overlay .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 36px;
+            color: white;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: 0.2s;
+            border: none;
+        }
+        .lightbox-overlay .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .lightbox-overlay .lightbox-counter {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 14px;
+            background: rgba(0,0,0,0.6);
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+        .lightbox-overlay .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: 0.2s;
+            border: none;
+            user-select: none;
+        }
+        .lightbox-overlay .lightbox-nav:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .lightbox-overlay .lightbox-prev {
+            left: 20px;
+        }
+        .lightbox-overlay .lightbox-next {
+            right: 20px;
+        }
+
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .header-left h1 { font-size: 13px; }
@@ -380,6 +674,8 @@
             thead th, tbody td { padding: 8px 10px; }
             .tipo-badge { font-size: 10px; padding: 2px 8px; }
             .pagination { flex-direction: column; align-items: center; }
+            .actions-cell { flex-direction: column; gap: 4px; }
+            .action-btn { justify-content: center; }
         }
 
         /* ===== SCROLLBAR ===== */
@@ -401,7 +697,7 @@
         </div>
     </div>
     <div class="header-right">
-        <button onclick="location.href='menu.html'">🏠 Menú Principal</button>
+        <button onclick="location.href='menu.html'" style="background:#f0a500;color:#000;border-color:#f0a500;font-weight:700;">📋 Ver Protocolos</button>
         <button onclick="cerrarSesion()">🚪 Salir</button>
     </div>
 </header>
@@ -433,11 +729,12 @@
                         <th>Fecha</th>
                         <th>Responsable Calidad</th>
                         <th>PDF</th>
+                        <th style="text-align:center;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
                     <tr>
-                        <td colspan="5">
+                        <td colspan="6">
                             <div class="loading-state">
                                 <div class="spinner"></div>
                                 <p>Cargando registros...</p>
@@ -451,15 +748,74 @@
     </div>
 </div>
 
+<!-- ===== MODAL DE CONFIRMACIÓN PARA ELIMINAR ===== -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+        <div class="modal-icon">⚠️</div>
+        <h3>¿Eliminar protocolo?</h3>
+        <p>
+            Estás a punto de eliminar el protocolo<br>
+            <strong class="modal-protocolo" id="modalProtocolo">-</strong>
+            <br><br>
+            Esta acción <strong>no se puede deshacer</strong>.
+            ¿Estás seguro de que deseas continuar?
+        </p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+            <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="confirmDelete()">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL GALERÍA DE FOTOS ===== -->
+<div class="modal-overlay" id="fotosModal">
+    <div class="modal-box modal-fotos">
+        <div class="modal-header">
+            <h3 id="fotosModalTitle">📷 Fotos del Protocolo</h3>
+            <button class="close-btn" onclick="closeFotosModal()">✕</button>
+        </div>
+        <div id="fotosGridContainer">
+            <div class="fotos-empty">
+                <div class="empty-icon">📸</div>
+                <p>Cargando fotos...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== LIGHTBOX PARA VER FOTO AMPLIADA ===== -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">‹</button>
+    <img id="lightboxImg" src="" alt="Foto ampliada">
+    <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">›</button>
+    <div class="lightbox-counter" id="lightboxCounter"></div>
+</div>
+
 <script>
+
 // ===== CONFIG =====
 const BASE_URL = 'https://backend-protocolos-de-calidad.onrender.com';
 const API_DASHBOARD = `${BASE_URL}/api/dashboard`;
 
+// Mapa de tipos de protocolo a sus URLs de formulario
+const TIPO_FORM_URLS = {
+    'concreto':         'concretobuzon.html',
+    'buzon':            'buzon.html',
+    'conexion':         'conexion.html',
+    'conexion-tramo':   'conexionTramo.html',
+    'estanquidad':      'estanquidad.html',
+    'excavacion':       'excavacion.html',
+    'prueba-hidraulica':'pruebaHidraulica.html',
+    'relleno':          'relleno.html',
+    'tuberia':          'tuberia.html',
+    'vereda':           'vereda.html'
+};
+
 // ===== STATE =====
 let state = {
-    tipo: null,           // filtro por tipo
-    search: '',           // búsqueda
+    tipo: null,
+    search: '',
     page: 1,
     limit: 50,
     total: 0,
@@ -469,6 +825,9 @@ let state = {
 };
 
 let searchTimeout = null;
+
+// Estado para eliminación
+let deleteTarget = null; // { tipo, id, nro_protocolo }
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -493,7 +852,7 @@ async function loadTipos() {
 async function loadData() {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = `
-        <tr><td colspan="5">
+        <tr><td colspan="6">
             <div class="loading-state">
                 <div class="spinner"></div>
                 <p>Cargando registros...</p>
@@ -523,7 +882,7 @@ async function loadData() {
     } catch (err) {
         console.error('Error cargando datos:', err);
         tbody.innerHTML = `
-            <tr><td colspan="5">
+            <tr><td colspan="6">
                 <div class="empty-state">
                     <div class="empty-icon">⚠️</div>
                     <p>Error al cargar los datos. Verifica tu conexión.</p>
@@ -570,7 +929,7 @@ function renderTable(registros) {
 
     if (!registros || registros.length === 0) {
         tbody.innerHTML = `
-            <tr><td colspan="5">
+            <tr><td colspan="6">
                 <div class="empty-state">
                     <div class="empty-icon">📭</div>
                     <p>No se encontraron registros${state.tipo ? ' para este tipo de protocolo' : ''}.</p>
@@ -591,6 +950,9 @@ function renderTable(registros) {
                </a>`
             : `<span class="pdf-btn no-pdf">📄 Sin PDF</span>`;
 
+        // URL del formulario de edición
+        const formUrl = TIPO_FORM_URLS[r.tipo] ? `${TIPO_FORM_URLS[r.tipo]}?id=${r._id}` : '#';
+
         return `
             <tr>
                 <td>
@@ -603,6 +965,19 @@ function renderTable(registros) {
                 <td><span class="fecha-cell">${fecha}</span></td>
                 <td><span class="resp-cell">${r.responsable_calidad || '-'}</span></td>
                 <td>${pdfHtml}</td>
+                <td>
+                    <div class="actions-cell">
+                        <a href="${formUrl}" class="action-btn edit" title="Editar protocolo">
+                            ✏️ Editar
+                        </a>
+                        <button class="action-btn delete" onclick="openDeleteModal('${r.tipo}', '${r._id}', '${r.nro_protocolo || 'Sin número'}')" title="Eliminar protocolo">
+                            🗑️ Eliminar
+                        </button>
+                        <button class="action-btn photos" onclick='openFotosModal(${JSON.stringify(r.fotos || [])}, "${r.nro_protocolo || 'Sin número'}")' title="Ver fotos">
+                            📷 Fotos
+                        </button>
+                    </div>
+                </td>
             </tr>
         `;
     }).join('');
@@ -623,10 +998,8 @@ function renderPagination() {
 
     let html = `<span class="info">${start}–${end} de ${total} registros</span><div class="pages">`;
 
-    // Prev
     html += `<button onclick="goToPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹ Anterior</button>`;
 
-    // Pages
     const maxVisible = 5;
     let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
     let endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -664,7 +1037,7 @@ function filterByTipo(tipoId) {
     state.tipo = tipoId;
     state.page = 1;
     loadData();
-    loadTipos(); // refresh stats
+    loadTipos();
 }
 
 function goToPage(page) {
@@ -692,6 +1065,181 @@ function clearFilters() {
     state.page = 1;
     loadData();
     loadTipos();
+}
+
+// ===== DELETE MODAL =====
+function openDeleteModal(tipo, id, nroProtocolo) {
+    deleteTarget = { tipo, id, nro_protocolo: nroProtocolo };
+    document.getElementById('modalProtocolo').textContent = nroProtocolo;
+    document.getElementById('deleteModal').classList.add('active');
+    document.getElementById('btnConfirmDelete').disabled = false;
+    document.getElementById('btnConfirmDelete').textContent = 'Sí, eliminar';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('active');
+    deleteTarget = null;
+}
+
+async function confirmDelete() {
+    if (!deleteTarget) return;
+
+    const btn = document.getElementById('btnConfirmDelete');
+    btn.disabled = true;
+    btn.textContent = 'Eliminando...';
+
+    try {
+        const res = await fetch(`${API_DASHBOARD}/${deleteTarget.tipo}/${deleteTarget.id}`, {
+            method: 'DELETE'
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeDeleteModal();
+            // Recargar datos
+            loadData();
+            loadTipos();
+            // Mostrar notificación temporal
+            showNotification(`✅ Protocolo ${deleteTarget.nro_protocolo} eliminado correctamente`, 'success');
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Sí, eliminar';
+            showNotification(`❌ ${data.error || 'Error al eliminar'}`, 'error');
+        }
+    } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Sí, eliminar';
+        showNotification('❌ Error de conexión al eliminar', 'error');
+    }
+}
+
+// ===== NOTIFICACIÓN TEMPORAL =====
+function showNotification(message, type) {
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: white;
+        background: ${type === 'success' ? '#059669' : '#dc2626'};
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        z-index: 2000;
+        animation: toastIn 0.3s ease;
+        max-width: 400px;
+    `;
+    document.body.appendChild(toast);
+
+    // Agregar keyframe si no existe
+    if (!document.getElementById('toastStyle')) {
+        const style = document.createElement('style');
+        style.id = 'toastStyle';
+        style.textContent = `
+            @keyframes toastIn {
+                from { transform: translateX(100px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    setTimeout(() => {
+        toast.style.transition = 'opacity 0.3s, transform 0.3s';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ===== FOTOS MODAL =====
+let fotosActuales = []; // Array de {nombre, url}
+let fotosIndexActual = 0;
+
+function openFotosModal(fotos, nroProtocolo) {
+    fotosActuales = fotos || [];
+    document.getElementById('fotosModalTitle').textContent = `📷 Fotos - Protocolo ${nroProtocolo}`;
+    renderFotosGrid();
+    document.getElementById('fotosModal').classList.add('active');
+}
+
+function closeFotosModal() {
+    document.getElementById('fotosModal').classList.remove('active');
+    fotosActuales = [];
+}
+
+function renderFotosGrid() {
+    const container = document.getElementById('fotosGridContainer');
+
+    if (!fotosActuales || fotosActuales.length === 0) {
+        container.innerHTML = `
+            <div class="fotos-empty">
+                <div class="empty-icon">📸</div>
+                <p>Este protocolo no tiene fotos asociadas.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="fotos-grid">
+            ${fotosActuales.map((foto, index) => `
+                <div class="foto-item">
+                    <img src="${foto.url}" alt="${foto.nombre || 'Foto'}" 
+                         onclick="openLightbox(${index})" 
+                         loading="lazy">
+                    <div class="foto-nombre" title="${foto.nombre || ''}">
+                        ${foto.nombre || 'Foto ' + (index + 1)}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// ===== LIGHTBOX =====
+function openLightbox(index) {
+    if (!fotosActuales || fotosActuales.length === 0) return;
+    fotosIndexActual = index;
+    updateLightboxImage();
+    document.getElementById('lightboxOverlay').classList.add('active');
+    document.addEventListener('keydown', handleLightboxKey);
+}
+
+function closeLightbox(event) {
+    // Si se llama desde el onclick del overlay, cerrar solo si es clic directo en el fondo
+    if (event) {
+        // Si el clic no fue directamente en el overlay (sino en un hijo), no cerrar
+        if (event.target !== event.currentTarget) return;
+    }
+    document.getElementById('lightboxOverlay').classList.remove('active');
+    document.removeEventListener('keydown', handleLightboxKey);
+}
+
+function navigateLightbox(direction) {
+    if (!fotosActuales || fotosActuales.length === 0) return;
+    fotosIndexActual = (fotosIndexActual + direction + fotosActuales.length) % fotosActuales.length;
+    updateLightboxImage();
+}
+
+function updateLightboxImage() {
+    const foto = fotosActuales[fotosIndexActual];
+    document.getElementById('lightboxImg').src = foto.url;
+    document.getElementById('lightboxImg').alt = foto.nombre || 'Foto';
+    document.getElementById('lightboxCounter').textContent = `${fotosIndexActual + 1} / ${fotosActuales.length}`;
+}
+
+function handleLightboxKey(e) {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') navigateLightbox(-1);
+    if (e.key === 'ArrowRight') navigateLightbox(1);
 }
 </script>
 

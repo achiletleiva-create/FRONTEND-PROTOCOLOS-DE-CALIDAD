@@ -125,6 +125,7 @@
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/relleno';
     let ultimoId = null;
+    let fotosParaPDF = [];
     let contadorEnsayo = 1;
     document.getElementById('fecha').valueAsDate = new Date();
 
@@ -166,6 +167,17 @@
 
     async function consultarCorrelativo() {
         try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); if (d.correlativo) document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+    }
+
+    async function leerFotosInputs() {
+        const fotos = [];
+        for (const inp of document.querySelectorAll('input[type="file"]')) {
+            if (inp.files[0]) {
+                const f = await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp);
+                fotos.push(f);
+            }
+        }
+        return fotos;
     }
 
     async function generarYSubirPDF() {
@@ -245,11 +257,7 @@
             doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
         });
 
-        const fotos = [];
-        for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp));
-        }
-        insertarFotosEnPDF(doc, fotos);
+        insertarFotosEnPDF(doc, fotosParaPDF);
 
         const nombre = `Relleno_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombre);
@@ -268,6 +276,7 @@
         const btn = e.target.querySelector('.btn-save');
         btn.innerText = "GUARDANDO..."; btn.disabled = true;
         try {
+            fotosParaPDF = await leerFotosInputs();
             const fd = new FormData(e.target);
             fd.append('ensayos', JSON.stringify(recolectarEnsayos()));
             const res = await fetch(API_URL, { method: 'POST', body: fd });

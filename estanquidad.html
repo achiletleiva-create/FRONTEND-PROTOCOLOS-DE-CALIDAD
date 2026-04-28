@@ -141,6 +141,7 @@
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/estanquidad';
     let ultimoIdGuardado = null;
+    let fotosParaPDF = [];
 
     document.getElementById('fecha_obra').valueAsDate = new Date();
 
@@ -219,6 +220,20 @@
         });
     }
 
+    async function leerFotosInputs() {
+        const fotos = [];
+        const inputs = ['f_antes', 'f_durante', 'f_despues'];
+        const labels = ['FOTO 1: ANTES', 'FOTO 2: DURANTE', 'FOTO 3: DESPUÉS'];
+        for (let i = 0; i < inputs.length; i++) {
+            const el = document.getElementById(inputs[i]);
+            if (el && el.files[0]) {
+                const f = await leerFotoCorregida(el.files[0], labels[i], el);
+                fotos.push(f);
+            }
+        }
+        return fotos;
+    }
+
     async function generarYSubirPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
@@ -267,10 +282,8 @@
         doc.text("RESIDENTE DE OBRA", inicioX + anchoF + esp + (anchoF/2), finalY + 4, {align:"center"});
         doc.text("ESP. CALIDAD\nSUPERVISIÓN", inicioX + 2*anchoF + 2*esp + (anchoF/2), finalY + 4, {align:"center"});
         doc.text("SUPERVISOR\nDE OBRA", inicioX + 3*anchoF + 3*esp + (anchoF/2), finalY + 4, {align:"center"});
-        const img1 = document.getElementById('f_antes').files[0] ? await leerFotoCorregida(document.getElementById('f_antes').files[0], 'FOTO 1: ANTES', document.getElementById('f_antes')) : null;
-        const img2 = document.getElementById('f_durante').files[0] ? await leerFotoCorregida(document.getElementById('f_durante').files[0], 'FOTO 2: DURANTE', document.getElementById('f_durante')) : null;
-        const img3 = document.getElementById('f_despues').files[0] ? await leerFotoCorregida(document.getElementById('f_despues').files[0], 'FOTO 3: DESPUÉS', document.getElementById('f_despues')) : null;
-        insertarFotosEnPDF(doc, [img1, img2, img3].filter(Boolean));
+        // Usar las fotos ya leídas antes del envío
+        insertarFotosEnPDF(doc, fotosParaPDF);
         const nombreArchivo = `Estanquidad_${document.getElementsByName('id_buzon')[0]?.value || "S-ID"}.pdf`;
         doc.save(nombreArchivo);
 
@@ -310,6 +323,9 @@
         const originalText = btn.innerText;
         btn.innerText = "GUARDANDO...";
         btn.disabled = true;
+
+        // Leer fotos ANTES de enviar el formulario (el FormData puede consumir los archivos)
+        fotosParaPDF = await leerFotosInputs();
 
         const formData = new FormData(e.target);
         formData.append('veredicto', document.getElementById('veredicto').innerText);

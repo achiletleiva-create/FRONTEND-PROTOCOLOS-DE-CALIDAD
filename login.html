@@ -145,8 +145,8 @@
 <script>
     const API = 'https://backend-protocolos-de-calidad.onrender.com/api/auth';
 
-    // Si ya tiene token válido, redirigir directo al menú
-    if (sessionStorage.getItem('token')) window.location.href = 'menu.html';
+    // Si ya tiene token válido, redirigir directo al dashboard
+    if (sessionStorage.getItem('token')) window.location.href = 'dashboard.html';
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -168,7 +168,7 @@
             if (res.ok) {
                 sessionStorage.setItem('token', data.token);
                 sessionStorage.setItem('username', data.username);
-                window.location.href = 'menu.html';
+                window.location.href = 'dashboard.html';
             } else {
                 errorMsg.innerText = data.error || 'Credenciales incorrectas.';
                 errorMsg.style.display = 'block';

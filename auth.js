@@ -236,9 +236,11 @@ window.leerFotoCorregida = function(file, label, inputElement) {
 };
 
 /**
- * Inserta fotos en el PDF con layout inteligente según cantidad:
- * 1 foto → 1 col, 2 fotos → 2 col, 3 fotos → 3 col,
- * 4 fotos → 2x2, 5-6 fotos → 3x2 (usa 2ª página si hay más de 6)
+ * Inserta fotos en el PDF con layout inteligente:
+ * 1 foto → centrada, grande, ocupando casi toda la página
+ * 2 fotos → una arriba y otra abajo, equitativas
+ * 3 fotos → 2 arriba (una al lado de otra) y 1 abajo centrada más grande
+ * 4+ fotos → 2x2, 3x2, etc. (usa 2ª página si hay más de 6)
  */
 window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
     if (!fotos || fotos.length === 0) return;
@@ -248,47 +250,103 @@ window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
     const PAGE_W = 190, PAGE_H = 277;
     const titleY = tituloY || 15;
     const startY = titleY + 8;
-
-    // Layout según cantidad de fotos
-    let cols, rows;
-    if      (n === 1) { cols = 1; rows = 1; }
-    else if (n === 2) { cols = 2; rows = 1; }
-    else if (n === 3) { cols = 3; rows = 1; }
-    else if (n === 4) { cols = 2; rows = 2; }
-    else              { cols = 3; rows = 2; } // 5, 6 o más
-
-    const fotasPorPagina = cols * rows;
-    const cellW = (PAGE_W - (cols - 1) * GAP) / cols;
-    const cellH = (PAGE_H - startY - (rows - 1) * GAP - rows * LABEL_H) / rows;
+    const areaH = PAGE_H - startY - 10; // altura disponible para fotos
 
     let pagina = -1;
 
-    fotos.forEach((f, i) => {
-        const posEnPagina = i % fotasPorPagina;
-        const col = posEnPagina % cols;
-        const row = Math.floor(posEnPagina / cols);
-
-        if (posEnPagina === 0) {
-            pagina++;
-            doc.addPage();
-            doc.setFontSize(11); doc.setTextColor(0, 74, 153);
-            doc.text(
-                pagina === 0 ? 'REGISTRO FOTOGRÁFICO' : 'REGISTRO FOTOGRÁFICO (continuación)',
-                105, titleY, { align: 'center' }
-            );
-            doc.setTextColor(0);
-        }
-
-        const cellX = MARGIN + col * (cellW + GAP);
-        const cellY = startY + row * (cellH + GAP + LABEL_H);
+    // Función auxiliar para insertar una foto en una celda
+    function insertarFoto(f, cellX, cellY, cellW, cellH) {
         const ratio = Math.min(cellW / f.w, cellH / f.h);
         const fw = f.w * ratio, fh = f.h * ratio;
-
         doc.rect(cellX, cellY, cellW, cellH);
-        doc.addImage(f.src, 'JPEG', cellX + (cellW - fw) / 2, cellY + (cellH - fh) / 2, fw, fh, undefined, 'FAST');
+        try {
+            doc.addImage(f.src, 'JPEG', cellX + (cellW - fw) / 2, cellY + (cellH - fh) / 2, fw, fh, undefined, 'FAST');
+        } catch(e) {
+            try {
+                doc.addImage(f.src, 'PNG', cellX + (cellW - fw) / 2, cellY + (cellH - fh) / 2, fw, fh, undefined, 'FAST');
+            } catch(e2) {
+                console.error('Error al insertar imagen en PDF:', e2);
+            }
+        }
         doc.setFontSize(7);
         doc.text(f.label, cellX + cellW / 2, cellY + cellH + 5, { align: 'center', maxWidth: cellW });
-    });
+    }
+
+    // Layout personalizado según cantidad de fotos
+    if (n === 1) {
+        // 1 foto: centrada, grande
+        pagina++;
+        doc.addPage();
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+        doc.text('REGISTRO FOTOGRÁFICO', 105, titleY, { align: 'center' });
+        doc.setTextColor(0);
+        const cellW = PAGE_W - MARGIN * 2;
+        const cellH = areaH - LABEL_H;
+        insertarFoto(fotos[0], MARGIN, startY, cellW, cellH);
+
+    } else if (n === 2) {
+        // 2 fotos: una arriba y otra abajo
+        pagina++;
+        doc.addPage();
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+        doc.text('REGISTRO FOTOGRÁFICO', 105, titleY, { align: 'center' });
+        doc.setTextColor(0);
+        const cellW = PAGE_W - MARGIN * 2;
+        const cellH = (areaH - GAP - LABEL_H * 2) / 2;
+        insertarFoto(fotos[0], MARGIN, startY, cellW, cellH);
+        insertarFoto(fotos[1], MARGIN, startY + cellH + GAP + LABEL_H, cellW, cellH);
+
+    } else if (n === 3) {
+        // 3 fotos: 2 arriba (una al lado de otra) y 1 abajo centrada más grande
+        pagina++;
+        doc.addPage();
+        doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+        doc.text('REGISTRO FOTOGRÁFICO', 105, titleY, { align: 'center' });
+        doc.setTextColor(0);
+
+        // Las 2 de arriba ocupan ~40% de la altura cada una
+        const supCellW = (PAGE_W - MARGIN * 2 - GAP) / 2;
+        const supCellH = areaH * 0.40 - LABEL_H;
+        insertarFoto(fotos[0], MARGIN, startY, supCellW, supCellH);
+        insertarFoto(fotos[1], MARGIN + supCellW + GAP, startY, supCellW, supCellH);
+
+        // La de abajo centrada, ocupa el ~55% restante
+        const infCellW = PAGE_W - MARGIN * 2;
+        const infCellH = areaH * 0.55 - LABEL_H;
+        const infY = startY + supCellH + GAP + LABEL_H;
+        insertarFoto(fotos[2], MARGIN, infY, infCellW, infCellH);
+
+    } else {
+        // 4+ fotos: layout en cuadrícula (2x2, 3x2, etc.)
+        let cols, rows;
+        if      (n <= 4) { cols = 2; rows = 2; }
+        else             { cols = 3; rows = 2; }
+
+        const fotasPorPagina = cols * rows;
+        const cellW = (PAGE_W - (cols - 1) * GAP) / cols;
+        const cellH = (areaH - (rows - 1) * GAP - rows * LABEL_H) / rows;
+
+        fotos.forEach((f, i) => {
+            const posEnPagina = i % fotasPorPagina;
+            const col = posEnPagina % cols;
+            const row = Math.floor(posEnPagina / cols);
+
+            if (posEnPagina === 0) {
+                pagina++;
+                doc.addPage();
+                doc.setFontSize(11); doc.setTextColor(0, 74, 153);
+                doc.text(
+                    pagina === 0 ? 'REGISTRO FOTOGRÁFICO' : 'REGISTRO FOTOGRÁFICO (continuación)',
+                    105, titleY, { align: 'center' }
+                );
+                doc.setTextColor(0);
+            }
+
+            const cellX = MARGIN + col * (cellW + GAP);
+            const cellY = startY + row * (cellH + GAP + LABEL_H);
+            insertarFoto(f, cellX, cellY, cellW, cellH);
+        });
+    }
 };
 
 function dibujar(img, orientation, resolve, label) {
@@ -296,20 +354,32 @@ function dibujar(img, orientation, resolve, label) {
     const ctx1 = c1.getContext('2d');
     const w = img.naturalWidth, h = img.naturalHeight;
     const swap = orientation >= 5;
-    c1.width  = swap ? h : w;
-    c1.height = swap ? w : h;
+    
+    // Redimensionar a máximo 1200px para evitar problemas con jsPDF
+    const MAX_DIM = 1200;
+    let cw = swap ? h : w;
+    let ch = swap ? w : h;
+    if (cw > MAX_DIM || ch > MAX_DIM) {
+        const scale = MAX_DIM / Math.max(cw, ch);
+        cw = Math.round(cw * scale);
+        ch = Math.round(ch * scale);
+    }
+    
+    c1.width = cw;
+    c1.height = ch;
     ctx1.save();
+    const sc = Math.min(cw / (swap ? h : w), ch / (swap ? w : h));
     switch (orientation) {
-        case 2: ctx1.transform(-1, 0, 0, 1, w, 0); break;
-        case 3: ctx1.transform(-1, 0, 0, -1, w, h); break;
-        case 4: ctx1.transform(1, 0, 0, -1, 0, h); break;
-        case 5: ctx1.transform(0, 1, 1, 0, 0, 0); break;
-        case 6: ctx1.transform(0, 1, -1, 0, h, 0); break;
-        case 7: ctx1.transform(0, -1, -1, 0, h, w); break;
-        case 8: ctx1.transform(0, -1, 1, 0, 0, w); break;
-        default: break;
+        case 2: ctx1.transform(-sc, 0, 0, sc, cw, 0); break;
+        case 3: ctx1.transform(-sc, 0, 0, -sc, cw, ch); break;
+        case 4: ctx1.transform(sc, 0, 0, -sc, 0, ch); break;
+        case 5: ctx1.transform(0, sc, sc, 0, 0, 0); break;
+        case 6: ctx1.transform(0, sc, -sc, 0, ch, 0); break;
+        case 7: ctx1.transform(0, -sc, -sc, 0, ch, cw); break;
+        case 8: ctx1.transform(0, -sc, sc, 0, 0, cw); break;
+        default: ctx1.scale(sc, sc); break;
     }
     ctx1.drawImage(img, 0, 0);
     ctx1.restore();
-    resolve({ src: c1.toDataURL('image/jpeg', 0.80), w: c1.width, h: c1.height, label });
+    resolve({ src: c1.toDataURL('image/jpeg', 0.70), w: c1.width, h: c1.height, label });
 }

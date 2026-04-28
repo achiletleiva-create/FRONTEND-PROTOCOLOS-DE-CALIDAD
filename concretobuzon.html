@@ -150,6 +150,7 @@
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/protocolos';
     document.getElementById('fecha_obra').valueAsDate = new Date();
     let ultimoIdGuardado = null;
+    let fotosParaPDF = [];
 
     function showMessage(msg, isError = false) {
         const toast = document.getElementById('toastMsg');
@@ -178,6 +179,18 @@
         } catch (e) {
             console.error("Error al obtener correlativo:", e);
         }
+    }
+
+    async function leerFotosInputs() {
+        const fotos = [];
+        for (const inp of document.querySelectorAll('input[type="file"]')) {
+            if (inp.files[0]) {
+                const label = inp.parentElement.querySelector('label')?.innerText || '';
+                const f = await leerFotoCorregida(inp.files[0], label, inp);
+                fotos.push(f);
+            }
+        }
+        return fotos;
     }
 
     async function generarYSubirPDF() {
@@ -240,15 +253,7 @@
             }
         });
 
-        const fotosInputs = document.querySelectorAll('input[type="file"]');
-        let fotosCargadas = [];
-        for (let input of fotosInputs) {
-            if (input.files && input.files[0]) {
-                const f = await leerFotoCorregida(input.files[0], input.parentElement.querySelector('label').innerText, input);
-                fotosCargadas.push(f);
-            }
-        }
-        insertarFotosEnPDF(doc, fotosCargadas);
+        insertarFotosEnPDF(doc, fotosParaPDF);
 
         const nombreArchivo = `Protocolo_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombreArchivo);
@@ -352,6 +357,7 @@
         });
 
         try {
+            fotosParaPDF = await leerFotosInputs();
             const response = await fetch(API_URL, { method: 'POST', body: finalFormData });
             if (response.ok) {
                 const resultado = await response.json();

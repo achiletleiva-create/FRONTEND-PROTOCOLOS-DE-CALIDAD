@@ -126,6 +126,7 @@
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/conexion-tramo';
     let ultimoId = null;
+    let fotosParaPDF = [];
     let contadorConexion = 0;
     document.getElementById('fecha').valueAsDate = new Date();
 
@@ -210,6 +211,17 @@
 
     async function consultarCorrelativo() {
         try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); if (d.correlativo) document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+    }
+
+    async function leerFotosInputs() {
+        const fotos = [];
+        for (const inp of document.querySelectorAll('input[type="file"]')) {
+            if (inp.files[0]) {
+                const f = await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp);
+                fotos.push(f);
+            }
+        }
+        return fotos;
     }
 
     async function generarYSubirPDF() {
@@ -305,25 +317,8 @@
             doc.line(x, fy, x + anchoF, fy); doc.text(label, x + anchoF / 2, fy + 4, { align: "center" });
         });
 
-        // Fotos
-        const fotos = [];
-        for (const inp of form.querySelectorAll('input[type="file"]')) {
-            if (inp.files[0]) fotos.push(await leerFotoCorregida(inp.files[0], inp.previousElementSibling?.innerText || '', inp));
-        }
-        if (fotos.length > 0) {
-            doc.addPage();
-            doc.setFontSize(11); doc.setTextColor(0, 74, 153);
-            doc.text("REGISTRO FOTOGRÁFICO", 148, 15, { align: "center" }); doc.setTextColor(0);
-            fotos.forEach((f, i) => {
-                const maxW = 250, maxH = 150;
-                const ratio = Math.min(maxW / f.w, maxH / f.h);
-                const fw = f.w * ratio, fh = f.h * ratio;
-                const x = (297 - fw) / 2, y = 25 + i * 165;
-                if (i > 0 && y + fh > 195) doc.addPage();
-                doc.addImage(f.src, 'JPEG', x, y, fw, fh, undefined, 'FAST');
-                doc.setFontSize(8); doc.text(f.label, 148, y + fh + 5, { align: "center" });
-            });
-        }
+        // Usar las fotos ya leídas antes del envío
+        insertarFotosEnPDF(doc, fotosParaPDF);
 
         const nombre = `ConexionTramo_${document.getElementById('nro_prot').value}.pdf`;
         doc.save(nombre);
@@ -344,6 +339,8 @@
         const btn = e.target.querySelector('.btn-save');
         btn.innerText = "GUARDANDO..."; btn.disabled = true;
         try {
+            // Leer fotos ANTES de enviar el formulario (el FormData puede consumir los archivos)
+            fotosParaPDF = await leerFotosInputs();
             const fd = new FormData(e.target);
             fd.append('conexiones', JSON.stringify(conexiones));
             const res = await fetch(API_URL, { method: 'POST', body: fd });
