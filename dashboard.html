@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Panel de Control de Calidad</title>
+    <script src="auth.js"></script>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            color: white;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .header-left h1 {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .header-left .sub {
+            font-size: 11px;
+            opacity: 0.7;
+            display: none;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-right button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+        .header-right button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .header-right .btn-menu {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            padding: 4px 8px;
+        }
+
+        /* ===== LAYOUT ===== */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px 24px 40px;
+        }
+
+        /* ===== STATS CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .stat-card.active {
+            border-color: #0f172a;
+            box-shadow: 0 4px 12px rgba(15,23,42,0.12);
+        }
+        .stat-card .stat-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .stat-card .stat-icon {
+            font-size: 22px;
+        }
+        .stat-card .stat-count {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+        .stat-card .stat-label {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .stat-card .stat-pdf {
+            font-size: 9px;
+            color: #10b981;
+            margin-top: 2px;
+        }
+        .stat-card .stat-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            border-radius: 0 2px 0 0;
+            transition: width 0.3s;
+        }
+
+        /* ===== FILTERS BAR ===== */
+        .filters-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .filters-bar .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .filters-bar .search-box input {
+            width: 100%;
+            padding: 9px 14px 9px 36px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            transition: 0.2s;
+            outline: none;
+        }
+        .filters-bar .search-box input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        .filters-bar .search-box .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .filters-bar .btn-clear {
+            padding: 8px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            color: #64748b;
+            transition: 0.2s;
+        }
+        .filters-bar .btn-clear:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .filters-bar .total-badge {
+            background: #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+        }
+
+        /* ===== TABLE ===== */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            overflow: hidden;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        thead {
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        thead th {
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            white-space: nowrap;
+        }
+        tbody tr {
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s;
+        }
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+        tbody td {
+            padding: 11px 14px;
+            vertical-align: middle;
+        }
+
+        /* Tipo badge */
+        .tipo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .tipo-badge .tipo-icon {
+            font-size: 14px;
+        }
+
+        /* Nro protocolo */
+        .nro-protocolo {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 13px;
+        }
+
+        /* Fecha */
+        .fecha-cell {
+            color: #475569;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        /* Responsable */
+        .resp-cell {
+            font-size: 12px;
+            color: #475569;
+        }
+
+        /* PDF button */
+        .pdf-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .pdf-btn.has-pdf {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .pdf-btn.has-pdf:hover {
+            background: #d1fae5;
+            transform: translateY(-1px);
+        }
+        .pdf-btn.no-pdf {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1px solid #e2e8f0;
+            cursor: default;
+        }
+
+        /* ===== PAGINATION ===== */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-top: 1px solid #f1f5f9;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .pagination .info {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .pagination .pages {
+            display: flex;
+            gap: 4px;
+        }
+        .pagination .pages button {
+            padding: 5px 11px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            color: #475569;
+            transition: 0.15s;
+        }
+        .pagination .pages button:hover {
+            background: #f1f5f9;
+        }
+        .pagination .pages button.active {
+            background: #0f172a;
+            color: white;
+            border-color: #0f172a;
+        }
+        .pagination .pages button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        /* ===== LOADING & EMPTY ===== */
+        .loading-state, .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+        .loading-state .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state .empty-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header-left h1 { font-size: 13px; }
+            .main-content { padding: 12px 12px 30px; }
+            .stats-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+            .stat-card { padding: 10px; }
+            .stat-card .stat-count { font-size: 15px; }
+            .stat-card .stat-label { font-size: 9px; }
+            .filters-bar { flex-direction: column; align-items: stretch; }
+            .filters-bar .search-box { min-width: auto; }
+            table { font-size: 12px; }
+            thead th, tbody td { padding: 8px 10px; }
+            .tipo-badge { font-size: 10px; padding: 2px 8px; }
+            .pagination { flex-direction: column; align-items: center; }
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .table-wrapper::-webkit-scrollbar { height: 6px; }
+        .table-wrapper::-webkit-scrollbar-track { background: #f1f5f9; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .table-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+    <div class="header-left">
+        <a href="menu.html" class="btn-menu" style="text-decoration:none;color:white;" title="Ir al Menú">☰</a>
+        <div>
+            <h1>📊 Dashboard de Protocolos</h1>
+            <span class="sub">Todos los registros en una sola tabla</span>
+        </div>
+    </div>
+    <div class="header-right">
+        <button onclick="location.href='menu.html'">🏠 Menú Principal</button>
+        <button onclick="cerrarSesion()">🚪 Salir</button>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main-content">
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar por N° de Protocolo..." oninput="debounceSearch()">
+        </div>
+        <span class="total-badge" id="totalBadge">0 registros</span>
+        <button class="btn-clear" onclick="clearFilters()">✕ Limpiar filtros</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>N° Protocolo</th>
+                        <th>Fecha</th>
+                        <th>Responsable Calidad</th>
+                        <th>PDF</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="5">
+                            <div class="loading-state">
+                                <div class="spinner"></div>
+                                <p>Cargando registros...</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const BASE_URL = 'https://backend-protocolos-de-calidad.onrender.com';
+const API_DASHBOARD = `${BASE_URL}/api/dashboard`;
+
+// ===== STATE =====
+let state = {
+    tipo: null,           // filtro por tipo
+    search: '',           // búsqueda
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+    registros: [],
+    tipos: []
+};
+
+let searchTimeout = null;
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+    loadTipos();
+    loadData();
+});
+
+// ===== LOAD TIPOS (stats cards) =====
+async function loadTipos() {
+    try {
+        const res = await fetch(`${API_DASHBOARD}/tipos`);
+        if (!res.ok) throw new Error('Error al cargar tipos');
+        const tipos = await res.json();
+        state.tipos = tipos;
+        renderStats(tipos);
+    } catch (err) {
+        console.error('Error cargando tipos:', err);
+    }
+}
+
+// ===== LOAD DATA =====
+async function loadData() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = `
+        <tr><td colspan="5">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Cargando registros...</p>
+            </div>
+        </td></tr>
+    `;
+
+    try {
+        const params = new URLSearchParams();
+        if (state.tipo) params.set('tipo', state.tipo);
+        if (state.search) params.set('search', state.search);
+        params.set('page', state.page);
+        params.set('limit', state.limit);
+
+        const res = await fetch(`${API_DASHBOARD}?${params}`);
+        if (!res.ok) throw new Error('Error al cargar datos');
+        const data = await res.json();
+
+        state.registros = data.registros;
+        state.total = data.paginacion.total;
+        state.totalPages = data.paginacion.totalPages;
+        state.tipos = data.tipos || state.tipos;
+
+        renderTable(data.registros);
+        renderPagination();
+        updateTotalBadge();
+    } catch (err) {
+        console.error('Error cargando datos:', err);
+        tbody.innerHTML = `
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <div class="empty-icon">⚠️</div>
+                    <p>Error al cargar los datos. Verifica tu conexión.</p>
+                </div>
+            </td></tr>
+        `;
+    }
+}
+
+// ===== RENDER STATS =====
+function renderStats(tipos) {
+    const grid = document.getElementById('statsGrid');
+    grid.innerHTML = `
+        <div class="stat-card ${!state.tipo ? 'active' : ''}" onclick="filterByTipo(null)">
+            <div class="stat-top">
+                <span class="stat-icon">📋</span>
+                <span class="stat-count">${tipos.reduce((s, t) => s + t.total, 0)}</span>
+            </div>
+            <div class="stat-label">Todos los protocolos</div>
+            <div class="stat-pdf">${tipos.reduce((s, t) => s + t.conPdf, 0)} con PDF</div>
+        </div>
+    `;
+
+    tipos.forEach(t => {
+        const card = document.createElement('div');
+        card.className = `stat-card ${state.tipo === t.id ? 'active' : ''}`;
+        card.onclick = () => filterByTipo(t.id);
+        card.innerHTML = `
+            <div class="stat-top">
+                <span class="stat-icon">${t.icono}</span>
+                <span class="stat-count">${t.total}</span>
+            </div>
+            <div class="stat-label">${t.nombre}</div>
+            <div class="stat-pdf">📄 ${t.conPdf} con PDF</div>
+            <div class="stat-bar" style="width:${t.total > 0 ? (t.conPdf / t.total * 100) : 0}%;background:${t.color}"></div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// ===== RENDER TABLE =====
+function renderTable(registros) {
+    const tbody = document.getElementById('tableBody');
+
+    if (!registros || registros.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="5">
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <p>No se encontraron registros${state.tipo ? ' para este tipo de protocolo' : ''}.</p>
+                </div>
+            </td></tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = registros.map(r => {
+        const fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-PE', {
+            year: 'numeric', month: 'short', day: 'numeric'
+        }) : '-';
+
+        const pdfHtml = r.pdf_url
+            ? `<a href="${r.pdf_url}" target="_blank" class="pdf-btn has-pdf" title="Abrir PDF">
+                📄 Ver PDF
+               </a>`
+            : `<span class="pdf-btn no-pdf">📄 Sin PDF</span>`;
+
+        return `
+            <tr>
+                <td>
+                    <span class="tipo-badge" style="background:${r.tipo_color}15;color:${r.tipo_color};border:1px solid ${r.tipo_color}30;">
+                        <span class="tipo-icon">${r.tipo_icono}</span>
+                        ${r.tipo_nombre}
+                    </span>
+                </td>
+                <td><span class="nro-protocolo">${r.nro_protocolo || '-'}</span></td>
+                <td><span class="fecha-cell">${fecha}</span></td>
+                <td><span class="resp-cell">${r.responsable_calidad || '-'}</span></td>
+                <td>${pdfHtml}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ===== RENDER PAGINATION =====
+function renderPagination() {
+    const pag = document.getElementById('pagination');
+    const { page, totalPages, total, limit } = state;
+
+    if (totalPages <= 1) {
+        pag.innerHTML = `<span class="info">${total} registro${total !== 1 ? 's' : ''}</span>`;
+        return;
+    }
+
+    const start = (page - 1) * limit + 1;
+    const end = Math.min(page * limit, total);
+
+    let html = `<span class="info">${start}–${end} de ${total} registros</span><div class="pages">`;
+
+    // Prev
+    html += `<button onclick="goToPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹ Anterior</button>`;
+
+    // Pages
+    const maxVisible = 5;
+    let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    if (endPage - startPage < maxVisible - 1) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    if (startPage > 1) {
+        html += `<button onclick="goToPage(1)">1</button>`;
+        if (startPage > 2) html += `<button disabled>...</button>`;
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<button onclick="goToPage(${i})" class="${i === page ? 'active' : ''}">${i}</button>`;
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<button disabled>...</button>`;
+        html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+    }
+
+    html += `<button onclick="goToPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Siguiente ›</button>`;
+    html += `</div>`;
+
+    pag.innerHTML = html;
+}
+
+// ===== UPDATE TOTAL BADGE =====
+function updateTotalBadge() {
+    document.getElementById('totalBadge').textContent = `${state.total} registro${state.total !== 1 ? 's' : ''}`;
+}
+
+// ===== ACTIONS =====
+function filterByTipo(tipoId) {
+    state.tipo = tipoId;
+    state.page = 1;
+    loadData();
+    loadTipos(); // refresh stats
+}
+
+function goToPage(page) {
+    if (page < 1 || page > state.totalPages) return;
+    state.page = page;
+    loadData();
+}
+
+function debounceSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        const val = document.getElementById('searchInput').value.trim();
+        if (val !== state.search) {
+            state.search = val;
+            state.page = 1;
+            loadData();
+        }
+    }, 400);
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    state.search = '';
+    state.tipo = null;
+    state.page = 1;
+    loadData();
+    loadTipos();
+}
+</script>
+
+</body>
+</html>

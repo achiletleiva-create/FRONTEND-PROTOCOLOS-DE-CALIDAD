@@ -23,6 +23,8 @@
         .btn-pdf-link { display: inline-block; padding: 4px 8px; background: #dc3545; color: white; text-decoration: none; border-radius: 3px; font-size: 9px; }
         .btn-pdf-link.disabled { background: #aaa; pointer-events: none; }
         label { font-size: 11px; font-weight: bold; display: block; margin-bottom: 3px; }
+        .btn-edit { display: inline-block; padding: 4px 8px; background: #fd7e14; color: white; border: none; border-radius: 3px; font-size: 9px; cursor: pointer; font-weight: bold; }
+        .modo-edicion { background: #fff3cd; border: 2px solid #fd7e14; border-radius: 5px; padding: 8px 15px; margin-top: 10px; font-weight: bold; color: #856404; display: none; }
     </style>
 <script src='auth.js'></script></head>
 <body>
@@ -30,6 +32,8 @@
 <div class="container">
     <h1>PROTOCOLO DE CONTROL DE CALIDAD: EXCAVACIÓN DE ZANJAS<br>
     MEJORAMIENTO REDES DE ALCANTARILLADO SANITARIO DEL SECTOR LIBERACIÓN SOCIAL, DISTRITO DE VÍCTOR LARCO HERRERA - PROVINCIA DE TRUJILLO - DEPARTAMENTO DE LA LIBERTAD | CUI N° 2288049</h1>
+
+    <div id="modoEdicion" class="modo-edicion">✏️ MODO EDICIÓN — Modificando protocolo: <span id="nroEdicion"></span> &nbsp;<button type="button" onclick="cancelarEdicion()" style="background:#6c757d;border:none;color:white;padding:3px 10px;border-radius:3px;cursor:pointer;font-size:11px;">✕ Cancelar</button></div>
 
     <form id="mainForm">
         <div class="header-grid">
@@ -96,7 +100,7 @@
     <div class="section-title">📂 HISTORIAL DE EXCAVACIONES</div>
     <div style="overflow-x:auto;">
         <table class="table-section" style="font-size:10px;">
-            <thead><tr><th>NRO PROTOCOLO</th><th>FECHA</th><th>TRAMO</th><th>MÉTODO</th><th>TERRENO</th><th>ESTADO</th><th>PDF</th></tr></thead>
+            <thead><tr><th>NRO PROTOCOLO</th><th>FECHA</th><th>TRAMO</th><th>MÉTODO</th><th>TERRENO</th><th>ESTADO</th><th>PDF</th><th>EDITAR</th></tr></thead>
             <tbody id="tablaHistorial"></tbody>
         </table>
     </div>
@@ -106,6 +110,8 @@
 <script>
     const API_URL = 'https://backend-protocolos-de-calidad.onrender.com/api/excavacion';
     let ultimoId = null;
+    let modoEdicionId = null; // null = crear, string = editar
+
     document.getElementById('fecha').valueAsDate = new Date();
 
     function showMessage(msg, isError = false) {
@@ -116,6 +122,60 @@
 
     async function consultarCorrelativo() {
         try { const r = await fetch(`${API_URL}/siguiente-correlativo`); const d = await r.json(); if (d.correlativo) document.getElementById('nro_prot').value = d.correlativo; } catch (e) { console.error(e); }
+    }
+
+    async function cargarParaEditar(id) {
+        try {
+            const res = await fetch(`${API_URL}/${id}`);
+            const p = await res.json();
+            const form = document.getElementById('mainForm');
+
+            // Activar modo edición
+            modoEdicionId = id;
+            ultimoId = id;
+            document.getElementById('modoEdicion').style.display = 'block';
+            document.getElementById('nroEdicion').innerText = p.nro_protocolo;
+            document.querySelector('.btn-save').innerText = '💾 ACTUALIZAR';
+            document.querySelector('.btn-save').style.background = '#fd7e14';
+
+            // Cargar datos en el formulario
+            document.getElementById('nro_prot').value = p.nro_protocolo;
+            document.getElementById('fecha').value = p.fecha ? p.fecha.substring(0, 10) : '';
+            form.querySelector('[name=tramo_bz_inicio]').value = p.datos_identificacion?.tramo_bz_inicio || '';
+            form.querySelector('[name=tramo_bz_fin]').value = p.datos_identificacion?.tramo_bz_fin || '';
+            form.querySelector('[name=calle_pasaje]').value = p.datos_identificacion?.calle_pasaje || '';
+            form.querySelector('[name=metodo_excavacion]').value = p.datos_identificacion?.metodo_excavacion || 'Manual';
+            form.querySelector('[name=tipo_terreno]').value = p.datos_identificacion?.tipo_terreno || 'Terreno Normal';
+            form.querySelector('[name=ancho_proyecto]').value = p.control_topografico?.ancho_zanja_proyecto || '';
+            form.querySelector('[name=ancho_realizado]').value = p.control_topografico?.ancho_zanja_realizado || '';
+            form.querySelector('[name=prof_ini_proyecto]').value = p.control_topografico?.profundidad_inicio_proyecto || '';
+            form.querySelector('[name=prof_ini_realizado]').value = p.control_topografico?.profundidad_inicio_realizado || '';
+            form.querySelector('[name=prof_fin_proyecto]').value = p.control_topografico?.profundidad_fin_proyecto || '';
+            form.querySelector('[name=prof_fin_realizado]').value = p.control_topografico?.profundidad_fin_realizado || '';
+            form.querySelector('[name=cota_proyecto]').value = p.control_topografico?.cota_fondo_proyecto || '';
+            form.querySelector('[name=cota_realizado]').value = p.control_topografico?.cota_fondo_realizado || '';
+            form.querySelector('[name=seg_senalizacion]').value = p.condiciones_seguridad?.senalizacion_cerco || 'SI';
+            form.querySelector('[name=seg_fondo]').value = p.condiciones_seguridad?.fondo_nivelado || 'SI';
+            form.querySelector('[name=seg_entibado]').value = p.condiciones_seguridad?.entibado || 'N/A';
+            form.querySelector('[name=seg_seca]').value = p.condiciones_seguridad?.zanja_seca || 'SI';
+            form.querySelector('[name=seg_excedente]').value = p.condiciones_seguridad?.material_excedente || 'SI';
+            form.querySelector('[name=observaciones]').value = p.observaciones || '';
+
+            // Scroll al formulario
+            document.getElementById('mainForm').scrollIntoView({ behavior: 'smooth' });
+            showMessage('✏️ Datos cargados. Modifica y presiona ACTUALIZAR.');
+        } catch (e) { showMessage('❌ Error al cargar el registro', true); }
+    }
+
+    function cancelarEdicion() {
+        modoEdicionId = null;
+        ultimoId = null;
+        document.getElementById('modoEdicion').style.display = 'none';
+        document.querySelector('.btn-save').innerText = '🚀 GUARDAR EN NUBE';
+        document.querySelector('.btn-save').style.background = '#28a745';
+        document.getElementById('mainForm').reset();
+        document.getElementById('fecha').valueAsDate = new Date();
+        consultarCorrelativo();
     }
 
     async function generarYSubirPDF() {
@@ -199,18 +259,33 @@
     document.getElementById('mainForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
-        btn.innerText = "GUARDANDO..."; btn.disabled = true;
+        btn.innerText = modoEdicionId ? 'ACTUALIZANDO...' : 'GUARDANDO...';
+        btn.disabled = true;
         try {
-            const res = await fetch(API_URL, { method: 'POST', body: new FormData(e.target) });
+            const fd = new FormData(e.target);
+            let res;
+            if (modoEdicionId) {
+                // MODO EDICIÓN — PUT
+                res = await fetch(`${API_URL}/${modoEdicionId}`, { method: 'PUT', body: fd });
+            } else {
+                // MODO CREACIÓN — POST
+                res = await fetch(API_URL, { method: 'POST', body: fd });
+            }
             if (res.ok) {
-                const d = await res.json(); ultimoId = d.id;
-                showMessage("✅ Guardado. Generando PDF...");
+                const d = await res.json();
+                ultimoId = modoEdicionId || d.id;
+                showMessage('✅ Guardado. Generando PDF...');
                 await new Promise(r => setTimeout(r, 500));
                 await generarYSubirPDF();
-                consultarCorrelativo(); cargarHistorial();
-            } else { const err = await res.json(); showMessage("❌ " + (err.error || 'Error'), true); }
-        } catch (e) { showMessage("❌ Error de conexión", true); }
-        finally { btn.innerText = "🚀 GUARDAR EN NUBE"; btn.disabled = false; }
+                if (modoEdicionId) {
+                    cancelarEdicion();
+                } else {
+                    consultarCorrelativo();
+                }
+                cargarHistorial();
+            } else { const err = await res.json(); showMessage('❌ ' + (err.error || 'Error'), true); }
+        } catch (e) { showMessage('❌ Error de conexión', true); }
+        finally { btn.innerText = modoEdicionId ? '💾 ACTUALIZAR' : '🚀 GUARDAR EN NUBE'; btn.disabled = false; }
     });
 
     async function cargarHistorial() {
@@ -223,8 +298,9 @@
                 const tieneNO = Object.values(p.condiciones_seguridad || {}).includes('NO');
                 const color = tieneNO ? '#dc3545' : '#28a745';
                 const btn = p.pdf_url ? `<a href="${p.pdf_url}" target="_blank" class="btn-pdf-link">📄 PDF</a>` : `<span class="btn-pdf-link disabled">📄 PDF</span>`;
+                const btnEdit = `<button class="btn-edit" onclick="cargarParaEditar('${p._id}')">✏️ Editar</button>`;
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${p.nro_protocolo}</td><td>${new Date(p.fecha).toLocaleDateString()}</td><td>BZ-${p.datos_identificacion?.tramo_bz_inicio} → BZ-${p.datos_identificacion?.tramo_bz_fin}</td><td>${p.datos_identificacion?.metodo_excavacion || 'S/N'}</td><td>${p.datos_identificacion?.tipo_terreno || 'S/N'}</td><td style="color:white;background:${color};font-weight:bold;text-align:center">${tieneNO ? 'CON OBS.' : 'LIBERADO'}</td><td>${btn}</td>`;
+                tr.innerHTML = `<td>${p.nro_protocolo}</td><td>${new Date(p.fecha).toLocaleDateString()}</td><td>BZ-${p.datos_identificacion?.tramo_bz_inicio} → BZ-${p.datos_identificacion?.tramo_bz_fin}</td><td>${p.datos_identificacion?.metodo_excavacion || 'S/N'}</td><td>${p.datos_identificacion?.tipo_terreno || 'S/N'}</td><td style="color:white;background:${color};font-weight:bold;text-align:center">${tieneNO ? 'CON OBS.' : 'LIBERADO'}</td><td>${btn}</td><td>${btnEdit}</td>`;
                 tabla.appendChild(tr);
             });
         } catch (e) { console.error(e); }
