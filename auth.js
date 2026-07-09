@@ -10,7 +10,9 @@
 
     window.fetch = async function (url, options) {
         options = options || {};
-        if (typeof url === 'string' && url.includes('onrender.com')) {
+        // Usar startsWith en lugar de includes para evitar fugas de token
+        // a dominios externos que contengan 'onrender.com' en su path
+        if (typeof url === 'string' && url.startsWith(BASE_URL)) {
             if (!(options.body instanceof FormData)) {
                 options.headers = Object.assign({}, options.headers, { 'Authorization': `Bearer ${token}` });
             } else {

@@ -871,7 +871,7 @@
 <script>
 
 // ===== CONFIG =====
-const BASE_URL = 'https://backend-protocolos-de-calidad.onrender.com';
+// NOTA: BASE_URL ya está declarada en auth.js (que se carga antes). No redeclarar.
 const API_DASHBOARD = `${BASE_URL}/api/dashboard`;
 
 // Mapa de tipos de protocolo a sus URLs de formulario
@@ -999,6 +999,20 @@ function renderStats(tipos) {
     });
 }
 
+// ===== ESCAPE HTML — previene XSS al insertar datos del API en el DOM =====
+function escapeHTML(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Mapa global para almacenar fotos por _id del protocolo (evita inyectar JSON en onclick)
+const fotosMap = new Map();
+
 // ===== RENDER TABLE =====
 function renderTable(registros) {
     const tbody = document.getElementById('tableBody');
@@ -1020,37 +1034,50 @@ function renderTable(registros) {
             year: 'numeric', month: 'short', day: 'numeric'
         }) : '-';
 
-        const pdfHtml = r.pdf_url
-            ? `<a href="${r.pdf_url}" target="_blank" class="pdf-btn has-pdf" title="Abrir PDF">
+        // Validar pdf_url para prevenir inyección de esquema javascript:
+        const safePdfUrl = (r.pdf_url && r.pdf_url.startsWith('https://')) ? r.pdf_url : null;
+        const pdfHtml = safePdfUrl
+            ? `<a href="${escapeHTML(safePdfUrl)}" target="_blank" rel="noopener noreferrer" class="pdf-btn has-pdf" title="Abrir PDF">
                 📄 Ver PDF
                </a>`
             : `<span class="pdf-btn no-pdf">📄 Sin PDF</span>`;
 
         // URL del formulario de edición
-        const formUrl = TIPO_FORM_URLS[r.tipo] ? `${TIPO_FORM_URLS[r.tipo]}?id=${r._id}` : '#';
+        const tipoSafe = TIPO_FORM_URLS[r.tipo] ? r.tipo : null;
+        const formUrl = tipoSafe ? `${TIPO_FORM_URLS[tipoSafe]}?id=${encodeURIComponent(r._id)}` : '#';
+
+        // Guardar fotos en el mapa para evitar inyección de JSON en onclick
+        fotosMap.set(r._id, r.fotos || []);
 
         return `
             <tr>
                 <td>
-                    <span class="tipo-badge" style="background:${r.tipo_color}15;color:${r.tipo_color};border:1px solid ${r.tipo_color}30;">
-                        <span class="tipo-icon">${r.tipo_icono}</span>
-                        ${r.tipo_nombre}
+                    <span class="tipo-badge" style="background:${escapeHTML(r.tipo_color)}15;color:${escapeHTML(r.tipo_color)};border:1px solid ${escapeHTML(r.tipo_color)}30;">
+                        <span class="tipo-icon">${escapeHTML(r.tipo_icono)}</span>
+                        ${escapeHTML(r.tipo_nombre)}
                     </span>
                 </td>
-                <td><span class="nro-protocolo">${r.nro_protocolo || '-'}</span></td>
-                <td><span class="resp-cell">${r.direccion || '-'}</span></td>
-                <td><span class="fecha-cell">${fecha}</span></td>
-                <td><span class="resp-cell">${r.responsable_calidad || '-'}</span></td>
+                <td><span class="nro-protocolo">${escapeHTML(r.nro_protocolo) || '-'}</span></td>
+                <td><span class="resp-cell">${escapeHTML(r.direccion) || '-'}</span></td>
+                <td><span class="fecha-cell">${escapeHTML(fecha)}</span></td>
+                <td><span class="resp-cell">${escapeHTML(r.responsable_calidad) || '-'}</span></td>
                 <td>${pdfHtml}</td>
                 <td>
                     <div class="actions-cell">
-                        <a href="${formUrl}" class="action-btn edit" title="Editar protocolo">
+                        <a href="${escapeHTML(formUrl)}" class="action-btn edit" title="Editar protocolo">
                             ✏️ Editar
                         </a>
-                        <button class="action-btn delete" onclick="openDeleteModal('${r.tipo}', '${r._id}', '${r.nro_protocolo || 'Sin número'}')" title="Eliminar protocolo">
+                        <button class="action-btn delete"
+                            data-tipo="${escapeHTML(r.tipo)}"
+                            data-id="${escapeHTML(r._id)}"
+                            data-nro="${escapeHTML(r.nro_protocolo || 'Sin número')}"
+                            title="Eliminar protocolo">
                             🗑️ Eliminar
                         </button>
-                        <button class="action-btn photos" onclick='openFotosModal(${JSON.stringify(r.fotos || [])}, "${r.nro_protocolo || 'Sin número'}")' title="Ver fotos">
+                        <button class="action-btn photos"
+                            data-fotos-id="${escapeHTML(r._id)}"
+                            data-nro="${escapeHTML(r.nro_protocolo || 'Sin número')}"
+                            title="Ver fotos">
                             📷 Fotos
                         </button>
                     </div>
@@ -1058,6 +1085,18 @@ function renderTable(registros) {
             </tr>
         `;
     }).join('');
+
+    // Delegación de eventos: un solo listener por tbody (sin onclick inline)
+    tbody.querySelectorAll('.action-btn.delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            openDeleteModal(btn.dataset.tipo, btn.dataset.id, btn.dataset.nro);
+        });
+    });
+    tbody.querySelectorAll('.action-btn.photos').forEach(btn => {
+        btn.addEventListener('click', () => {
+            openFotosModal(fotosMap.get(btn.dataset.fotosId) || [], btn.dataset.nro);
+        });
+    });
 }
 
 // ===== RENDER PAGINATION =====
