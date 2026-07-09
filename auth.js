@@ -3,10 +3,12 @@
     const token = sessionStorage.getItem('token');
     if (!token) { window.location.href = 'login.html'; return; }
 
-    const BASE_URL = 'https://backend-protocolos-de-calidad.onrender.com';
+    // Exponer BASE_URL globalmente para que otras páginas (dashboard.html) puedan usarlo
+    window.BASE_URL = 'https://backend-protocolos-de-calidad.onrender.com';
+    const BASE_URL = window.BASE_URL;
     const originalFetch = window.fetch.bind(window);
 
-    originalFetch(`${BASE_URL}/api/auth/ping`).catch(() => {});
+    originalFetch(`${BASE_URL}/api/auth/ping`).catch(() => { });
 
     window.fetch = async function (url, options) {
         options = options || {};
@@ -61,11 +63,11 @@ function mostrarPreview(inp) {
 
     const file = inp.files[0];
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
             const fr2 = new FileReader();
-            fr2.onload = function(e2) {
+            fr2.onload = function (e2) {
                 let orientation = 1;
                 try {
                     const dv = new DataView(e2.target.result);
@@ -92,7 +94,7 @@ function mostrarPreview(inp) {
                             else off += dv.getUint16(off);
                         }
                     }
-                } catch(_) {}
+                } catch (_) { }
 
                 // Generar canvas con EXIF corregido — redimensionar si es muy grande
                 const MAX_DIM = 1600;
@@ -112,13 +114,13 @@ function mostrarPreview(inp) {
                 ctx.save();
                 const sc = Math.min(cw / (swap ? h : w), ch / (swap ? w : h));
                 switch (orientation) {
-                    case 2: ctx.transform(-sc,0,0,sc,cw,0); break;
-                    case 3: ctx.transform(-sc,0,0,-sc,cw,ch); break;
-                    case 4: ctx.transform(sc,0,0,-sc,0,ch); break;
-                    case 5: ctx.transform(0,sc,sc,0,0,0); break;
-                    case 6: ctx.transform(0,sc,-sc,0,ch,0); break;
-                    case 7: ctx.transform(0,-sc,-sc,0,ch,cw); break;
-                    case 8: ctx.transform(0,-sc,sc,0,0,cw); break;
+                    case 2: ctx.transform(-sc, 0, 0, sc, cw, 0); break;
+                    case 3: ctx.transform(-sc, 0, 0, -sc, cw, ch); break;
+                    case 4: ctx.transform(sc, 0, 0, -sc, 0, ch); break;
+                    case 5: ctx.transform(0, sc, sc, 0, 0, 0); break;
+                    case 6: ctx.transform(0, sc, -sc, 0, ch, 0); break;
+                    case 7: ctx.transform(0, -sc, -sc, 0, ch, cw); break;
+                    case 8: ctx.transform(0, -sc, sc, 0, 0, cw); break;
                     default: ctx.scale(sc, sc); break;
                 }
                 ctx.drawImage(img, 0, 0);
@@ -151,7 +153,7 @@ function mostrarPreview(inp) {
                     ctxRot.translate(sh / 2, sw / 2);
                     ctxRot.rotate(90 * Math.PI / 180);
                     const imgRot = new Image();
-                    imgRot.onload = function() {
+                    imgRot.onload = function () {
                         ctxRot.drawImage(imgRot, -sw / 2, -sh / 2);
                         inp._correctedSrc = cRot.toDataURL('image/jpeg', 0.80);
                         inp._correctedW = cRot.width;
@@ -181,7 +183,7 @@ function cerrarSesion() {
  * Lee una imagen y devuelve { src, w, h, label } para insertar en jsPDF.
  * Usa el canvas ya corregido del preview si existe, si no corrige EXIF desde el archivo.
  */
-window.leerFotoCorregida = function(file, label, inputElement) {
+window.leerFotoCorregida = function (file, label, inputElement) {
     return new Promise(resolve => {
         // Usar canvas ya corregido del preview directamente
         if (inputElement && inputElement._correctedSrc) {
@@ -195,11 +197,11 @@ window.leerFotoCorregida = function(file, label, inputElement) {
         }
         // Fallback: corregir EXIF desde el archivo (sin preview)
         const reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             const img = new Image();
-            img.onload = function() {
+            img.onload = function () {
                 const fr2 = new FileReader();
-                fr2.onload = function(e2) {
+                fr2.onload = function (e2) {
                     let orientation = 1;
                     try {
                         const dv = new DataView(e2.target.result);
@@ -226,7 +228,7 @@ window.leerFotoCorregida = function(file, label, inputElement) {
                                 else off += dv.getUint16(off);
                             }
                         }
-                    } catch(_) {}
+                    } catch (_) { }
                     dibujar(img, orientation, resolve, label);
                 };
                 fr2.readAsArrayBuffer(file);
@@ -244,7 +246,7 @@ window.leerFotoCorregida = function(file, label, inputElement) {
  * 3 fotos → 2 arriba (una al lado de otra) y 1 abajo centrada más grande
  * 4+ fotos → 2x2, 3x2, etc. (usa 2ª página si hay más de 6)
  */
-window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
+window.insertarFotosEnPDF = function (doc, fotos, tituloY) {
     if (!fotos || fotos.length === 0) return;
 
     const n = fotos.length;
@@ -263,10 +265,10 @@ window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
         doc.rect(cellX, cellY, cellW, cellH);
         try {
             doc.addImage(f.src, 'JPEG', cellX + (cellW - fw) / 2, cellY + (cellH - fh) / 2, fw, fh, undefined, 'FAST');
-        } catch(e) {
+        } catch (e) {
             try {
                 doc.addImage(f.src, 'PNG', cellX + (cellW - fw) / 2, cellY + (cellH - fh) / 2, fw, fh, undefined, 'FAST');
-            } catch(e2) {
+            } catch (e2) {
                 console.error('Error al insertar imagen en PDF:', e2);
             }
         }
@@ -321,8 +323,8 @@ window.insertarFotosEnPDF = function(doc, fotos, tituloY) {
     } else {
         // 4+ fotos: layout en cuadrícula (2x2, 3x2, etc.)
         let cols, rows;
-        if      (n <= 4) { cols = 2; rows = 2; }
-        else             { cols = 3; rows = 2; }
+        if (n <= 4) { cols = 2; rows = 2; }
+        else { cols = 3; rows = 2; }
 
         const fotasPorPagina = cols * rows;
         const cellW = (PAGE_W - (cols - 1) * GAP) / cols;
@@ -356,7 +358,7 @@ function dibujar(img, orientation, resolve, label) {
     const ctx1 = c1.getContext('2d');
     const w = img.naturalWidth, h = img.naturalHeight;
     const swap = orientation >= 5;
-    
+
     // Redimensionar a máximo 1200px para evitar problemas con jsPDF
     const MAX_DIM = 1200;
     let cw = swap ? h : w;
@@ -366,7 +368,7 @@ function dibujar(img, orientation, resolve, label) {
         cw = Math.round(cw * scale);
         ch = Math.round(ch * scale);
     }
-    
+
     c1.width = cw;
     c1.height = ch;
     ctx1.save();

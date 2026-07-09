@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,14 @@
     <script src="auth.js"></script>
     <style>
         /* ===== RESET & BASE ===== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f0f2f5;
@@ -24,34 +32,39 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
             position: sticky;
             top: 0;
             z-index: 100;
         }
+
         .header-left {
             display: flex;
             align-items: center;
             gap: 16px;
         }
+
         .header-left h1 {
             font-size: 16px;
             font-weight: 600;
             letter-spacing: 0.5px;
         }
+
         .header-left .sub {
             font-size: 11px;
             opacity: 0.7;
             display: none;
         }
+
         .header-right {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .header-right button {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             padding: 6px 14px;
             border-radius: 6px;
@@ -59,9 +72,11 @@
             font-size: 12px;
             transition: 0.2s;
         }
+
         .header-right button:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
+
         .header-right .btn-menu {
             background: transparent;
             border: none;
@@ -83,6 +98,7 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+
         .stat-card {
             background: white;
             border-radius: 10px;
@@ -90,31 +106,37 @@
             cursor: pointer;
             transition: all 0.2s;
             border: 2px solid transparent;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
             position: relative;
             overflow: hidden;
         }
+
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
+
         .stat-card.active {
             border-color: #0f172a;
-            box-shadow: 0 4px 12px rgba(15,23,42,0.12);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
         }
+
         .stat-card .stat-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
+
         .stat-card .stat-icon {
             font-size: 22px;
         }
+
         .stat-card .stat-count {
             font-size: 18px;
             font-weight: 700;
             color: #1a1a2e;
         }
+
         .stat-card .stat-label {
             font-size: 10px;
             color: #64748b;
@@ -123,11 +145,13 @@
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
+
         .stat-card .stat-pdf {
             font-size: 9px;
             color: #10b981;
             margin-top: 2px;
         }
+
         .stat-card .stat-bar {
             position: absolute;
             bottom: 0;
@@ -145,11 +169,13 @@
             margin-bottom: 16px;
             flex-wrap: wrap;
         }
+
         .filters-bar .search-box {
             flex: 1;
             min-width: 200px;
             position: relative;
         }
+
         .filters-bar .search-box input {
             width: 100%;
             padding: 9px 14px 9px 36px;
@@ -160,10 +186,12 @@
             transition: 0.2s;
             outline: none;
         }
+
         .filters-bar .search-box input:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
+
         .filters-bar .search-box .search-icon {
             position: absolute;
             left: 12px;
@@ -172,6 +200,7 @@
             color: #94a3b8;
             font-size: 14px;
         }
+
         .filters-bar .btn-clear {
             padding: 8px 16px;
             border: 1.5px solid #e2e8f0;
@@ -182,10 +211,12 @@
             color: #64748b;
             transition: 0.2s;
         }
+
         .filters-bar .btn-clear:hover {
             background: #f8fafc;
             border-color: #cbd5e1;
         }
+
         .filters-bar .total-badge {
             background: #e2e8f0;
             padding: 6px 14px;
@@ -200,21 +231,25 @@
         .table-container {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
             overflow: hidden;
         }
+
         .table-wrapper {
             overflow-x: auto;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
         }
+
         thead {
             background: #f8fafc;
             border-bottom: 2px solid #e2e8f0;
         }
+
         thead th {
             padding: 12px 14px;
             text-align: left;
@@ -225,13 +260,16 @@
             color: #64748b;
             white-space: nowrap;
         }
+
         tbody tr {
             border-bottom: 1px solid #f1f5f9;
             transition: background 0.15s;
         }
+
         tbody tr:hover {
             background: #f8fafc;
         }
+
         tbody td {
             padding: 11px 14px;
             vertical-align: middle;
@@ -248,6 +286,7 @@
             font-weight: 600;
             white-space: nowrap;
         }
+
         .tipo-badge .tipo-icon {
             font-size: 14px;
         }
@@ -285,15 +324,18 @@
             transition: 0.2s;
             white-space: nowrap;
         }
+
         .pdf-btn.has-pdf {
             background: #ecfdf5;
             color: #059669;
             border: 1px solid #a7f3d0;
         }
+
         .pdf-btn.has-pdf:hover {
             background: #d1fae5;
             transform: translateY(-1px);
         }
+
         .pdf-btn.no-pdf {
             background: #f1f5f9;
             color: #94a3b8;
@@ -316,33 +358,40 @@
             text-decoration: none;
             white-space: nowrap;
         }
+
         .action-btn.edit {
             background: #eff6ff;
             color: #2563eb;
             border-color: #bfdbfe;
         }
+
         .action-btn.edit:hover {
             background: #dbeafe;
             transform: translateY(-1px);
         }
+
         .action-btn.delete {
             background: #fef2f2;
             color: #dc2626;
             border-color: #fecaca;
         }
+
         .action-btn.delete:hover {
             background: #fee2e2;
             transform: translateY(-1px);
         }
+
         .action-btn.photos {
             background: #f0fdf4;
             color: #16a34a;
             border-color: #bbf7d0;
         }
+
         .action-btn.photos:hover {
             background: #dcfce7;
             transform: translateY(-1px);
         }
+
         .actions-cell {
             display: flex;
             gap: 6px;
@@ -359,14 +408,17 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+
         .pagination .info {
             font-size: 12px;
             color: #64748b;
         }
+
         .pagination .pages {
             display: flex;
             gap: 4px;
         }
+
         .pagination .pages button {
             padding: 5px 11px;
             border: 1px solid #e2e8f0;
@@ -377,25 +429,30 @@
             color: #475569;
             transition: 0.15s;
         }
+
         .pagination .pages button:hover {
             background: #f1f5f9;
         }
+
         .pagination .pages button.active {
             background: #0f172a;
             color: white;
             border-color: #0f172a;
         }
+
         .pagination .pages button:disabled {
             opacity: 0.4;
             cursor: default;
         }
 
         /* ===== LOADING & EMPTY ===== */
-        .loading-state, .empty-state {
+        .loading-state,
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #64748b;
         }
+
         .loading-state .spinner {
             width: 36px;
             height: 36px;
@@ -405,11 +462,18 @@
             animation: spin 0.8s linear infinite;
             margin: 0 auto 12px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         .empty-state .empty-icon {
             font-size: 48px;
             margin-bottom: 10px;
         }
+
         .empty-state p {
             font-size: 14px;
         }
@@ -419,15 +483,17 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
+
         .modal-overlay.active {
             display: flex;
         }
+
         .modal-box {
             background: white;
             border-radius: 12px;
@@ -435,37 +501,51 @@
             max-width: 420px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: modalIn 0.25s ease;
         }
+
         @keyframes modalIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
+
         .modal-box .modal-icon {
             font-size: 48px;
             margin-bottom: 12px;
         }
+
         .modal-box h3 {
             font-size: 18px;
             color: #1a1a2e;
             margin-bottom: 8px;
         }
+
         .modal-box p {
             font-size: 13px;
             color: #64748b;
             margin-bottom: 20px;
             line-height: 1.5;
         }
+
         .modal-box .modal-protocolo {
             font-weight: 700;
             color: #dc2626;
         }
+
         .modal-actions {
             display: flex;
             gap: 10px;
             justify-content: center;
         }
+
         .modal-actions button {
             padding: 10px 24px;
             border-radius: 8px;
@@ -475,22 +555,27 @@
             transition: 0.2s;
             border: 1px solid transparent;
         }
+
         .modal-actions .btn-cancel {
             background: #f1f5f9;
             color: #475569;
             border-color: #e2e8f0;
         }
+
         .modal-actions .btn-cancel:hover {
             background: #e2e8f0;
         }
+
         .modal-actions .btn-confirm-delete {
             background: #dc2626;
             color: white;
         }
+
         .modal-actions .btn-confirm-delete:hover {
             background: #b91c1c;
             transform: translateY(-1px);
         }
+
         .modal-actions .btn-confirm-delete:disabled {
             background: #fca5a5;
             cursor: not-allowed;
@@ -506,6 +591,7 @@
             text-align: left;
             overflow-y: auto;
         }
+
         .modal-fotos .modal-header {
             display: flex;
             align-items: center;
@@ -514,11 +600,13 @@
             padding-bottom: 12px;
             border-bottom: 1px solid #e2e8f0;
         }
+
         .modal-fotos .modal-header h3 {
             margin: 0;
             font-size: 16px;
             color: #0f172a;
         }
+
         .modal-fotos .modal-header .close-btn {
             background: none;
             border: none;
@@ -529,15 +617,18 @@
             border-radius: 6px;
             transition: 0.2s;
         }
+
         .modal-fotos .modal-header .close-btn:hover {
             background: #f1f5f9;
             color: #1a1a2e;
         }
+
         .modal-fotos .fotos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 12px;
         }
+
         .modal-fotos .foto-item {
             border-radius: 8px;
             overflow: hidden;
@@ -545,10 +636,12 @@
             background: #f8fafc;
             transition: 0.2s;
         }
+
         .modal-fotos .foto-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+
         .modal-fotos .foto-item img {
             width: 100%;
             height: 180px;
@@ -556,6 +649,7 @@
             display: block;
             cursor: pointer;
         }
+
         .modal-fotos .foto-item .foto-info {
             padding: 8px 10px;
             display: flex;
@@ -563,6 +657,7 @@
             justify-content: space-between;
             gap: 6px;
         }
+
         .modal-fotos .foto-item .foto-nombre {
             font-size: 11px;
             color: #475569;
@@ -573,6 +668,7 @@
             flex: 1;
             min-width: 0;
         }
+
         .modal-fotos .foto-item .download-btn {
             display: inline-flex;
             align-items: center;
@@ -589,11 +685,13 @@
             transition: 0.2s;
             flex-shrink: 0;
         }
+
         .modal-fotos .foto-item .download-btn:hover {
             background: #f1f5f9;
             border-color: #cbd5e1;
             color: #0f172a;
         }
+
         .modal-fotos .foto-item .view-btn {
             display: inline-flex;
             align-items: center;
@@ -610,20 +708,24 @@
             transition: 0.2s;
             flex-shrink: 0;
         }
+
         .modal-fotos .foto-item .view-btn:hover {
             background: #f1f5f9;
             border-color: #cbd5e1;
             color: #0f172a;
         }
+
         .modal-fotos .fotos-empty {
             text-align: center;
             padding: 40px 20px;
             color: #94a3b8;
         }
+
         .modal-fotos .fotos-empty .empty-icon {
             font-size: 48px;
             margin-bottom: 10px;
         }
+
         .modal-fotos .fotos-empty p {
             font-size: 14px;
         }
@@ -633,23 +735,26 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 2000;
             align-items: center;
             justify-content: center;
             padding: 40px;
             cursor: zoom-out;
         }
+
         .lightbox-overlay.active {
             display: flex;
         }
+
         .lightbox-overlay img {
             max-width: 95%;
             max-height: 95%;
             object-fit: contain;
             border-radius: 8px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
+
         .lightbox-overlay .lightbox-close {
             position: absolute;
             top: 20px;
@@ -657,7 +762,7 @@
             font-size: 36px;
             color: white;
             cursor: pointer;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             width: 48px;
             height: 48px;
             display: flex;
@@ -667,9 +772,11 @@
             transition: 0.2s;
             border: none;
         }
+
         .lightbox-overlay .lightbox-close:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
+
         .lightbox-overlay .lightbox-counter {
             position: absolute;
             bottom: 24px;
@@ -677,10 +784,11 @@
             transform: translateX(-50%);
             color: white;
             font-size: 14px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             padding: 6px 16px;
             border-radius: 20px;
         }
+
         .lightbox-overlay .lightbox-nav {
             position: absolute;
             top: 50%;
@@ -688,7 +796,7 @@
             font-size: 40px;
             color: white;
             cursor: pointer;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             width: 50px;
             height: 50px;
             display: flex;
@@ -699,15 +807,19 @@
             border: none;
             user-select: none;
         }
+
         .lightbox-overlay .lightbox-nav:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
+
         .lightbox-overlay .lightbox-prev {
             left: 20px;
         }
+
         .lightbox-overlay .lightbox-next {
             right: 20px;
         }
+
         .lightbox-overlay .lightbox-download {
             position: absolute;
             bottom: 70px;
@@ -718,216 +830,280 @@
             gap: 6px;
             padding: 10px 20px;
             border-radius: 8px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             color: white;
             font-size: 14px;
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
             transition: 0.2s;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(4px);
         }
+
         .lightbox-overlay .lightbox-download:hover {
-            background: rgba(255,255,255,0.25);
-            border-color: rgba(255,255,255,0.4);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .header-left h1 { font-size: 13px; }
-            .main-content { padding: 12px 12px 30px; }
-            .stats-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
-            .stat-card { padding: 10px; }
-            .stat-card .stat-count { font-size: 15px; }
-            .stat-card .stat-label { font-size: 9px; }
-            .filters-bar { flex-direction: column; align-items: stretch; }
-            .filters-bar .search-box { min-width: auto; }
-            table { font-size: 12px; }
-            thead th, tbody td { padding: 8px 10px; }
-            .tipo-badge { font-size: 10px; padding: 2px 8px; }
-            .pagination { flex-direction: column; align-items: center; }
-            .actions-cell { flex-direction: column; gap: 4px; }
-            .action-btn { justify-content: center; }
+            .header-left h1 {
+                font-size: 13px;
+            }
+
+            .main-content {
+                padding: 12px 12px 30px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 6px;
+            }
+
+            .stat-card {
+                padding: 10px;
+            }
+
+            .stat-card .stat-count {
+                font-size: 15px;
+            }
+
+            .stat-card .stat-label {
+                font-size: 9px;
+            }
+
+            .filters-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filters-bar .search-box {
+                min-width: auto;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            thead th,
+            tbody td {
+                padding: 8px 10px;
+            }
+
+            .tipo-badge {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
+
+            .pagination {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .actions-cell {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .action-btn {
+                justify-content: center;
+            }
         }
 
         /* ===== SCROLLBAR ===== */
-        .table-wrapper::-webkit-scrollbar { height: 6px; }
-        .table-wrapper::-webkit-scrollbar-track { background: #f1f5f9; }
-        .table-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .table-wrapper::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .table-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
+
 <body>
 
-<!-- ===== HEADER ===== -->
-<header class="header">
-    <div class="header-left">
-        <a href="menu.html" class="btn-menu" style="text-decoration:none;color:white;" title="Ir al Menú">☰</a>
-        <div>
-            <h1>📊 Dashboard de Protocolos</h1>
-            <span class="sub">Todos los registros en una sola tabla</span>
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-left">
+            <a href="menu.html" class="btn-menu" style="text-decoration:none;color:white;" title="Ir al Menú">☰</a>
+            <div>
+                <h1>📊 Dashboard de Protocolos</h1>
+                <span class="sub">Todos los registros en una sola tabla</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button onclick="location.href='menu.html'"
+                style="background:#f0a500;color:#000;border-color:#f0a500;font-weight:700;">📋 Ver Protocolos</button>
+            <button onclick="cerrarSesion()">🚪 Salir</button>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content">
+
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Buscar por N° Protocolo, dirección/calle..."
+                    oninput="debounceSearch()">
+            </div>
+            <span class="total-badge" id="totalBadge">0 registros</span>
+            <button class="btn-clear" onclick="clearFilters()">✕ Limpiar filtros</button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>N° Protocolo</th>
+                            <th>Dirección / Calle</th>
+                            <th>Fecha</th>
+                            <th>Responsable Calidad</th>
+                            <th>PDF</th>
+                            <th style="text-align:center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="7">
+                                <div class="loading-state">
+                                    <div class="spinner"></div>
+                                    <p>Cargando registros...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination" id="pagination"></div>
         </div>
     </div>
-    <div class="header-right">
-        <button onclick="location.href='menu.html'" style="background:#f0a500;color:#000;border-color:#f0a500;font-weight:700;">📋 Ver Protocolos</button>
-        <button onclick="cerrarSesion()">🚪 Salir</button>
-    </div>
-</header>
 
-<!-- ===== MAIN CONTENT ===== -->
-<div class="main-content">
-
-    <!-- Stats Cards -->
-    <div class="stats-grid" id="statsGrid"></div>
-
-    <!-- Filters -->
-    <div class="filters-bar">
-        <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Buscar por N° Protocolo, dirección/calle..." oninput="debounceSearch()">
-        </div>
-        <span class="total-badge" id="totalBadge">0 registros</span>
-        <button class="btn-clear" onclick="clearFilters()">✕ Limpiar filtros</button>
-    </div>
-
-    <!-- Table -->
-    <div class="table-container">
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tipo</th>
-                        <th>N° Protocolo</th>
-                        <th>Dirección / Calle</th>
-                        <th>Fecha</th>
-                        <th>Responsable Calidad</th>
-                        <th>PDF</th>
-                        <th style="text-align:center;">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr>
-                        <td colspan="7">
-                            <div class="loading-state">
-                                <div class="spinner"></div>
-                                <p>Cargando registros...</p>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="pagination" id="pagination"></div>
-    </div>
-</div>
-
-<!-- ===== MODAL DE CONFIRMACIÓN PARA ELIMINAR ===== -->
-<div class="modal-overlay" id="deleteModal">
-    <div class="modal-box">
-        <div class="modal-icon">⚠️</div>
-        <h3>¿Eliminar protocolo?</h3>
-        <p>
-            Estás a punto de eliminar el protocolo<br>
-            <strong class="modal-protocolo" id="modalProtocolo">-</strong>
-            <br><br>
-            Esta acción <strong>no se puede deshacer</strong>.
-            ¿Estás seguro de que deseas continuar?
-        </p>
-        <div class="modal-actions">
-            <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
-            <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="confirmDelete()">Sí, eliminar</button>
-        </div>
-    </div>
-</div>
-
-<!-- ===== MODAL GALERÍA DE FOTOS ===== -->
-<div class="modal-overlay" id="fotosModal">
-    <div class="modal-box modal-fotos">
-        <div class="modal-header">
-            <h3 id="fotosModalTitle">📷 Fotos del Protocolo</h3>
-            <button class="close-btn" onclick="closeFotosModal()">✕</button>
-        </div>
-        <div id="fotosGridContainer">
-            <div class="fotos-empty">
-                <div class="empty-icon">📸</div>
-                <p>Cargando fotos...</p>
+    <!-- ===== MODAL DE CONFIRMACIÓN PARA ELIMINAR ===== -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-icon">⚠️</div>
+            <h3>¿Eliminar protocolo?</h3>
+            <p>
+                Estás a punto de eliminar el protocolo<br>
+                <strong class="modal-protocolo" id="modalProtocolo">-</strong>
+                <br><br>
+                Esta acción <strong>no se puede deshacer</strong>.
+                ¿Estás seguro de que deseas continuar?
+            </p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="confirmDelete()">Sí, eliminar</button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ===== LIGHTBOX PARA VER FOTO AMPLIADA ===== -->
-<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
-    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">‹</button>
-    <img id="lightboxImg" src="" alt="Foto ampliada">
-    <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">›</button>
-    <button class="lightbox-download" id="lightboxDownload" onclick="downloadLightboxImage()" title="Descargar imagen original">⬇ Descargar imagen</button>
-    <div class="lightbox-counter" id="lightboxCounter"></div>
-</div>
+    <!-- ===== MODAL GALERÍA DE FOTOS ===== -->
+    <div class="modal-overlay" id="fotosModal">
+        <div class="modal-box modal-fotos">
+            <div class="modal-header">
+                <h3 id="fotosModalTitle">📷 Fotos del Protocolo</h3>
+                <button class="close-btn" onclick="closeFotosModal()">✕</button>
+            </div>
+            <div id="fotosGridContainer">
+                <div class="fotos-empty">
+                    <div class="empty-icon">📸</div>
+                    <p>Cargando fotos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
+    <!-- ===== LIGHTBOX PARA VER FOTO AMPLIADA ===== -->
+    <div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">‹</button>
+        <img id="lightboxImg" src="" alt="Foto ampliada">
+        <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">›</button>
+        <button class="lightbox-download" id="lightboxDownload" onclick="downloadLightboxImage()"
+            title="Descargar imagen original">⬇ Descargar imagen</button>
+        <div class="lightbox-counter" id="lightboxCounter"></div>
+    </div>
 
-// ===== CONFIG =====
-// NOTA: BASE_URL ya está declarada en auth.js (que se carga antes). No redeclarar.
-const API_DASHBOARD = `${BASE_URL}/api/dashboard`;
+    <script>
 
-// Mapa de tipos de protocolo a sus URLs de formulario
-const TIPO_FORM_URLS = {
-    'concreto':         'concretobuzon.html',
-    'buzon':            'buzon.html',
-    'conexion':         'conexion.html',
-    'conexion-tramo':   'conexionTramo.html',
-    'estanquidad':      'estanquidad.html',
-    'excavacion':       'excavacion.html',
-    'prueba-hidraulica':'pruebaHidraulica.html',
-    'relleno':          'relleno.html',
-    'tuberia':          'tuberia.html',
-    'vereda':           'vereda.html'
-};
+        // ===== CONFIG =====
+        // NOTA: BASE_URL ya está declarada en auth.js (que se carga antes). No redeclarar.
+        const API_DASHBOARD = `${BASE_URL}/api/dashboard`;
 
-// ===== STATE =====
-let state = {
-    tipo: null,
-    search: '',
-    page: 1,
-    limit: 50,
-    total: 0,
-    totalPages: 0,
-    registros: [],
-    tipos: []
-};
+        // Mapa de tipos de protocolo a sus URLs de formulario
+        const TIPO_FORM_URLS = {
+            'concreto': 'concretobuzon.html',
+            'buzon': 'buzon.html',
+            'conexion': 'conexion.html',
+            'conexion-tramo': 'conexionTramo.html',
+            'estanquidad': 'estanquidad.html',
+            'excavacion': 'excavacion.html',
+            'prueba-hidraulica': 'pruebaHidraulica.html',
+            'relleno': 'relleno.html',
+            'tuberia': 'tuberia.html',
+            'vereda': 'vereda.html'
+        };
 
-let searchTimeout = null;
+        // ===== STATE =====
+        let state = {
+            tipo: null,
+            search: '',
+            page: 1,
+            limit: 50,
+            total: 0,
+            totalPages: 0,
+            registros: [],
+            tipos: []
+        };
 
-// Estado para eliminación
-let deleteTarget = null; // { tipo, id, nro_protocolo }
+        let searchTimeout = null;
 
-// ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
-    loadTipos();
-    loadData();
-});
+        // Estado para eliminación
+        let deleteTarget = null; // { tipo, id, nro_protocolo }
 
-// ===== LOAD TIPOS (stats cards) =====
-async function loadTipos() {
-    try {
-        const res = await fetch(`${API_DASHBOARD}/tipos`);
-        if (!res.ok) throw new Error('Error al cargar tipos');
-        const tipos = await res.json();
-        state.tipos = tipos;
-        renderStats(tipos);
-    } catch (err) {
-        console.error('Error cargando tipos:', err);
-    }
-}
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTipos();
+            loadData();
+        });
 
-// ===== LOAD DATA =====
-async function loadData() {
-    const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = `
+        // ===== LOAD TIPOS (stats cards) =====
+        async function loadTipos() {
+            try {
+                const res = await fetch(`${API_DASHBOARD}/tipos`);
+                if (!res.ok) throw new Error('Error al cargar tipos');
+                const tipos = await res.json();
+                state.tipos = tipos;
+                renderStats(tipos);
+            } catch (err) {
+                console.error('Error cargando tipos:', err);
+            }
+        }
+
+        // ===== LOAD DATA =====
+        async function loadData() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = `
         <tr><td colspan="7">
             <div class="loading-state">
                 <div class="spinner"></div>
@@ -936,28 +1112,28 @@ async function loadData() {
         </td></tr>
     `;
 
-    try {
-        const params = new URLSearchParams();
-        if (state.tipo) params.set('tipo', state.tipo);
-        if (state.search) params.set('search', state.search);
-        params.set('page', state.page);
-        params.set('limit', state.limit);
+            try {
+                const params = new URLSearchParams();
+                if (state.tipo) params.set('tipo', state.tipo);
+                if (state.search) params.set('search', state.search);
+                params.set('page', state.page);
+                params.set('limit', state.limit);
 
-        const res = await fetch(`${API_DASHBOARD}?${params}`);
-        if (!res.ok) throw new Error('Error al cargar datos');
-        const data = await res.json();
+                const res = await fetch(`${API_DASHBOARD}?${params}`);
+                if (!res.ok) throw new Error('Error al cargar datos');
+                const data = await res.json();
 
-        state.registros = data.registros;
-        state.total = data.paginacion.total;
-        state.totalPages = data.paginacion.totalPages;
-        state.tipos = data.tipos || state.tipos;
+                state.registros = data.registros;
+                state.total = data.paginacion.total;
+                state.totalPages = data.paginacion.totalPages;
+                state.tipos = data.tipos || state.tipos;
 
-        renderTable(data.registros);
-        renderPagination();
-        updateTotalBadge();
-    } catch (err) {
-        console.error('Error cargando datos:', err);
-        tbody.innerHTML = `
+                renderTable(data.registros);
+                renderPagination();
+                updateTotalBadge();
+            } catch (err) {
+                console.error('Error cargando datos:', err);
+                tbody.innerHTML = `
             <tr><td colspan="7">
                 <div class="empty-state">
                     <div class="empty-icon">⚠️</div>
@@ -965,13 +1141,13 @@ async function loadData() {
                 </div>
             </td></tr>
         `;
-    }
-}
+            }
+        }
 
-// ===== RENDER STATS =====
-function renderStats(tipos) {
-    const grid = document.getElementById('statsGrid');
-    grid.innerHTML = `
+        // ===== RENDER STATS =====
+        function renderStats(tipos) {
+            const grid = document.getElementById('statsGrid');
+            grid.innerHTML = `
         <div class="stat-card ${!state.tipo ? 'active' : ''}" onclick="filterByTipo(null)">
             <div class="stat-top">
                 <span class="stat-icon">📋</span>
@@ -982,11 +1158,11 @@ function renderStats(tipos) {
         </div>
     `;
 
-    tipos.forEach(t => {
-        const card = document.createElement('div');
-        card.className = `stat-card ${state.tipo === t.id ? 'active' : ''}`;
-        card.onclick = () => filterByTipo(t.id);
-        card.innerHTML = `
+            tipos.forEach(t => {
+                const card = document.createElement('div');
+                card.className = `stat-card ${state.tipo === t.id ? 'active' : ''}`;
+                card.onclick = () => filterByTipo(t.id);
+                card.innerHTML = `
             <div class="stat-top">
                 <span class="stat-icon">${t.icono}</span>
                 <span class="stat-count">${t.total}</span>
@@ -995,30 +1171,30 @@ function renderStats(tipos) {
             <div class="stat-pdf">📄 ${t.conPdf} con PDF</div>
             <div class="stat-bar" style="width:${t.total > 0 ? (t.conPdf / t.total * 100) : 0}%;background:${t.color}"></div>
         `;
-        grid.appendChild(card);
-    });
-}
+                grid.appendChild(card);
+            });
+        }
 
-// ===== ESCAPE HTML — previene XSS al insertar datos del API en el DOM =====
-function escapeHTML(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
+        // ===== ESCAPE HTML — previene XSS al insertar datos del API en el DOM =====
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
-// Mapa global para almacenar fotos por _id del protocolo (evita inyectar JSON en onclick)
-const fotosMap = new Map();
+        // Mapa global para almacenar fotos por _id del protocolo (evita inyectar JSON en onclick)
+        const fotosMap = new Map();
 
-// ===== RENDER TABLE =====
-function renderTable(registros) {
-    const tbody = document.getElementById('tableBody');
+        // ===== RENDER TABLE =====
+        function renderTable(registros) {
+            const tbody = document.getElementById('tableBody');
 
-    if (!registros || registros.length === 0) {
-        tbody.innerHTML = `
+            if (!registros || registros.length === 0) {
+                tbody.innerHTML = `
             <tr><td colspan="7">
                 <div class="empty-state">
                     <div class="empty-icon">📭</div>
@@ -1026,30 +1202,30 @@ function renderTable(registros) {
                 </div>
             </td></tr>
         `;
-        return;
-    }
+                return;
+            }
 
-    tbody.innerHTML = registros.map(r => {
-        const fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-PE', {
-            year: 'numeric', month: 'short', day: 'numeric'
-        }) : '-';
+            tbody.innerHTML = registros.map(r => {
+                const fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-PE', {
+                    year: 'numeric', month: 'short', day: 'numeric'
+                }) : '-';
 
-        // Validar pdf_url para prevenir inyección de esquema javascript:
-        const safePdfUrl = (r.pdf_url && r.pdf_url.startsWith('https://')) ? r.pdf_url : null;
-        const pdfHtml = safePdfUrl
-            ? `<a href="${escapeHTML(safePdfUrl)}" target="_blank" rel="noopener noreferrer" class="pdf-btn has-pdf" title="Abrir PDF">
+                // Validar pdf_url para prevenir inyección de esquema javascript:
+                const safePdfUrl = (r.pdf_url && r.pdf_url.startsWith('https://')) ? r.pdf_url : null;
+                const pdfHtml = safePdfUrl
+                    ? `<a href="${escapeHTML(safePdfUrl)}" target="_blank" rel="noopener noreferrer" class="pdf-btn has-pdf" title="Abrir PDF">
                 📄 Ver PDF
                </a>`
-            : `<span class="pdf-btn no-pdf">📄 Sin PDF</span>`;
+                    : `<span class="pdf-btn no-pdf">📄 Sin PDF</span>`;
 
-        // URL del formulario de edición
-        const tipoSafe = TIPO_FORM_URLS[r.tipo] ? r.tipo : null;
-        const formUrl = tipoSafe ? `${TIPO_FORM_URLS[tipoSafe]}?id=${encodeURIComponent(r._id)}` : '#';
+                // URL del formulario de edición
+                const tipoSafe = TIPO_FORM_URLS[r.tipo] ? r.tipo : null;
+                const formUrl = tipoSafe ? `${TIPO_FORM_URLS[tipoSafe]}?id=${encodeURIComponent(r._id)}` : '#';
 
-        // Guardar fotos en el mapa para evitar inyección de JSON en onclick
-        fotosMap.set(r._id, r.fotos || []);
+                // Guardar fotos en el mapa para evitar inyección de JSON en onclick
+                fotosMap.set(r._id, r.fotos || []);
 
-        return `
+                return `
             <tr>
                 <td>
                     <span class="tipo-badge" style="background:${escapeHTML(r.tipo_color)}15;color:${escapeHTML(r.tipo_color)};border:1px solid ${escapeHTML(r.tipo_color)}30;">
@@ -1084,160 +1260,160 @@ function renderTable(registros) {
                 </td>
             </tr>
         `;
-    }).join('');
+            }).join('');
 
-    // Delegación de eventos: un solo listener por tbody (sin onclick inline)
-    tbody.querySelectorAll('.action-btn.delete').forEach(btn => {
-        btn.addEventListener('click', () => {
-            openDeleteModal(btn.dataset.tipo, btn.dataset.id, btn.dataset.nro);
-        });
-    });
-    tbody.querySelectorAll('.action-btn.photos').forEach(btn => {
-        btn.addEventListener('click', () => {
-            openFotosModal(fotosMap.get(btn.dataset.fotosId) || [], btn.dataset.nro);
-        });
-    });
-}
+            // Delegación de eventos: un solo listener por tbody (sin onclick inline)
+            tbody.querySelectorAll('.action-btn.delete').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openDeleteModal(btn.dataset.tipo, btn.dataset.id, btn.dataset.nro);
+                });
+            });
+            tbody.querySelectorAll('.action-btn.photos').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openFotosModal(fotosMap.get(btn.dataset.fotosId) || [], btn.dataset.nro);
+                });
+            });
+        }
 
-// ===== RENDER PAGINATION =====
-function renderPagination() {
-    const pag = document.getElementById('pagination');
-    const { page, totalPages, total, limit } = state;
+        // ===== RENDER PAGINATION =====
+        function renderPagination() {
+            const pag = document.getElementById('pagination');
+            const { page, totalPages, total, limit } = state;
 
-    if (totalPages <= 1) {
-        pag.innerHTML = `<span class="info">${total} registro${total !== 1 ? 's' : ''}</span>`;
-        return;
-    }
+            if (totalPages <= 1) {
+                pag.innerHTML = `<span class="info">${total} registro${total !== 1 ? 's' : ''}</span>`;
+                return;
+            }
 
-    const start = (page - 1) * limit + 1;
-    const end = Math.min(page * limit, total);
+            const start = (page - 1) * limit + 1;
+            const end = Math.min(page * limit, total);
 
-    let html = `<span class="info">${start}–${end} de ${total} registros</span><div class="pages">`;
+            let html = `<span class="info">${start}–${end} de ${total} registros</span><div class="pages">`;
 
-    html += `<button onclick="goToPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹ Anterior</button>`;
+            html += `<button onclick="goToPage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>‹ Anterior</button>`;
 
-    const maxVisible = 5;
-    let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-    if (endPage - startPage < maxVisible - 1) {
-        startPage = Math.max(1, endPage - maxVisible + 1);
-    }
+            const maxVisible = 5;
+            let startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
 
-    if (startPage > 1) {
-        html += `<button onclick="goToPage(1)">1</button>`;
-        if (startPage > 2) html += `<button disabled>...</button>`;
-    }
+            if (startPage > 1) {
+                html += `<button onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) html += `<button disabled>...</button>`;
+            }
 
-    for (let i = startPage; i <= endPage; i++) {
-        html += `<button onclick="goToPage(${i})" class="${i === page ? 'active' : ''}">${i}</button>`;
-    }
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button onclick="goToPage(${i})" class="${i === page ? 'active' : ''}">${i}</button>`;
+            }
 
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) html += `<button disabled>...</button>`;
-        html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
-    }
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) html += `<button disabled>...</button>`;
+                html += `<button onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            }
 
-    html += `<button onclick="goToPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Siguiente ›</button>`;
-    html += `</div>`;
+            html += `<button onclick="goToPage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>Siguiente ›</button>`;
+            html += `</div>`;
 
-    pag.innerHTML = html;
-}
+            pag.innerHTML = html;
+        }
 
-// ===== UPDATE TOTAL BADGE =====
-function updateTotalBadge() {
-    document.getElementById('totalBadge').textContent = `${state.total} registro${state.total !== 1 ? 's' : ''}`;
-}
+        // ===== UPDATE TOTAL BADGE =====
+        function updateTotalBadge() {
+            document.getElementById('totalBadge').textContent = `${state.total} registro${state.total !== 1 ? 's' : ''}`;
+        }
 
-// ===== ACTIONS =====
-function filterByTipo(tipoId) {
-    state.tipo = tipoId;
-    state.page = 1;
-    loadData();
-    loadTipos();
-}
-
-function goToPage(page) {
-    if (page < 1 || page > state.totalPages) return;
-    state.page = page;
-    loadData();
-}
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        const val = document.getElementById('searchInput').value.trim();
-        if (val !== state.search) {
-            state.search = val;
+        // ===== ACTIONS =====
+        function filterByTipo(tipoId) {
+            state.tipo = tipoId;
             state.page = 1;
             loadData();
+            loadTipos();
         }
-    }, 400);
-}
 
-function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    state.search = '';
-    state.tipo = null;
-    state.page = 1;
-    loadData();
-    loadTipos();
-}
+        function goToPage(page) {
+            if (page < 1 || page > state.totalPages) return;
+            state.page = page;
+            loadData();
+        }
 
-// ===== DELETE MODAL =====
-function openDeleteModal(tipo, id, nroProtocolo) {
-    deleteTarget = { tipo, id, nro_protocolo: nroProtocolo };
-    document.getElementById('modalProtocolo').textContent = nroProtocolo;
-    document.getElementById('deleteModal').classList.add('active');
-    document.getElementById('btnConfirmDelete').disabled = false;
-    document.getElementById('btnConfirmDelete').textContent = 'Sí, eliminar';
-}
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const val = document.getElementById('searchInput').value.trim();
+                if (val !== state.search) {
+                    state.search = val;
+                    state.page = 1;
+                    loadData();
+                }
+            }, 400);
+        }
 
-function closeDeleteModal() {
-    document.getElementById('deleteModal').classList.remove('active');
-    deleteTarget = null;
-}
-
-async function confirmDelete() {
-    if (!deleteTarget) return;
-
-    const btn = document.getElementById('btnConfirmDelete');
-    btn.disabled = true;
-    btn.textContent = 'Eliminando...';
-
-    try {
-        const res = await fetch(`${API_DASHBOARD}/${deleteTarget.tipo}/${deleteTarget.id}`, {
-            method: 'DELETE'
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-            closeDeleteModal();
-            // Recargar datos
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            state.search = '';
+            state.tipo = null;
+            state.page = 1;
             loadData();
             loadTipos();
-            // Mostrar notificación temporal
-            showNotification(`✅ Protocolo ${deleteTarget.nro_protocolo} eliminado correctamente`, 'success');
-        } else {
-            btn.disabled = false;
-            btn.textContent = 'Sí, eliminar';
-            showNotification(`❌ ${data.error || 'Error al eliminar'}`, 'error');
         }
-    } catch (err) {
-        btn.disabled = false;
-        btn.textContent = 'Sí, eliminar';
-        showNotification('❌ Error de conexión al eliminar', 'error');
-    }
-}
 
-// ===== NOTIFICACIÓN TEMPORAL =====
-function showNotification(message, type) {
-    const existing = document.querySelector('.toast-notification');
-    if (existing) existing.remove();
+        // ===== DELETE MODAL =====
+        function openDeleteModal(tipo, id, nroProtocolo) {
+            deleteTarget = { tipo, id, nro_protocolo: nroProtocolo };
+            document.getElementById('modalProtocolo').textContent = nroProtocolo;
+            document.getElementById('deleteModal').classList.add('active');
+            document.getElementById('btnConfirmDelete').disabled = false;
+            document.getElementById('btnConfirmDelete').textContent = 'Sí, eliminar';
+        }
 
-    const toast = document.createElement('div');
-    toast.className = 'toast-notification';
-    toast.textContent = message;
-    toast.style.cssText = `
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            deleteTarget = null;
+        }
+
+        async function confirmDelete() {
+            if (!deleteTarget) return;
+
+            const btn = document.getElementById('btnConfirmDelete');
+            btn.disabled = true;
+            btn.textContent = 'Eliminando...';
+
+            try {
+                const res = await fetch(`${API_DASHBOARD}/${deleteTarget.tipo}/${deleteTarget.id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    closeDeleteModal();
+                    // Recargar datos
+                    loadData();
+                    loadTipos();
+                    // Mostrar notificación temporal
+                    showNotification(`✅ Protocolo ${deleteTarget.nro_protocolo} eliminado correctamente`, 'success');
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = 'Sí, eliminar';
+                    showNotification(`❌ ${data.error || 'Error al eliminar'}`, 'error');
+                }
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'Sí, eliminar';
+                showNotification('❌ Error de conexión al eliminar', 'error');
+            }
+        }
+
+        // ===== NOTIFICACIÓN TEMPORAL =====
+        function showNotification(message, type) {
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.textContent = message;
+            toast.style.cssText = `
         position: fixed;
         bottom: 24px;
         right: 24px;
@@ -1252,144 +1428,151 @@ function showNotification(message, type) {
         animation: toastIn 0.3s ease;
         max-width: 400px;
     `;
-    document.body.appendChild(toast);
+            document.body.appendChild(toast);
 
-    // Agregar keyframe si no existe
-    if (!document.getElementById('toastStyle')) {
-        const style = document.createElement('style');
-        style.id = 'toastStyle';
-        style.textContent = `
+            // Agregar keyframe si no existe
+            if (!document.getElementById('toastStyle')) {
+                const style = document.createElement('style');
+                style.id = 'toastStyle';
+                style.textContent = `
             @keyframes toastIn {
                 from { transform: translateX(100px); opacity: 0; }
                 to { transform: translateX(0); opacity: 1; }
             }
         `;
-        document.head.appendChild(style);
-    }
+                document.head.appendChild(style);
+            }
 
-    setTimeout(() => {
-        toast.style.transition = 'opacity 0.3s, transform 0.3s';
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100px)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.3s, transform 0.3s';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-// ===== FOTOS MODAL =====
-let fotosActuales = []; // Array de {nombre, url}
-let fotosIndexActual = 0;
+        // ===== FOTOS MODAL =====
+        let fotosActuales = []; // Array de {nombre, url}
+        let fotosIndexActual = 0;
 
-function openFotosModal(fotos, nroProtocolo) {
-    fotosActuales = fotos || [];
-    document.getElementById('fotosModalTitle').textContent = `📷 Fotos - Protocolo ${nroProtocolo}`;
-    renderFotosGrid();
-    document.getElementById('fotosModal').classList.add('active');
-}
+        function openFotosModal(fotos, nroProtocolo) {
+            fotosActuales = fotos || [];
+            document.getElementById('fotosModalTitle').textContent = `📷 Fotos - Protocolo ${nroProtocolo}`;
+            renderFotosGrid();
+            document.getElementById('fotosModal').classList.add('active');
+        }
 
-function closeFotosModal() {
-    document.getElementById('fotosModal').classList.remove('active');
-    fotosActuales = [];
-}
+        function closeFotosModal() {
+            document.getElementById('fotosModal').classList.remove('active');
+            fotosActuales = [];
+        }
 
-function renderFotosGrid() {
-    const container = document.getElementById('fotosGridContainer');
+        function renderFotosGrid() {
+            const container = document.getElementById('fotosGridContainer');
 
-    if (!fotosActuales || fotosActuales.length === 0) {
-        container.innerHTML = `
+            if (!fotosActuales || fotosActuales.length === 0) {
+                container.innerHTML = `
             <div class="fotos-empty">
                 <div class="empty-icon">📸</div>
                 <p>Este protocolo no tiene fotos asociadas.</p>
             </div>
         `;
-        return;
-    }
+                return;
+            }
 
-    container.innerHTML = `
+            container.innerHTML = `
         <div class="fotos-grid">
-            ${fotosActuales.map((foto, index) => `
-                <div class="foto-item">
-                    <img src="${foto.url}" alt="${foto.nombre || 'Foto'}" 
-                         onclick="openLightbox(${index})" 
-                         loading="lazy">
-                    <div class="foto-info">
-                        <span class="foto-nombre" title="${foto.nombre || ''}">
-                            ${foto.nombre || 'Foto ' + (index + 1)}
-                        </span>
-                        <button class="download-btn" title="Descargar imagen" onclick="event.stopPropagation(); downloadImage('${foto.url}', '${foto.nombre || 'foto-' + (index + 1)}')">
-                            ⬇
-                        </button>
+            ${fotosActuales.map((foto, index) => {
+                const safeUrl = escapeHTML(foto.url);
+                const safeNombre = escapeHTML(foto.nombre) || 'Foto ' + (index + 1);
+                const safeNombreAttr = escapeHTML(foto.nombre || '');
+                const safeNombreDownload = escapeHTML(foto.nombre || 'foto-' + (index + 1));
+                return `
+                    <div class="foto-item">
+                        <img src="${safeUrl}" alt="${safeNombre}" 
+                             onclick="openLightbox(${index})" 
+                             loading="lazy">
+                        <div class="foto-info">
+                            <span class="foto-nombre" title="${safeNombreAttr}">
+                                ${safeNombre}
+                            </span>
+                            <button class="download-btn" title="Descargar imagen" onclick="event.stopPropagation(); downloadImage('${safeUrl}', '${safeNombreDownload}')">
+                                ⬇
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `).join('')}
+                `;
+            }).join('')}
         </div>
     `;
-}
+        }
 
-// ===== LIGHTBOX =====
-function openLightbox(index) {
-    if (!fotosActuales || fotosActuales.length === 0) return;
-    fotosIndexActual = index;
-    updateLightboxImage();
-    document.getElementById('lightboxOverlay').classList.add('active');
-    document.addEventListener('keydown', handleLightboxKey);
-}
+        // ===== LIGHTBOX =====
+        function openLightbox(index) {
+            if (!fotosActuales || fotosActuales.length === 0) return;
+            fotosIndexActual = index;
+            updateLightboxImage();
+            document.getElementById('lightboxOverlay').classList.add('active');
+            document.addEventListener('keydown', handleLightboxKey);
+        }
 
-function closeLightbox(event) {
-    // Si se llama desde el onclick del overlay, cerrar solo si es clic directo en el fondo
-    if (event) {
-        // Si el clic no fue directamente en el overlay (sino en un hijo), no cerrar
-        if (event.target !== event.currentTarget) return;
-    }
-    document.getElementById('lightboxOverlay').classList.remove('active');
-    document.removeEventListener('keydown', handleLightboxKey);
-}
+        function closeLightbox(event) {
+            // Si se llama desde el onclick del overlay, cerrar solo si es clic directo en el fondo
+            if (event) {
+                // Si el clic no fue directamente en el overlay (sino en un hijo), no cerrar
+                if (event.target !== event.currentTarget) return;
+            }
+            document.getElementById('lightboxOverlay').classList.remove('active');
+            document.removeEventListener('keydown', handleLightboxKey);
+        }
 
-function navigateLightbox(direction) {
-    if (!fotosActuales || fotosActuales.length === 0) return;
-    fotosIndexActual = (fotosIndexActual + direction + fotosActuales.length) % fotosActuales.length;
-    updateLightboxImage();
-}
+        function navigateLightbox(direction) {
+            if (!fotosActuales || fotosActuales.length === 0) return;
+            fotosIndexActual = (fotosIndexActual + direction + fotosActuales.length) % fotosActuales.length;
+            updateLightboxImage();
+        }
 
-function updateLightboxImage() {
-    const foto = fotosActuales[fotosIndexActual];
-    document.getElementById('lightboxImg').src = foto.url;
-    document.getElementById('lightboxImg').alt = foto.nombre || 'Foto';
-    document.getElementById('lightboxCounter').textContent = `${fotosIndexActual + 1} / ${fotosActuales.length}`;
-}
+        function updateLightboxImage() {
+            const foto = fotosActuales[fotosIndexActual];
+            document.getElementById('lightboxImg').src = foto.url;
+            document.getElementById('lightboxImg').alt = foto.nombre || 'Foto';
+            document.getElementById('lightboxCounter').textContent = `${fotosIndexActual + 1} / ${fotosActuales.length}`;
+        }
 
-function handleLightboxKey(e) {
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') navigateLightbox(-1);
-    if (e.key === 'ArrowRight') navigateLightbox(1);
-}
+        function handleLightboxKey(e) {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        }
 
-// ===== DESCARGA DE IMÁGENES (fetch + blob para forzar descarga desde Cloudinary) =====
-async function downloadImage(url, nombreArchivo) {
-    try {
-        const respuesta = await fetch(url);
-        if (!respuesta.ok) throw new Error('Error al descargar la imagen');
-        const blob = await respuesta.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const enlace = document.createElement('a');
-        enlace.href = blobUrl;
-        enlace.download = nombreArchivo || 'imagen';
-        document.body.appendChild(enlace);
-        enlace.click();
-        document.body.removeChild(enlace);
-        URL.revokeObjectURL(blobUrl);
-    } catch (err) {
-        console.error('Error al descargar imagen:', err);
-        showNotification('❌ Error al descargar la imagen', 'error');
-    }
-}
+        // ===== DESCARGA DE IMÁGENES (fetch + blob para forzar descarga desde Cloudinary) =====
+        async function downloadImage(url, nombreArchivo) {
+            try {
+                const respuesta = await fetch(url);
+                if (!respuesta.ok) throw new Error('Error al descargar la imagen');
+                const blob = await respuesta.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const enlace = document.createElement('a');
+                enlace.href = blobUrl;
+                enlace.download = nombreArchivo || 'imagen';
+                document.body.appendChild(enlace);
+                enlace.click();
+                document.body.removeChild(enlace);
+                URL.revokeObjectURL(blobUrl);
+            } catch (err) {
+                console.error('Error al descargar imagen:', err);
+                showNotification('❌ Error al descargar la imagen', 'error');
+            }
+        }
 
-function downloadLightboxImage() {
-    if (!fotosActuales || fotosActuales.length === 0) return;
-    const foto = fotosActuales[fotosIndexActual];
-    const nombre = foto.nombre || 'foto-' + (fotosIndexActual + 1);
-    downloadImage(foto.url, nombre);
-}
-</script>
+        function downloadLightboxImage() {
+            if (!fotosActuales || fotosActuales.length === 0) return;
+            const foto = fotosActuales[fotosIndexActual];
+            const nombre = foto.nombre || 'foto-' + (fotosIndexActual + 1);
+            downloadImage(foto.url, nombre);
+        }
+    </script>
 
 </body>
+
 </html>
