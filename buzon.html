@@ -37,8 +37,8 @@
         <div class="header-grid">
             <div><label>PROTOCOLO N°:</label><input type="text" id="nro_prot" name="nro_protocolo" readonly></div>
             <div><label>FECHA:</label><input type="date" id="fecha" name="fecha"></div>
-            <div><label>CÓDIGO DE BUZÓN: *</label><input type="text" name="codigo_buzon" placeholder="Ej: BZ-042" required></div>
-            <div><label>CALLE / PASAJE:</label><input type="text" name="calle_pasaje"></div>
+            <div><label>CÓDIGO DE BUZÓN: *</label><input type="text" name="codigo_buzon" placeholder="Ej: BZ-042" maxlength="50" required></div>
+            <div><label>CALLE / PASAJE:</label><input type="text" name="calle_pasaje" maxlength="150"></div>
             <div><label>TIPO DE BUZÓN:</label>
                 <select name="tipo_buzon">
                     <option>Tipo I (h &lt; 3.00m)</option>

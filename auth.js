@@ -1,26 +1,28 @@
 // auth.js - Incluir en todas las páginas protegidas
 (function () {
-    const token = sessionStorage.getItem('token');
-    if (!token) { window.location.href = 'login.html'; return; }
-
-    // Exponer BASE_URL globalmente para que otras páginas (dashboard.html) puedan usarlo
     window.BASE_URL = 'https://backend-protocolos-de-calidad.onrender.com';
     const BASE_URL = window.BASE_URL;
+    const token = sessionStorage.getItem('token');
+    const username = sessionStorage.getItem('username');
+
+    if (!token && !username) { window.location.href = 'login.html'; return; }
+
     const originalFetch = window.fetch.bind(window);
 
-    originalFetch(`${BASE_URL}/api/auth/ping`).catch(() => { });
+    originalFetch(`${BASE_URL}/api/auth/ping`, { credentials: 'include' }).catch(() => { });
 
     window.fetch = async function (url, options) {
         options = options || {};
-        // Usar startsWith en lugar de includes para evitar fugas de token
-        // a dominios externos que contengan 'onrender.com' en su path
         if (typeof url === 'string' && url.startsWith(BASE_URL)) {
-            if (!(options.body instanceof FormData)) {
-                options.headers = Object.assign({}, options.headers, { 'Authorization': `Bearer ${token}` });
-            } else {
-                const h = new Headers(options.headers || {});
-                h.set('Authorization', `Bearer ${token}`);
-                options.headers = h;
+            options.credentials = 'include';
+            if (token) {
+                if (!(options.body instanceof FormData)) {
+                    options.headers = Object.assign({}, options.headers, { 'Authorization': `Bearer ${token}` });
+                } else {
+                    const h = new Headers(options.headers || {});
+                    h.set('Authorization', `Bearer ${token}`);
+                    options.headers = h;
+                }
             }
         }
         const MAX_INTENTOS = 3;
@@ -174,7 +176,10 @@ function mostrarPreview(inp) {
     reader.readAsDataURL(file);
 }
 
-function cerrarSesion() {
+async function cerrarSesion() {
+    try {
+        await fetch(`${window.BASE_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch (_) {}
     sessionStorage.clear();
     window.location.href = 'login.html';
 }
